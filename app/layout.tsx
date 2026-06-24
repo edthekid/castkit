@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { ck } from './_theme/colors';
+import { Analytics } from '@vercel/analytics/next';
 import { LanguageProvider } from './_i18n/LanguageContext';
 import { AppShell } from './_components/AppShell';
 import { Noto_Sans_JP } from 'next/font/google';
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LanguageProvider>
           <AppShell>{children}</AppShell>
         </LanguageProvider>
+        <Analytics />
       </body>
     </html>
   );
