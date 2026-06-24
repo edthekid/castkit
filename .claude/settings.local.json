@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Remove-Item \"C:\\\\Users\\\\zero2\\\\castkit\\\\app\\\\_components\\\\ObsLinkButton.tsx\" \"C:\\\\Users\\\\zero2\\\\castkit\\\\app\\\\_components\\\\ObsFitWrapper.tsx\" \"C:\\\\Users\\\\zero2\\\\castkit\\\\app\\\\_hooks\\\\useObsMode.ts\")"
+    ]
+  }
+}

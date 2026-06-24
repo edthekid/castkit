@@ -1,0 +1,351 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+/* ════════════════════════════════════════════════════════
+   CastKit Design Tokens (Monochrome)
+   ────────────────────────────────────────────────────────
+   色の変更はこのセクションだけで完結するようにする。
+   コンポーネント側は var(--ck-xxx) または _theme/colors.ts
+   経由でこれらの値を参照すること。
+   ════════════════════════════════════════════════════════ */
+:root {
+  /* ── ベースとなるアクセント色のRGB値（透過パターンの基準） ──
+     この値を変えると、rgba(var(--ck-ink-rgb), N) を使っている
+     全ての半透明シャドウ/バッジ/グロー等が一括で追従する。 */
+  --ck-ink-rgb: 17, 17, 20;
+
+  /* ── グレースケール基本パレット（明 → 暗） ── */
+  --ck-gray-50:  #fafafa;
+  --ck-gray-100: #f4f4f5;
+  --ck-gray-200: #e4e4e7;
+  --ck-gray-300: #d4d4d8;
+  --ck-gray-400: #a1a1aa;
+  --ck-gray-500: #71717a;
+  --ck-gray-600: #52525b;
+  --ck-gray-700: #3f3f46;
+  --ck-gray-800: #27272a;
+  --ck-gray-900: #18181b;
+  --ck-gray-950: #09090b;
+
+  /* ── セマンティックトークン ── */
+  --ck-bg:            #ffffff;            /* ページ背景 */
+  --ck-bg-card:       var(--ck-gray-50);  /* カード背景 */
+  --ck-bg-card-muted: var(--ck-gray-100); /* 控えめな背景 */
+  --ck-border:        var(--ck-gray-200); /* 標準ボーダー */
+  --ck-border-strong: var(--ck-gray-300); /* 強調ボーダー */
+
+  --ck-text-primary:   var(--ck-gray-900); /* 見出し・本文 */
+  --ck-text-secondary: var(--ck-gray-500); /* サブテキスト */
+  --ck-text-muted:     var(--ck-gray-400); /* placeholder等 */
+  --ck-text-on-dark:   #ffffff;            /* 濃色背景上の文字 */
+
+  --ck-accent:        var(--ck-gray-900); /* プライマリアクセント（黒） */
+  --ck-accent-soft:   var(--ck-gray-100); /* アクセントの淡い背景 */
+  --ck-accent-border: var(--ck-gray-200); /* アクセントの淡いボーダー */
+
+  --ck-focus-ring: rgba(var(--ck-ink-rgb), 0.08);   /* フォーカスリング */
+  --ck-shadow-soft: rgba(var(--ck-ink-rgb), 0.06);  /* 控えめなシャドウ */
+  --ck-shadow-mid:  rgba(var(--ck-ink-rgb), 0.18);  /* 中間シャドウ */
+  --ck-shadow-glow: rgba(var(--ck-ink-rgb), 0.10);  /* グロー用 */
+
+  /* ── グラデーション ── */
+  --ck-gradient-text:   linear-gradient(135deg, var(--ck-gray-900) 0%, var(--ck-gray-600) 60%, var(--ck-gray-400) 100%);
+  --ck-gradient-btn:    linear-gradient(135deg, var(--ck-gray-900), var(--ck-gray-700));
+  --ck-gradient-badge:  linear-gradient(135deg, rgba(var(--ck-ink-rgb), 0.06), rgba(var(--ck-ink-rgb), 0.03));
+  --ck-gradient-active: linear-gradient(135deg, rgba(var(--ck-ink-rgb), 0.08), rgba(var(--ck-ink-rgb), 0.03));
+
+  /* ── プレイヤー/チーム判別用パレット（濃淡12段階） ──
+     amida・team-divisionなど「複数の対象を色で見分ける」用途専用。
+     index % length でループ利用する。 */
+  /* シリーズカラー（amida・team-divisionで複数対象を見分ける用途）。
+     彩度を抑えたディープトーン。_theme/colors.ts の ck.series と同じ値を保つこと。 */
+  --ck-series-0:  #3a3a40; /* ソフトブラック */
+  --ck-series-1:  #a8475a; /* ワインレッド */
+  --ck-series-2:  #3f6a8a; /* ネイビーブルー */
+  --ck-series-3:  #7c8f54; /* オリーブグリーン */
+  --ck-series-4:  #7d6448; /* ブラウン */
+  --ck-series-5:  #5c5c66; /* グレー */
+  --ck-series-6:  #a3702f; /* バーントオレンジ */
+  --ck-series-7:  #477366; /* フォレストグリーン */
+  --ck-series-8:  #7c5380; /* モーブパープル */
+  --ck-series-9:  #8d8d96; /* ミッドグレー */
+  --ck-series-10: #b3923f; /* マスタード */
+  --ck-series-11: #5d7488; /* スレートブルー */
+
+  /* ── 旧名称（互換用エイリアス。新規コードでは使用しない） ── */
+  --ck-ink:    var(--ck-gray-900);
+  --ck-gray-1: var(--ck-gray-700);
+  --ck-gray-2: var(--ck-gray-500);
+  --ck-gray-3: var(--ck-gray-400);
+  --ck-card:   var(--ck-bg-card);
+  --ck-glow:   var(--ck-shadow-glow);
+}
+
+/* ════════════════════════════════════════════════════════
+   Tailwind 用カラートークン
+   ────────────────────────────────────────────────────────
+   上の :root トークンを Tailwind の名前付きユーティリティに公開する。
+   これにより text-[#a1a1aa] のようなハードコードを
+   text-ck-muted / bg-ck-card / border-ck-line などに置き換えられる。
+   値の実体は上の :root（単一ソース）を参照しているので、
+   色を変えるときは :root だけ直せば全ユーティリティに追従する。
+   ════════════════════════════════════════════════════════ */
+@theme inline {
+  --color-ck-ink:       var(--ck-text-primary);   /* 見出し・本文 (#18181b) */
+  --color-ck-body:      var(--ck-gray-600);        /* 記事本文 (#52525b) */
+  --color-ck-subtle:    var(--ck-text-secondary);  /* サブテキスト (#71717a) */
+  --color-ck-muted:     var(--ck-text-muted);      /* 補助・サブタイトル (#a1a1aa) */
+  --color-ck-line:      var(--ck-border);          /* 標準ボーダー (#e4e4e7) */
+  --color-ck-line-bold: var(--ck-border-strong);   /* 強調ボーダー (#d4d4d8) */
+  --color-ck-card:      var(--ck-bg-card);         /* カード背景 (#fafafa) */
+  --color-ck-surface:   var(--ck-bg-card-muted);   /* 控えめな面 (#f4f4f5) */
+}
+
+/* ── ブラウザのネイティブUI（角丸・装飾）を完全にリセット ──
+   シャープなデザインを保証するため、button/input/textareaの
+   デフォルトのappearance・border-radiusを明示的に潰す。 */
+button, input, textarea, select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border-radius: 0;
+  font-family: inherit;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="checkbox"], input[type="radio"] {
+  appearance: auto; /* チェックボックス/ラジオはネイティブ表示を維持 */
+}
+
+html, body {
+  background: var(--ck-bg);
+  color: var(--ck-text-primary);
+}
+
+/* ── グラスモーフィズムカード ── */
+.ck-glass {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--ck-border);
+  box-shadow: 0 8px 32px var(--ck-shadow-soft);
+}
+
+/* ── グラデーションテキスト ── */
+.ck-gradient-text {
+  background: var(--ck-gradient-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── グロー ── */
+.ck-glow {
+  box-shadow: 0 0 24px var(--ck-shadow-glow);
+}
+
+/* ── スクロールバー ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ck-shadow-mid); border-radius: 0; }
+
+/* ── アニメーション ── */
+@keyframes ck-float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes ck-pulse-glow {
+  0%,100% { box-shadow: 0 0 16px var(--ck-shadow-mid); }
+  50%      { box-shadow: 0 0 32px rgba(var(--ck-ink-rgb), 0.35), 0 0 60px var(--ck-shadow-glow); }
+}
+@keyframes ck-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+@keyframes ck-scan {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+@keyframes ck-slide-up {
+  from { opacity:0; transform: translateY(30px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+@keyframes ck-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.ck-float    { animation: ck-float 3s ease-in-out infinite; }
+.ck-slide-up { animation: ck-slide-up 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+.ck-fade-in  { animation: ck-fade-in 0.5s ease both; }
+
+/* ── ボタン共通 ── */
+.ck-btn {
+  position: relative;
+  overflow: hidden;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  border-radius: 0;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+}
+.ck-btn:hover  { transform: translate(-1px, -1px); }
+.ck-btn:active { transform: translate(0, 0); }
+.ck-btn-primary {
+  background: var(--ck-gradient-btn);
+  color: var(--ck-text-on-dark);
+  box-shadow: 4px 4px 0 0 var(--ck-gray-300);
+}
+.ck-btn-primary:hover { box-shadow: 6px 6px 0 0 var(--ck-gray-300); }
+.ck-btn-primary:active { box-shadow: 2px 2px 0 0 var(--ck-gray-300); }
+.ck-btn-ghost {
+  background: var(--ck-bg-card-muted);
+  color: var(--ck-gray-800);
+  border: 1px solid var(--ck-gray-900);
+}
+.ck-btn-ghost:hover { background: var(--ck-gray-900); color: var(--ck-text-on-dark); }
+
+/* ── インプット ── */
+.ck-input, .ck-textarea {
+  background: var(--ck-bg);
+  border: 1.5px solid var(--ck-border);
+  border-radius: 0;
+  color: var(--ck-text-primary);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.ck-input:focus, .ck-textarea:focus {
+  outline: none;
+  border-color: var(--ck-gray-400);
+  box-shadow: 0 0 0 3px var(--ck-focus-ring);
+}
+.ck-input::placeholder, .ck-textarea::placeholder { color: var(--ck-text-muted); }
+
+/* ── セクションカード ── */
+.ck-section {
+  background: var(--ck-bg-card);
+  border: 1.5px solid var(--ck-border);
+  border-radius: 0;
+  padding: 24px;
+}
+@media (max-width: 640px) {
+  .ck-section { padding: 16px; }
+}
+
+/* ── 汎用カード ──
+   一覧カード・リンクカードなど「枠 + 淡い背景 + 控えめな影」の共通スタイル。
+   ホバーで少し浮かせたい場合は ck-card-interactive を併用する。 */
+.ck-card {
+  background: var(--ck-bg-card);
+  border: 1px solid var(--ck-border);
+  box-shadow: 0 1px 4px rgba(var(--ck-ink-rgb), 0.04);
+  border-radius: 0;
+}
+.ck-card-interactive {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.ck-card-interactive:hover {
+  transform: translateY(-2px);
+}
+
+/* ── バッジ ── */
+.ck-badge {
+  background: var(--ck-gradient-badge);
+  border: 1px solid rgba(var(--ck-ink-rgb), 0.12);
+  color: var(--ck-gray-800);
+  border-radius: 9999px;
+  padding: 2px 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ── チップ ── */
+.ck-chip {
+  padding: 6px 14px;
+  border-radius: 0;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1.5px solid;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+/* ── サイドバー ── */
+.ck-sidebar {
+  background: var(--ck-bg-card);
+  border-right: 1px solid var(--ck-border);
+}
+
+/* ── ナビリンク ── */
+.ck-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 0;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ck-text-secondary);
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.ck-nav-link:hover {
+  background: var(--ck-gray-100);
+  color: var(--ck-text-primary);
+}
+.ck-nav-link.active {
+  background: var(--ck-gradient-active);
+  color: var(--ck-text-primary);
+  border: 1px solid rgba(var(--ck-ink-rgb), 0.12);
+}
+
+/* ── テーブル行カラー（濃淡4段階） ── */
+.ck-row-0 { border-left: 3px solid var(--ck-series-0); background: rgba(var(--ck-ink-rgb), 0.04); }
+.ck-row-1 { border-left: 3px solid var(--ck-series-1); background: rgba(82,82,91,0.05); }
+.ck-row-2 { border-left: 3px solid var(--ck-series-3); background: rgba(161,161,170,0.06); }
+.ck-row-3 { border-left: 3px solid var(--ck-series-2); background: rgba(63,63,70,0.05); }
+
+/* ── 記事・固定ページ本文（Markdown描画後のHTMLに適用） ── */
+.article-body h2 {
+  font-size: 1.125rem;
+  font-weight: 900;
+  color: var(--ck-text-primary);
+  margin: 2rem 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--ck-border);
+}
+.article-body p {
+  font-size: 0.9rem;
+  line-height: 1.85;
+  color: var(--ck-gray-700);
+  margin: 0.75rem 0;
+}
+.article-body ul {
+  margin: 0.75rem 0;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+.article-body li {
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: var(--ck-gray-700);
+  margin: 0.3rem 0;
+}
+.article-body strong {
+  font-weight: 700;
+  color: var(--ck-text-primary);
+}
+.article-body a {
+  color: var(--ck-text-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.article-body a:hover {
+  opacity: 0.7;
+}
