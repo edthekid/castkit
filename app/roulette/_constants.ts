@@ -2,10 +2,7 @@
 export type DesignType = 1 | 2;
 
 // ─── デフォルト候補者 ────────────────────────────────────
-export const DEFAULT_ITEMS = [
-  'ローレン', '葛葉', 'イブラヒム', '叶', '釈迦',
-  'k4sen', 'らっだぁ', 'Obo', 'うるか', 'なるせ',
-];
+export const DEFAULT_ITEMS = [];
 
 // ─── スロット定数 ────────────────────────────────────────
 export const SLOT_CELL_H  = 80; // 1セルの高さ(px)
