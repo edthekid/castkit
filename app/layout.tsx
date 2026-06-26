@@ -46,6 +46,9 @@ const siteWebsiteJsonLd = websiteJsonLd();
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja">
+      <head>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1239327933943225" crossOrigin="anonymous" />
+      </head>
       <body style={{ fontFamily: FONT_STACK, background: ck.bg.page, color: ck.text.primary }}>
         <script
           type="application/ld+json"
