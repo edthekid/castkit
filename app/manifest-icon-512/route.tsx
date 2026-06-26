@@ -1,6 +1,7 @@
 import { appIconResponse } from '../_lib/appIcon';
 
-export const runtime = 'edge';
+// ビルド時に静的生成する（リクエストごとに変化しないため）
+export const dynamic = 'force-static';
 
 // PWA manifest 用 512x512 アイコン
 export function GET() {

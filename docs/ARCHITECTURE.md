@@ -1,0 +1,124 @@
+# ARCHITECTURE.md — システム構成
+
+## 1. 全体像
+
+```
+[ブラウザ] ──HTTPS──> [Vercel（静的配信 + edge関数）] 
+                          ↑ git push で自動デプロイ
+                      [GitHub: edthekid/castkit]
+DNS: Cloudflare（cast-kit.com → Vercel）
+解析: Vercel Analytics
+お問い合わせ: Google フォーム（外部）
+```
+
+- **バックエンド無し**。ページはビルド時に生成（SSG/Static）。ツールのロジックは**すべてブラウザ内**で完結。
+- 画像生成系（OGP・アイコン）もデフォルトの Node.js ランタイムでビルド時に静的生成（`○ Static`）。
+
+---
+
+## 2. 技術スタック
+
+| 分類 | 採用 |
+|------|------|
+| フレームワーク | Next.js 16（App Router・Turbopack） |
+| 言語 | TypeScript / React 19 |
+| スタイル | Tailwind CSS v4（`@theme`）+ daisyUI + 自作トークン |
+| トースト | sonner |
+| Markdown | marked |
+| 解析 | @vercel/analytics |
+| ホスティング | Vercel / Cloudflare(DNS) |
+
+---
+
+## 3. ディレクトリ構成
+
+```
+app/
+├─ layout.tsx                # ルート: <html>, メタ, フォント, JSON-LD, LanguageProvider, AppShell, Analytics
+├─ page.tsx                  # ホーム（全幅ランディング）
+├─ globals.css               # :root デザイントークン / @theme / 共通ユーティリティ / .article-body
+│
+├─ _components/              # 共通UI（COMPONENTS.md 参照）
+├─ _lib/                     # データ・ヘルパー
+│   ├─ seo.ts                #   SITE_URL, pageAlternates, *JsonLd ヘルパー
+│   ├─ tools.ts              #   ツールのシェア文言（TOOL_SHARE）
+│   ├─ site.ts               #   CONTACT_FORM_URL など
+│   ├─ appIcon.tsx           #   アイコン描画の共通関数（icon / manifest-icon で共用）
+│   └─ articles/             #   記事の単一ソース
+│       ├─ _types.ts         #     ArticleInput / Article 型
+│       ├─ _template.ts      #     新規記事のひな型
+│       ├─ <slug>.ts         #     各記事（メタ + Markdown本文）
+│       └─ README.md         #     記事追加ガイド
+│   └─ articles.ts           #   索引（ARTICLES 配列 + 取得ヘルパー）
+│
+├─ _i18n/                    # 多言語
+│   ├─ translations.ts       #   翻訳辞書（ja/en）+ TranslationKey 型
+│   ├─ LanguageContext.tsx   #   locale の決定・保持（Provider）
+│   └─ useTranslation.ts     #   t() / locale フック
+│
+├─ _theme/colors.ts          # JS用カラートークン（ck）。globals.css の :root と同値を保つ
+│
+├─ <tool>/                   # 各ツール（team-division / roulette / amida / topic / debate）
+│   ├─ page.tsx              #   画面（ToolHeader + 本体 + ToolFooter）
+│   ├─ layout.tsx            #   メタデータ + JSON-LD
+│   ├─ _hooks/               #   状態・ロジック（useXxx）
+│   ├─ _components/          #   ツール固有UI
+│   ├─ _data/, _constants/, _utils
+│
+├─ articles/                 # 記事
+│   ├─ page.tsx              #   一覧
+│   ├─ [slug]/page.tsx       #   詳細（generateStaticParams + marked でHTML化）
+│   └─ _components/ArticleList.tsx
+│
+├─ guide/  privacy/  contact/   # コンテンツ・規約ページ
+└─ sitemap.ts / robots.ts / manifest.ts / opengraph-image.tsx / icon.tsx / manifest-icon-*/route.tsx
+```
+
+---
+
+## 4. 描画モデル（重要）
+
+- **ページ**: 基本は静的生成（`○ Static`）。記事詳細は `generateStaticParams` による SSG（`● SSG`）。
+- **画像系**（OGP・favicon・PWAアイコン）: `next/og` の `ImageResponse` をデフォルトの Node.js ランタイムでビルド時に静的生成（`○ Static`）。route handler 形式（manifest 用アイコン）は `dynamic = 'force-static'` を付けて静的化する。
+- **クライアントコンポーネント**: 言語切替やインタラクションを持つUIは `'use client'`。`AppShell` 配下はクライアント側で locale を反映。
+
+### 記事のレンダリング経路
+```
+app/_lib/articles/<slug>.ts (Markdown)
+   → articles/[slug]/page.tsx で marked.parse()（ビルド時・サーバー側）
+   → ArticleLayout に bodyHtml(ja/en) を渡す
+   → ArticleLayout（クライアント）が locale に応じて dangerouslySetInnerHTML
+```
+※ Markdown→HTML はビルド時に完了。閲覧者に marked のJSは送られない。
+
+---
+
+## 5. 多言語（i18n）の流れ
+
+```
+LanguageProvider（useState 初期値 = ja）
+   → 初回マウント後の useEffect で URLクエリ/localStorage/ブラウザ言語から locale を決定
+   → useTranslation() の t() / locale を各コンポーネントが参照
+AppShell の useEffect で document.documentElement.lang と document.title を更新
+```
+- **SSRは常に ja**（ハイドレーション不一致を避けるため初期値を固定）。
+- 言語別の**URLは存在しない**（同一URLで表示を切替）。
+
+---
+
+## 6. SEO 関連モジュール
+
+| ファイル | 役割 |
+|----------|------|
+| `_lib/seo.ts` | `SITE_URL`, `pageAlternates`（canonical/hreflang）, `webAppJsonLd` / `websiteJsonLd` / `breadcrumb*JsonLd` / `articleJsonLd` |
+| `app/sitemap.ts` | 静的ページ＋ `ARTICLES` から記事を自動生成 |
+| `app/opengraph-image.tsx` | OGP画像（日英） |
+| 各 `layout.tsx` / `ArticleSchema` | ページ別メタ＋JSON-LD |
+
+---
+
+## 7. ホスティング / 環境
+
+- **Vercel**（Hobby）でビルド・配信。`git push` で `main` を自動デプロイ。
+- **環境変数 `NEXT_PUBLIC_SITE_URL`**（= `https://cast-kit.com`）がビルド時に埋め込まれ、canonical/sitemap/OGP/シェアURLの基準になる。
+- **DNS**: Cloudflare。独自ドメイン `cast-kit.com`。
