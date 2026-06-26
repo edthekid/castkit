@@ -31,7 +31,7 @@ export function EditableTitle({ defaultValue, className = '' }: EditableTitlePro
       {editing ? (
         <input
           autoFocus
-          className="text-3xl sm:text-5xl font-black tracking-widest text-center border-b-2 outline-none bg-transparent w-48 sm:w-72 ck-gradient-text"
+          className="text-3xl sm:text-5xl font-black tracking-widest text-center border-b-2 outline-none bg-transparent w-48 sm:w-72 text-ck-ink"
           style={{ borderColor: ck.text.primary }}
           value={value}
           onChange={(e) => setCustom(e.target.value)}
@@ -42,7 +42,7 @@ export function EditableTitle({ defaultValue, className = '' }: EditableTitlePro
         <>
           {/* 右の編集ボタンと同じ幅の透明スペーサー。タイトル文字を真の中央に保つ */}
           <span className="w-5 shrink-0" aria-hidden="true" />
-          <h1 className="text-3xl sm:text-5xl font-black tracking-widest ck-gradient-text">
+          <h1 className="text-3xl sm:text-5xl font-black tracking-widest text-ck-ink">
             {value}
           </h1>
           <button

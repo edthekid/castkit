@@ -106,7 +106,7 @@ export default function HomePage() {
 
         {/* タイトル */}
         <h1 ref={titleRef}
-          className="text-5xl sm:text-7xl font-black tracking-widest mb-4 ck-gradient-text"
+          className="text-5xl sm:text-7xl font-black tracking-widest mb-4 text-ck-ink"
           style={{ fontFamily: 'Inter, sans-serif', lineHeight: 1.1 }}>
           CastKit
         </h1>
