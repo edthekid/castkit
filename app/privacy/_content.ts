@@ -1,8 +1,8 @@
 export const privacyTitle = { ja: 'プライバシーポリシー', en: 'Privacy Policy' };
 
 export const privacyMeta = {
-  ja: '最終更新日: 2026年6月22日',
-  en: 'Last updated: June 22, 2026',
+  ja: '最終更新日: 2026年6月26日',
+  en: 'Last updated: June 26, 2026',
 };
 
 export const privacyBody = {
@@ -14,12 +14,14 @@ export const privacyBody = {
 
 言語設定やカスタムお題などの一部の設定は、利便性のためにお使いの端末のブラウザ（localStorage）に保存されます。これらは端末内に留まり、運営者が閲覧することはありません。
 
-## 広告について
+## 広告・アフィリエイトについて
 
 当サイトでは、第三者配信の広告サービス「Google AdSense」を利用する場合があります。Googleなどの第三者配信事業者は、Cookieを使用して、利用者が当サイトや他のサイトに過去にアクセスした情報に基づいて広告を配信することがあります。
 
 - 利用者は、[Googleの広告設定](https://adssettings.google.com/) からパーソナライズ広告を無効にできます。
 - 第三者配信事業者によるCookieの使用について詳しくは、[Googleの広告に関するポリシー](https://policies.google.com/technologies/ads?hl=ja) をご覧ください。
+
+当サイトはAmazonのアソシエイトとして、適格販売により収入を得ています。記事内に含まれるAmazonへのリンクはアフィリエイトリンクです。リンクを経由して商品を購入された場合、当サイトに紹介料が支払われることがあります。購入者の費用が増えることはありません。
 
 ## アクセス解析について
 
@@ -48,12 +50,14 @@ The Site's tools (Team Division, Roulette, Amida, Topic Picker, Debate, and othe
 
 Some settings, such as your language preference and custom topics, are stored in your device's browser (localStorage) for convenience. These remain on your device and are not accessible to the operator.
 
-## Advertising
+## Advertising and Affiliate Links
 
 The Site may use the third-party advertising service Google AdSense. Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to this Site or other sites.
 
 - You can opt out of personalized advertising through [Google Ads Settings](https://adssettings.google.com/).
 - For more about how third-party vendors use cookies, see [Google's advertising policies](https://policies.google.com/technologies/ads).
+
+As an Amazon Associate, this site earns from qualifying purchases. Some links in articles are affiliate links to Amazon. If you purchase through these links, the Site may receive a referral fee at no additional cost to you.
 
 ## Analytics
 
