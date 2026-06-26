@@ -65,6 +65,14 @@ export const roulette: ArticleInput = {
 - **スクリーンシェアで共有**：OBSなどでブラウザ画面を共有すれば視聴者もリアルタイムで見られます
 - **オートムーブ機能を活用**：当選者を自動で除外すれば複数回の抽選もスムーズです
 
+## ルーレット配信をより本格的にする機材
+
+演出の質を上げることで、視聴者の盛り上がりもさらにアップします。
+
+- **[配信用マイク](https://www.amazon.co.jp/s?k=配信+マイク+コンデンサー&tag=castkit-22)**：声がクリアに届くと実況の臨場感が大幅に上がります。
+- **[OBSに対応したキャプチャボード](https://www.amazon.co.jp/s?k=キャプチャボード+OBS&tag=castkit-22)**：コンソールゲームの配信に必須。ルーレット画面と合わせて表示できます。
+- **[グリーンバック（クロマキー背景）](https://www.amazon.co.jp/s?k=グリーンバック+配信&tag=castkit-22)**：背景を透過して、ルーレット画面に自分を重ねる演出が可能です。
+
 ## まとめ
 
 ランダム抽選はシンプルでも、演出次第で大きな盛り上がりを作れるコンテンツです。CastKitのルーレットツールは2モードで多彩な演出が可能。登録不要でどのデバイスからも使えるので、ぜひ次の配信企画で活用してみてください。`,
@@ -114,6 +122,14 @@ A slot-machine-style draw with a more suspenseful feel and a compact UI that won
 - **Read the candidates aloud** before spinning so viewers share the anticipation
 - **Screen-share it**: share the browser via OBS so viewers see the spin in real time
 - **Use auto-move**: auto-removing winners keeps multi-round draws smooth
+
+## Gear to Make Your Roulette Stream More Polished
+
+Better production quality amplifies the hype of every spin.
+
+- **[Streaming microphone](https://www.amazon.co.jp/s?k=streaming+microphone+condenser&tag=castkit-22)**: Clear audio makes your commentary land harder during the build-up and reveal.
+- **[Capture card for OBS](https://www.amazon.co.jp/s?k=capture+card+OBS&tag=castkit-22)**: Essential for streaming console games alongside the roulette overlay.
+- **[Green screen (chroma key)](https://www.amazon.co.jp/s?k=green+screen+streaming&tag=castkit-22)**: Remove your background and composite yourself over the roulette wheel for a slick look.
 
 ## Summary
 

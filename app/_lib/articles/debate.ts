@@ -57,6 +57,14 @@ export const debate: ArticleInput = {
 - **タイマー終了後に「どちらが良かったか投票して」と聞く**
 - **複数ラウンド行う**——3〜5ラウンドで配信の充実度が増します
 
+## ディベート配信を本格化する機材
+
+声の迫力と映像クオリティが上がると、白熱したトークがさらに映えます。
+
+- **[コンデンサーマイク（高音質）](https://www.amazon.co.jp/s?k=コンデンサーマイク+高音質+配信&tag=castkit-22)**：ディベートでは声のトーンや熱量が伝わることが大切。音質への投資が視聴体験を直接左右します。
+- **[ゲーミングヘッドセット](https://www.amazon.co.jp/s?k=ゲーミングヘッドセット+マイク付き&tag=castkit-22)**：コラボ相手の声を聞きながら反論する際にも、ヘッドセットがあると集中しやすいです。
+- **[配信用照明](https://www.amazon.co.jp/s?k=配信用+照明+ライト&tag=castkit-22)**：顔が明るく映ることで表情の変化が伝わり、ディベートのドラマが視覚的に伝わります。
+
 ## まとめ
 
 ディベート企画は配信者・視聴者ともに楽しめるコンテンツです。お題選びや陣営決めをCastKitのディベートツールで自動化すれば、企画のスタートがよりスムーズになります。まずは1回試してみてください。`,
@@ -98,6 +106,14 @@ Enter them in the format "theme, faction A, faction B".
 - **Quote viewer comments** as you develop your argument
 - **After the timer, ask viewers to vote** on which side was better
 - **Run multiple rounds** — 3–5 rounds adds depth to the stream
+
+## Gear to Make Your Debate Stream More Intense
+
+Better audio and lighting let your passion and expressions come through.
+
+- **[High-quality condenser microphone](https://www.amazon.co.jp/s?k=condenser+microphone+streaming+high+quality&tag=castkit-22)**: In a debate, the energy in your voice matters — good audio makes your arguments hit harder.
+- **[Gaming headset with mic](https://www.amazon.co.jp/s?k=gaming+headset+with+microphone&tag=castkit-22)**: Lets you hear your collab partner clearly while you formulate your counter-argument.
+- **[Stream lighting](https://www.amazon.co.jp/s?k=streaming+light+LED&tag=castkit-22)**: A well-lit face shows every reaction, turning the drama of the debate into a visual experience.
 
 ## Summary
 

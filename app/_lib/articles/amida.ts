@@ -59,6 +59,14 @@ export const amida: ArticleInput = {
 - 「あみだを作る」ボタンを押す
 - 生成されたあみだくじを確認し、「スタート」で結果発表
 
+## あみだくじ配信をさらに演出する機材
+
+結果発表の瞬間をより盛り上げるための環境づくりにも投資してみましょう。
+
+- **[配信用ライト（リングライト）](https://www.amazon.co.jp/s?k=リングライト+配信&tag=castkit-22)**：顔を明るく映すことで、結果発表の表情が視聴者に伝わりやすくなります。
+- **[ゲーミングチェア](https://www.amazon.co.jp/s?k=ゲーミングチェア&tag=castkit-22)**：長時間の配信・イベント進行も快適に。
+- **[デュアルモニター](https://www.amazon.co.jp/s?k=モニター+27インチ&tag=castkit-22)**：あみだくじ画面をサブモニターに表示しながらメインでゲームを進行できます。
+
 ## まとめ
 
 デジタルあみだくじはオンラインゲームや配信にも自然に溶け込む演出方法です。紙のあみだくじと同じ公平感・ドキドキ感をそのままに、準備時間をゼロにできます。次の企画でぜひ活用してみてください。`,
@@ -102,6 +110,14 @@ Let everyone watch nervously to see "who gets the penalty." The tension until th
 - Enter results, one per line (e.g. 1st, 2nd, Miss)
 - Press the "Build ladder" button
 - Review the ladder and press "Start" to reveal results
+
+## Gear to Enhance Your Amida Reveal Moments
+
+A better production environment helps the suspense land for your viewers.
+
+- **[Ring light for streaming](https://www.amazon.co.jp/s?k=ring+light+streaming&tag=castkit-22)**: Bright, even lighting makes your reaction at the reveal much more expressive on camera.
+- **[Gaming chair](https://www.amazon.co.jp/s?k=gaming+chair&tag=castkit-22)**: Stay comfortable during long event streams and hosting sessions.
+- **[Second monitor](https://www.amazon.co.jp/s?k=monitor+27+inch&tag=castkit-22)**: Show the Amida on a secondary display while running the game on your main screen.
 
 ## Summary
 

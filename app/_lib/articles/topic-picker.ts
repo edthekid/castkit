@@ -63,6 +63,14 @@ export const topicPicker: ArticleInput = {
 - **「みなさんはどうですか？」とコメントを促す**
 - **盛り上がったお題はメモしておく**——次回も使えます
 
+## 雑談配信の質を上げる機材
+
+話す内容だけでなく、音声・映像の質を上げることで視聴者の滞在時間が伸びます。
+
+- **[コンデンサーマイク](https://www.amazon.co.jp/s?k=コンデンサーマイク+配信+USB&tag=castkit-22)**：声がクリアに聞こえるだけで配信のプロ感が大幅アップ。雑談配信には特に重要です。
+- **[マイクアーム](https://www.amazon.co.jp/s?k=マイクアーム+配信&tag=castkit-22)**：デスクにアームを設置することで口元に最適な距離でマイクを固定できます。
+- **[ポップガード](https://www.amazon.co.jp/s?k=ポップガード+マイク&tag=castkit-22)**：「パ行」「バ行」などの破裂音を軽減し、聴き取りやすい音声になります。
+
 ## まとめ
 
 お題ガチャは雑談配信の強力なサポートツールです。準備不要で即使えるCastKitのお題ガチャを活用して、毎回の配信をもっと楽しくしてください。`,
@@ -110,6 +118,14 @@ For collab streams, preparing custom topics tailored to your partner is a great 
 - **Share your own take first** — it makes viewers more likely to respond
 - **Prompt with "how about you all?"**
 - **Note the topics that landed well** — reuse them next time
+
+## Gear to Improve Your Chat Stream Quality
+
+Great conversation is better when your audio and video are polished too.
+
+- **[USB condenser microphone](https://www.amazon.co.jp/s?k=USB+condenser+microphone+streaming&tag=castkit-22)**: Clear audio is the single biggest upgrade for chat streams — it makes every word land.
+- **[Microphone boom arm](https://www.amazon.co.jp/s?k=microphone+boom+arm&tag=castkit-22)**: Positions the mic at the ideal distance without taking up desk space.
+- **[Pop filter](https://www.amazon.co.jp/s?k=pop+filter+microphone&tag=castkit-22)**: Reduces plosive sounds (p, b) so your speech is comfortable to listen to.
 
 ## Summary
 

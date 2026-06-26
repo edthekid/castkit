@@ -68,6 +68,14 @@ export const teamDivision: ArticleInput = {
 
 毎週行うような定期的なゲーム大会では、チームの固定化を防ぎながら公平な対戦環境を維持できます。過去に試した組み合わせを「試合済み」に移しながら使えるので、同じチームの重複も防げます。
 
+## チーム戦をもっと盛り上げる配信機材
+
+チーム分けが決まったら、快適な配信・ゲーム環境も重要です。
+
+- **[ゲーミングヘッドセット](https://www.amazon.co.jp/s?k=ゲーミングヘッドセット&tag=castkit-22)**：チームメンバーとのボイスチャットに。クリアな音声でコミュニケーションが円滑になります。
+- **[Webカメラ（配信用）](https://www.amazon.co.jp/s?k=Webカメラ+配信&tag=castkit-22)**：顔出し配信でチーム戦の臨場感をアップ。
+- **[キャプチャボード](https://www.amazon.co.jp/s?k=キャプチャボード&tag=castkit-22)**：コンソールゲームをPCに取り込んでOBSで配信するときに必要です。
+
 ## まとめ
 
 チーム分けはシンプルな作業ですが、毎回手動でやるとミスや偏りが生じやすいものです。CastKitのチーム分けツールを使えば、数秒で公平なランダムチーム分けが完了します。登録不要でブラウザだけで動くため、配信中でもすぐに使えます。ぜひ次回のゲームイベントで試してみてください。`,
@@ -120,6 +128,14 @@ At meetups with multiple games or activities, reshuffling teams each round lets 
 **Recurring online game tournaments**
 
 For weekly tournaments, you avoid fixed teams while keeping the competition fair. You can move past combinations to a "played" list to prevent repeats.
+
+## Gear to Level Up Your Team Game Streams
+
+Once the teams are set, a solid setup makes the experience better for everyone.
+
+- **[Gaming headset](https://www.amazon.co.jp/s?k=gaming+headset&tag=castkit-22)**: Clear voice chat with teammates keeps coordination smooth.
+- **[Webcam for streaming](https://www.amazon.co.jp/s?k=webcam+streaming&tag=castkit-22)**: A face cam adds energy to team-battle streams.
+- **[Capture card](https://www.amazon.co.jp/s?k=capture+card&tag=castkit-22)**: Needed to bring console gameplay into OBS for PC streaming.
 
 ## Summary
 
