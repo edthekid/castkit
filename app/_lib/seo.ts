@@ -1,4 +1,4 @@
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://castkit.app';
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cast-kit.com';
 
 /** canonical + hreflang を生成するヘルパー */
 export function pageAlternates(path: string) {
