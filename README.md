@@ -77,3 +77,4 @@ app/
 - [docs/DEPLOY.md](./docs/DEPLOY.md) — デプロイ手順・記事追加手順
 - [docs/NEW_TOOL.md](./docs/NEW_TOOL.md) — 新ツール追加チェックリスト
 - [docs/DEBUGGING.md](./docs/DEBUGGING.md) — デバッグ手順・修正の完了条件
+- [docs/UPGRADING.md](./docs/UPGRADING.md) — Next.js メジャー/マイナーアップグレード手順
