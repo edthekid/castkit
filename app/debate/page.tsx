@@ -291,14 +291,14 @@ export default function DebatePage() {
             className="text-5xl sm:text-6xl font-black tracking-widest tabular-nums transition-colors duration-300"
             style={{
               fontFamily: 'monospace',
-              color: isDone ? ck.text.muted : urgent ? '#a8475a' : ck.text.primary,
+              color: isDone ? ck.text.muted : urgent ? ck.series[1] : ck.text.primary,
               animation: urgent && isRunning ? 'debate-pulse 0.6s ease-in-out infinite' : undefined,
             }}
           >
             {timerDisplay}
           </p>
           {isDone && (
-            <p className="text-xl font-black tracking-widest mt-2" style={{ color: '#a8475a' }}>
+            <p className="text-xl font-black tracking-widest mt-2" style={{ color: ck.series[1] }}>
               {t('debate.timeUp')}
             </p>
           )}

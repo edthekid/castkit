@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useTranslation } from './_i18n/useTranslation';
 import type { TranslationKey } from './_i18n/translations';
-import { ck } from './_theme/colors';
+import { gray } from './_theme/colors';
 import { IconBolt, IconTarget, IconLadder, IconChat, IconScales } from './_components/icons';
 import { HomeArticles } from './_components/HomeArticles';
 import type { ComponentType, SVGProps } from 'react';
@@ -23,7 +23,7 @@ const TOOLS: {
     icon: IconBolt,
     titleKey: 'home.teamDivision.title',
     descKey: 'home.teamDivision.description',
-    accent: '#18181b',
+    accent: gray[900],
     gradient: 'from-zinc-900/5 to-zinc-500/5',
     tag: 'Team Division',
   },
@@ -32,7 +32,7 @@ const TOOLS: {
     icon: IconTarget,
     titleKey: 'home.roulette.title',
     descKey: 'home.roulette.description',
-    accent: '#71717a',
+    accent: gray[500],
     gradient: 'from-zinc-400/10 to-zinc-900/5',
     tag: 'Roulette',
   },
@@ -41,7 +41,7 @@ const TOOLS: {
     icon: IconLadder,
     titleKey: 'home.amida.title',
     descKey: 'home.amida.description',
-    accent: '#27272a',
+    accent: gray[800],
     gradient: 'from-zinc-700/8 to-zinc-300/8',
     tag: 'Amida',
   },
@@ -50,7 +50,7 @@ const TOOLS: {
     icon: IconChat,
     titleKey: 'home.topic.title',
     descKey: 'home.topic.description',
-    accent: '#52525b',
+    accent: gray[600],
     gradient: 'from-zinc-600/8 to-zinc-200/8',
     tag: 'Topic',
   },
@@ -59,7 +59,7 @@ const TOOLS: {
     icon: IconScales,
     titleKey: 'home.debate.title',
     descKey: 'home.debate.description',
-    accent: '#52525b',
+    accent: gray[600],
     gradient: 'from-zinc-500/8 to-zinc-300/8',
     tag: 'Debate',
   },
