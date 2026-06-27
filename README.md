@@ -74,4 +74,6 @@ app/
 - [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — システム構成
 - [docs/COMPONENTS.md](./docs/COMPONENTS.md) — UIコンポーネント一覧
 - [docs/STYLEGUIDE.md](./docs/STYLEGUIDE.md) — コーディング規約
-- [docs/DEPLOY.md](./docs/DEPLOY.md) — デプロイ手順
+- [docs/DEPLOY.md](./docs/DEPLOY.md) — デプロイ手順・記事追加手順
+- [docs/NEW_TOOL.md](./docs/NEW_TOOL.md) — 新ツール追加チェックリスト
+- [docs/DEBUGGING.md](./docs/DEBUGGING.md) — デバッグ手順・修正の完了条件

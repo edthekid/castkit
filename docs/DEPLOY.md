@@ -95,7 +95,7 @@ https://cast-kit.com/sitemap.xml
 
 1. **Search Console** … インデックス状況・サイトマップのステータスを確認
 2. **Vercel Analytics** … Analytics タブで流入を確認（コード組み込み済み）
-3. **AdSense** … インデックス後に申請（規約ページ準備済み）
+3. **AdSense** … 申請済み（2026-06-26・`app/layout.tsx` に審査コード埋め込み済み）。審査通過後に広告配置を最適化（SPEC.md §9 参照）
 4. **記事を継続追加** … Search Console のデータを見ながら
 
 ### SEO（canonical / hreflang / 構造化データ）を修正してデプロイしたら

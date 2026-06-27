@@ -52,7 +52,7 @@
 | `/privacy` | 静的 | プライバシーポリシー（広告・解析のCookie開示） |
 | `/contact` | 静的 | お問い合わせ（Googleフォームへのリンク） |
 | `/sitemap.xml` `/robots.txt` `/manifest.webmanifest` | 生成 | SEO/PWA |
-| `/opengraph-image` `/icon` `/manifest-icon-192` `/manifest-icon-512` | 動的(edge) | 画像生成（`next/og`） |
+| `/opengraph-image` `/icon` `/manifest-icon-192` `/manifest-icon-512` | 静的 | 画像生成（`next/og`、Node.js ランタイムでビルド時に静的生成。manifest-icon は `dynamic = 'force-static'`） |
 
 ---
 
