@@ -4,6 +4,7 @@ import { marked } from 'marked';
 import { ARTICLES, getArticleBySlug } from '../../_lib/articles';
 import { ArticleLayout } from '../../_components/ArticleLayout';
 import { ArticleSchema } from '../../_components/ArticleSchema';
+import { pageAlternates } from '../../_lib/seo';
 
 /** 全記事を静的生成する */
 export function generateStaticParams() {
@@ -21,6 +22,7 @@ export async function generateMetadata({
   return {
     title: article.title.ja,
     description: `${article.description.ja} / ${article.description.en}`,
+    alternates: pageAlternates(article.href),
   };
 }
 

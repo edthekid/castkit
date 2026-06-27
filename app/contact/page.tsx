@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { ContactContent } from './ContactContent';
-import { pageAlternates } from '../_lib/seo';
+import { pageAlternates, breadcrumbJsonLd } from '../_lib/seo';
 
 export const metadata: Metadata = {
   title: 'お問い合わせ',
@@ -8,6 +8,13 @@ export const metadata: Metadata = {
   alternates: pageAlternates('/contact'),
 };
 
+const breadcrumb = breadcrumbJsonLd('お問い合わせ', '/contact');
+
 export default function ContactPage() {
-  return <ContactContent />;
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <ContactContent />
+    </>
+  );
 }

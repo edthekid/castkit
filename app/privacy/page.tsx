@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { marked } from 'marked';
 import { StaticPageLayout } from '../_components/StaticPageLayout';
-import { pageAlternates } from '../_lib/seo';
+import { pageAlternates, breadcrumbJsonLd } from '../_lib/seo';
 import { privacyTitle, privacyMeta, privacyBody } from './_content';
 
 export const metadata: Metadata = {
@@ -10,11 +10,18 @@ export const metadata: Metadata = {
   alternates: pageAlternates('/privacy'),
 };
 
+const breadcrumb = breadcrumbJsonLd('プライバシーポリシー', '/privacy');
+
 export default async function PrivacyPage() {
   const bodyHtml = {
     ja: await marked.parse(privacyBody.ja),
     en: await marked.parse(privacyBody.en),
   };
 
-  return <StaticPageLayout title={privacyTitle} meta={privacyMeta} bodyHtml={bodyHtml} />;
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <StaticPageLayout title={privacyTitle} meta={privacyMeta} bodyHtml={bodyHtml} />
+    </>
+  );
 }
