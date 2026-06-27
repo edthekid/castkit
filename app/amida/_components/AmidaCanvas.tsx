@@ -89,20 +89,6 @@ export function AmidaCanvas({
     if (!wrapper) return;
     const timers: ReturnType<typeof setTimeout>[] = [];
 
-    const smoothScroll = (toY: number, duration: number): Promise<void> =>
-      new Promise((resolve) => {
-        const startY = window.scrollY;
-        const diff   = toY - startY;
-        const st     = performance.now();
-        const tick   = (now: number) => {
-          const t     = Math.min((now - st) / duration, 1);
-          const eased = t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
-          window.scrollTo({ top: startY + diff * eased, behavior: 'instant' });
-          if (t < 1) requestAnimationFrame(tick); else resolve();
-        };
-        requestAnimationFrame(tick);
-      });
-
     const run = async () => {
       const rect    = wrapper.getBoundingClientRect();
       const wrapTop = rect.top + window.scrollY;

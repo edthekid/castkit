@@ -11,10 +11,6 @@ export type Phase = 'input' | 'ready' | 'tracing' | 'done';
 // 何人でも同じ長さ・同じ時間になるよう固定行数
 const FIXED_ROWS = 20;
 
-function calcRows(_n: number): number {
-  return FIXED_ROWS;
-}
-
 function autoResultsText(n: number, wins: number, locale: 'ja' | 'en'): string {
   if (n <= 0) return '';
   const w = Math.min(Math.max(wins, 1), n);
@@ -40,7 +36,7 @@ export function useAmida() {
   const [scrollTrigger, setScrollTrigger] = useState(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const rows = useMemo(() => calcRows(players.length), [players.length]);
+  const rows = FIXED_ROWS;
 
   const results = useMemo(
     () => resultsText.split('\n').map((s) => s.trim()).filter(Boolean),

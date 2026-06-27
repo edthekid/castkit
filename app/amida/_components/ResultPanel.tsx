@@ -9,11 +9,10 @@ import { IconCopy, IconCheck } from '../../_components/icons';
 interface ResultPanelProps {
   players: string[];
   resultMap: Record<number, string>;
-  doneSet: Set<number>;
   show: boolean;
 }
 
-export function ResultPanel({ players, resultMap, doneSet, show }: ResultPanelProps) {
+export function ResultPanel({ players, resultMap, show }: ResultPanelProps) {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 

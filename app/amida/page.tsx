@@ -57,7 +57,6 @@ export default function AmidaPage() {
       <ResultPanel
         players={amida.players}
         resultMap={amida.resultMap}
-        doneSet={amida.doneSet}
         show={amida.phase === 'done'}
       />
 

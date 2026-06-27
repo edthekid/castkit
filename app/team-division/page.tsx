@@ -30,7 +30,6 @@ export default function TeamDivider() {
         teamNames={td.teamNames}
         onTeamCountChange={td.handleTeamCountChange}
         onTeamNameChange={td.handleTeamNameChange}
-        getTeamName={td.getTeamName}
       />
 
       {/* STEP 3: メンバー固定 */}

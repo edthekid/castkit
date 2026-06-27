@@ -6,7 +6,6 @@ interface TeamSettingsProps {
   teamNames: Record<number, string>;
   onTeamCountChange: (count: number) => void;
   onTeamNameChange: (index: number, val: string) => void;
-  getTeamName: (index: number) => string;
 }
 
 export function TeamSettings({
@@ -14,7 +13,6 @@ export function TeamSettings({
   teamNames,
   onTeamCountChange,
   onTeamNameChange,
-  getTeamName,
 }: TeamSettingsProps) {
   const { t } = useTranslation();
   return (

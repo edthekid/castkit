@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useDeferredValue } from 'react';
 import { toast } from 'sonner';
 import type { TeamPattern, TabType } from '../_constants';
-import { MIN_TEAM_COUNT, MAX_RESULTS } from '../_constants';
+import { MAX_RESULTS } from '../_constants';
 import {
   generateAllCombinations,
   calcTeamSizes,
