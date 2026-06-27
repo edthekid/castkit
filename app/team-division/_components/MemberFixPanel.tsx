@@ -19,9 +19,10 @@ export function MemberFixPanel({
   getTeamName,
   onToggle,
 }: MemberFixPanelProps) {
+  // フックは早期 return より前で無条件に呼ぶ（rules-of-hooks）
+  const { t } = useTranslation();
   if (members.length === 0) return null;
 
-  const { t } = useTranslation();
   return (
     <div className="ck-section ck-slide-up" style={{ animationDelay: '0.15s' }}>
       <h3 className="font-black text-sm tracking-wide mb-1 flex items-center gap-2">

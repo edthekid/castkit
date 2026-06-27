@@ -48,6 +48,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- SSRは常にDEFAULT_LOCALE固定。URL/localStorage/言語はマウント後に反映（ハイドレーション不一致回避）
     setLocaleState(initial);
   }, []);
 

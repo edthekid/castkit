@@ -28,6 +28,7 @@ export function ParticleBackground() {
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const colors = [ck.text.primary, ck.text.secondary, ck.text.secondary];
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Math.random()のSSR不一致回避のためマウント後のみ生成（意図的）
     setParticles(
       Array.from({ length: 28 }, (_, i) => ({
         id: i,

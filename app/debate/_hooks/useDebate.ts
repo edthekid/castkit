@@ -135,6 +135,7 @@ export function useDebate() {
   // カスタムタイマーが変わったら timerSec も更新
   useEffect(() => {
     if (customTimerMin !== null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- カスタムタイマー値の変更を timerSec へ同期（意図的なリセット）
       setTimerSec(Math.max(1, customTimerMin) * 60);
     }
   }, [customTimerMin]);

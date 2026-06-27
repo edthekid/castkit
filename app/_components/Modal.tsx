@@ -14,10 +14,11 @@ export function Modal({ onClose, ariaLabel, children }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const prevFocusRef = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
+  // onClose を ref 経由で参照することで、親の再レンダーによる effect 再実行を防ぐ。
+  // ref の更新は render 中ではなく effect 内で行う（React 19）。
+  useEffect(() => { onCloseRef.current = onClose; });
 
   // Escape キー閉鎖 + フォーカス復元
-  // onClose を ref 経由で参照することで、親の再レンダーによる effect 再実行を防ぐ
   useEffect(() => {
     prevFocusRef.current = document.activeElement as HTMLElement;
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onCloseRef.current(); };
@@ -26,7 +27,6 @@ export function Modal({ onClose, ariaLabel, children }: ModalProps) {
       document.removeEventListener('keydown', handler);
       prevFocusRef.current?.focus();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 初期フォーカス + フォーカストラップ

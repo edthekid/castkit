@@ -75,11 +75,15 @@ export function AmidaCanvas({
   }, [n, rungs, rows]);
 
   // ─── phaseリセット ──────────────────────────────────────
-  useEffect(() => { setShowButtons(false); }, [phase]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- phase切替時にボタンを隠す演出制御（意図的）
+    setShowButtons(false);
+  }, [phase]);
 
   // ─── 演出スクロール（generate時のみ） ────────────────────
   useEffect(() => {
     if (scrollTrigger === 0) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- スクロール演出の開始時にボタンを隠す（演出シーケンス）
     setShowButtons(false);
     const wrapper = svgWrapRef.current;
     if (!wrapper) return;
@@ -185,10 +189,19 @@ export function AmidaCanvas({
     return () => { if (scrollRafRef.current) cancelAnimationFrame(scrollRafRef.current); };
   }, [phase]);
 
-  // ─── done: 結果へスクロール ──────────────────────────────
+  // ─── done: 結果パネルへスクロール（下端ではなく結果の位置で止める） ──
   useEffect(() => {
     if (phase !== 'done') return;
-    setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 300);
+    setTimeout(() => {
+      const el = document.getElementById('amida-result');
+      if (el) {
+        // 結果パネルの上端を、（モバイルのsticky headerを避けて）少し余白を持たせて表示
+        const targetY = el.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }
+    }, 300);
     setTimeout(() => setShowButtons(true), 900);
   }, [phase]);
 
