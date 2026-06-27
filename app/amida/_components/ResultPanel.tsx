@@ -30,7 +30,7 @@ export function ResultPanel({ players, resultMap, doneSet, show }: ResultPanelPr
   };
 
   return (
-    <div className="ck-section mt-6 ck-fade-in">
+    <div id="amida-result" className="ck-section mt-6 ck-fade-in">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-black text-sm tracking-wide flex items-center gap-2">
           <span className="ck-gradient-text">{t('amidaResult.title')}</span>
