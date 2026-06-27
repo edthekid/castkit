@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CastKit
 
-## Getting Started
+配信・ゲームイベントをスムーズにするための**無料ツール集**。登録不要、ブラウザだけで使えます。
 
-First, run the development server:
+🔗 **本番サイト**: https://cast-kit.com
+
+---
+
+## ツール一覧
+
+| ツール | パス | 概要 |
+|--------|------|------|
+| チーム分け | `/team-division` | メンバーを均等チームに自動振り分け（固定メンバー対応・全パターン生成） |
+| ルーレット | `/roulette` | ランダム抽選（ルーレット／スロットの2モード） |
+| あみだくじ | `/amida` | 参加者と結果を入力して自動生成・アニメーション表示 |
+| お題ガチャ | `/topic` | 雑談お題をランダム抽選（カテゴリ絞り込み・カスタムお題） |
+| ディベート | `/debate` | お題と陣営をランダム決定・カウントダウンタイマー付き |
+
+その他のページ：使い方ガイド（`/guide`）、記事（`/articles`）、プライバシーポリシー（`/privacy`）、お問い合わせ（`/contact`）。
+
+---
+
+## 技術スタック
+
+- **フレームワーク**: Next.js 16（App Router・Turbopack）
+- **言語**: TypeScript / React 19
+- **スタイル**: Tailwind CSS v4（`@theme` トークン）+ daisyUI + 自作デザイントークン（`globals.css` / `_theme/colors.ts`）
+- **トースト**: sonner
+- **Markdown**: marked（記事本文をビルド時にHTML化）
+- **解析**: Vercel Analytics
+- **多言語**: 日本語・英語（同一URLでクライアント側切替）
+- **ホスティング**: Vercel（DNS は Cloudflare）
+
+---
+
+## 開発
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install        # 依存をインストール
+npm run dev        # 開発サーバー（http://localhost:3000）
+npm run build      # 本番ビルド（型チェック込み）
+npm run start      # 本番ビルドをローカル起動
+npm run lint       # ESLint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> 変更を加えたら **`npm run build`** が通ることを必ず確認してください。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ディレクトリ概要
 
-## Learn More
+```
+app/
+├─ layout.tsx, page.tsx          # ルートレイアウト / ホーム
+├─ globals.css                   # デザイントークン・共通スタイル
+├─ sitemap.ts, robots.ts, manifest.ts, opengraph-image.tsx, icon.tsx
+├─ _components/                  # 共通UIコンポーネント
+├─ _lib/                         # データ・ヘルパー（seo / articles / tools / site）
+├─ _i18n/                        # 翻訳・言語コンテキスト
+├─ _theme/colors.ts              # JS用カラートークン（ck）
+├─ <tool>/                       # 各ツール（page・layout・_hooks・_components・_data）
+├─ articles/                     # 記事（一覧 + 動的ルート [slug]）
+├─ guide/, privacy/, contact/    # コンテンツ・規約ページ
+```
 
-To learn more about Next.js, take a look at the following resources:
+詳細は `docs/ARCHITECTURE.md` を参照。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## ドキュメント
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [CLAUDE.md](./CLAUDE.md) — AI開発ルール
+- [SPEC.md](./SPEC.md) — 全体仕様
+- [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — システム構成
+- [docs/COMPONENTS.md](./docs/COMPONENTS.md) — UIコンポーネント一覧
+- [docs/STYLEGUIDE.md](./docs/STYLEGUIDE.md) — コーディング規約
+- [docs/DEPLOY.md](./docs/DEPLOY.md) — デプロイ手順
