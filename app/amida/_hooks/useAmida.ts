@@ -57,14 +57,14 @@ export function useAmida() {
       }
       return list;
     });
-  }, [winCount]);
+  }, [winCount, locale]);
 
   // ─── 当たり数変更 ────────────────────────────────────
   const changeWinCount = useCallback((count: number) => {
     const clamped = Math.min(Math.max(count, 1), players.length);
     setWinCount(clamped);
     setResultsText(autoResultsText(players.length, clamped, locale));
-  }, [players.length]);
+  }, [players.length, locale]);
 
   // ─── 参加者の入れ替え ────────────────────────────────
   const startEdit = useCallback((idx: number) => {

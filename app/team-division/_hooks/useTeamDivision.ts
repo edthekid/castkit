@@ -132,7 +132,7 @@ export function useTeamDivision() {
     );
     setPlayedKeys(new Set());
     setActiveTab('unplayed');
-  }, [currentMembers, teamCount, fixedMembers, getTeamName]);
+  }, [currentMembers, teamCount, fixedMembers, getTeamName, t]);
 
   // ─── クリップボードコピー ────────────────────────────────
   const copyPattern = useCallback((pattern: TeamPattern) => {
