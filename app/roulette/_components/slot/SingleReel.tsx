@@ -66,6 +66,7 @@ export function SingleReel({ items, triggerKey, winnerIdx, delay = 0 }: SingleRe
       }
     };
     rafRef.current = requestAnimationFrame(tick);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- スピンはtriggerKey(明示的な開始信号)でのみ発火。winnerIdx/n/delayは発火時点の値を読む（値変化での再スピンを防ぐ）
   }, [triggerKey]);
 
   if (n === 0) return null;

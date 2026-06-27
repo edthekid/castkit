@@ -119,6 +119,7 @@ export function AmidaCanvas({
 
     run();
     return () => { timers.forEach(clearTimeout); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- generate信号(scrollTrigger)でのみ発火させる演出。btmY/svgHは発火時点の値を読む（リサイズ等で再発火させない）
   }, [scrollTrigger]);
 
   // ─── regenerate/swapはすぐボタン表示 ─────────────────────
@@ -128,6 +129,7 @@ export function AmidaCanvas({
       setShowButtons(true);
     }
     prevScrollTrigger.current = scrollTrigger;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- phase遷移時のみ判定。scrollTriggerは前回値(ref)との比較用で、依存に入れると比較が壊れる
   }, [phase]);
 
   // ─── トレースアニメーション ──────────────────────────────
@@ -148,6 +150,7 @@ export function AmidaCanvas({
         });
       });
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- トレースは本数(activeSet.size)の増加でのみ起動。Set参照全体を依存にすると毎renderで再起動してしまう
   }, [activeSet.size]);
 
   // ─── tracing: スクロール追従（SVGスケールを正確に計算） ───
@@ -173,6 +176,7 @@ export function AmidaCanvas({
     };
     scrollRafRef.current = requestAnimationFrame(tick);
     return () => { if (scrollRafRef.current) cancelAnimationFrame(scrollRafRef.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- tracing開始時のみ追従ループを起動。btmY/svgHは開始時点の値を読む（途中の再計算で再起動させない）
   }, [phase]);
 
   // ─── done: 結果パネルへスクロール（下端ではなく結果の位置で止める） ──
