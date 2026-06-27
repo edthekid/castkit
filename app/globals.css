@@ -180,10 +180,20 @@ html, body {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+/* スコアボードの得点変動演出（数字が跳ねて発光する） */
+@keyframes ck-score-pop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.28); filter: drop-shadow(0 0 10px var(--ck-shadow-mid)); }
+  100% { transform: scale(1); }
+}
 
 .ck-float    { animation: ck-float 3s ease-in-out infinite; }
 .ck-slide-up { animation: ck-slide-up 0.6s cubic-bezier(0.16,1,0.3,1) both; }
 .ck-fade-in  { animation: ck-fade-in 0.5s ease both; }
+.ck-score-pop { animation: ck-score-pop 0.45s cubic-bezier(0.22,1.2,0.36,1); }
+@media (prefers-reduced-motion: reduce) {
+  .ck-score-pop { animation: none; }
+}
 
 /* ── ボタン共通 ── */
 .ck-btn {

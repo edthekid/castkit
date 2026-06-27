@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useTranslation } from '../_i18n/useTranslation';
-import { IconBolt, IconTarget, IconLadder, IconChat, IconScales } from '../_components/icons';
+import { IconBolt, IconTarget, IconLadder, IconChat, IconScales, IconTrophy } from '../_components/icons';
 import type { ComponentType, SVGProps } from 'react';
 
 type Locale = 'ja' | 'en';
@@ -151,6 +151,32 @@ const TOOLS: Record<Locale, ToolContent[]> = {
       ],
       related: ['/topic', '/roulette'],
     },
+    {
+      href: '/scoreboard',
+      tag: 'Scoreboard',
+      icon: IconTrophy,
+      name: 'スコアボード',
+      summary: 'チームの得点をリアルタイムに管理する得点版ツールです。2〜10チームに対応し、+/- ボタンやカスタム加減算、順位表示、並べ替え、アンドゥで配信中もスムーズに点数を動かせます。',
+      steps: [
+        'チーム数を選び、チーム名とテーマカラーを設定する',
+        '加減算する点数を入れて「＋」「−」で得点を動かす（数字をダブルクリックで直接入力も可）',
+        '必要に応じて「点数順に並べ替え」や「順位表示」を使う',
+        '「記録」で途中経過を保存、「試合結果をコピー」でDiscord等に貼り付け',
+      ],
+      tips: [
+        '得点はブラウザに自動保存され、再読み込みしても消えない',
+        '操作を間違えても各チームの「1つ戻る」で1手ずつ戻せる',
+        'デザインは7セグ風・ミニマル・カードの3種類から選べる',
+        'チームごとにテーマカラーを変えると配信画面で見分けやすい',
+      ],
+      usecases: [
+        '配信での視聴者参加型ゲームの得点管理',
+        '対戦ゲームのチーム戦スコア表示',
+        'クイズ大会・大喜利などイベントの採点',
+        '複数ラウンドの合計点トラッキング',
+      ],
+      related: ['/team-division', '/roulette'],
+    },
   ],
   en: [
     {
@@ -283,6 +309,32 @@ const TOOLS: Record<Locale, ToolContent[]> = {
       ],
       related: ['/topic', '/roulette'],
     },
+    {
+      href: '/scoreboard',
+      tag: 'Scoreboard',
+      icon: IconTrophy,
+      name: 'Scoreboard',
+      summary: 'A live scoreboard for tracking team scores in real time. Supports 2–10 teams with +/- buttons, custom increments, rank display, sorting, and undo — keeping scoring smooth even during a live stream.',
+      steps: [
+        'Choose the number of teams, then set each team name and theme color',
+        'Enter the amount to add or subtract, then tap "+" / "−" (double-click a number to type it directly)',
+        'Use "Sort by score" and "Show rank" as needed',
+        'Press "Record" to save a snapshot, or "Copy match result" to paste into Discord and more',
+      ],
+      tips: [
+        'Scores are auto-saved in your browser and survive a page reload',
+        "Made a mistake? Each team's \"Undo\" steps back one change at a time",
+        'Pick from three designs: 7-segment, minimal, or card style',
+        'Give each team its own color to tell them apart on stream',
+      ],
+      usecases: [
+        'Scorekeeping for viewer-participation games on stream',
+        'Team battle scoreboards for competitive games',
+        'Judging quiz shows, comedy bits, and other events',
+        'Tracking cumulative points across multiple rounds',
+      ],
+      related: ['/team-division', '/roulette'],
+    },
   ],
 };
 
@@ -292,6 +344,7 @@ const TOOL_MAP: Record<string, { name: { ja: string; en: string } }> = {
   '/amida':         { name: { ja: 'あみだくじ',   en: 'Amida' } },
   '/topic':         { name: { ja: 'お題ガチャ',   en: 'Topic Picker' } },
   '/debate':        { name: { ja: 'ディベート',   en: 'Debate' } },
+  '/scoreboard':    { name: { ja: 'スコアボード', en: 'Scoreboard' } },
 };
 
 const FAQ: Record<Locale, { q: string; a: string }[]> = {

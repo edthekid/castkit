@@ -58,7 +58,7 @@ app/
 │
 ├─ _theme/colors.ts          # JS用カラートークン（ck）。globals.css の :root と同値を保つ
 │
-├─ <tool>/                   # 各ツール（team-division / roulette / amida / topic / debate）
+├─ <tool>/                   # 各ツール（team-division / roulette / amida / topic / debate / scoreboard）
 │   ├─ page.tsx              #   画面（ToolHeader + 本体 + ToolFooter）
 │   ├─ layout.tsx            #   メタデータ + JSON-LD
 │   ├─ _hooks/               #   状態・ロジック（useXxx）

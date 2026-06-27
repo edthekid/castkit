@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from '../_i18n/useTranslation';
-import { IconBolt, IconTarget, IconLadder, IconChat, IconScales } from './icons';
+import { IconBolt, IconTarget, IconLadder, IconChat, IconScales, IconTrophy } from './icons';
 import type { ComponentType, SVGProps } from 'react';
 
 const ALL_TOOLS: {
@@ -20,6 +20,7 @@ const ALL_TOOLS: {
   { href: '/amida',         icon: IconLadder, tag: 'Amida',         titleJa: 'あみだくじ',   titleEn: 'Amida',         descJa: '結果をあみだくじで割り当て',    descEn: 'Assign results via ladder lottery' },
   { href: '/topic',         icon: IconChat,   tag: 'Topic',         titleJa: 'お題ガチャ',   titleEn: 'Topic Picker',  descJa: 'ランダムにお題を出すツール',   descEn: 'Pick a random conversation topic' },
   { href: '/debate',        icon: IconScales, tag: 'Debate',        titleJa: 'ディベート',   titleEn: 'Debate',        descJa: 'お題と陣営をランダム決定',     descEn: 'Randomly assign debate topics and sides' },
+  { href: '/scoreboard',    icon: IconTrophy, tag: 'Scoreboard',    titleJa: 'スコアボード', titleEn: 'Scoreboard',    descJa: 'チームの得点をリアルタイム管理', descEn: 'Manage team scores in real time' },
 ];
 
 export function RelatedTools() {
