@@ -62,8 +62,10 @@ app/
 │   ├─ page.tsx              #   画面（ToolHeader + 本体 + ToolFooter）
 │   ├─ layout.tsx            #   メタデータ + JSON-LD
 │   ├─ _hooks/               #   状態・ロジック（useXxx）
-│   ├─ _components/          #   ツール固有UI
-│   ├─ _data/, _constants/, _utils
+│   ├─ _components/          #   ツール固有UI（debate は page.tsx 内に集約）
+│   ├─ _constants.ts         #   定数（各ツール）
+│   ├─ _utils.ts / _styles.ts #   ヘルパー・スタイル（ツールにより有無。_styles は roulette のみ）
+│   └─ _data/                #   固定データ（topic / debate のみ）
 │
 ├─ articles/                 # 記事
 │   ├─ page.tsx              #   一覧
