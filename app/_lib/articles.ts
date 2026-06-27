@@ -9,11 +9,12 @@ import { roulette } from './articles/roulette';
 import { amida } from './articles/amida';
 import { topicPicker } from './articles/topic-picker';
 import { debate } from './articles/debate';
+import { scoreboard } from './articles/scoreboard';
 
 export type { Article, ArticleInput } from './articles/_types';
 
 /** 一覧などでの表示順（先頭が新着扱い） */
-export const ARTICLES: Article[] = [teamDivision, roulette, amida, topicPicker, debate].map((a) => ({
+export const ARTICLES: Article[] = [scoreboard, teamDivision, roulette, amida, topicPicker, debate].map((a) => ({
   ...a,
   href: `/articles/${a.slug}`,
 }));

@@ -47,6 +47,13 @@ export const TOOL_SHARE: ToolShare[] = [
       en: '⚖️ Random debate topic and faction picker with timer — CastKit Debate #CastKit',
     },
   },
+  {
+    href: '/scoreboard',
+    shareText: {
+      ja: '🏆 チームの得点をリアルタイム管理「CastKit スコアボード」配信・ゲームイベントで使えます #CastKit',
+      en: '🏆 Live team scoreboard for streams and gaming events — CastKit Scoreboard #CastKit',
+    },
+  },
 ];
 
 /** パスから対応するシェア文言を取得 */

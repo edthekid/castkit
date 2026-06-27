@@ -336,6 +336,16 @@ export function IconScales({ size = 18, ...props }: IconProps) {
   );
 }
 
+export function IconTrophy({ size = 18, ...props }: IconProps) {
+  return (
+    <svg {...base(size)} {...props}>
+      <path d="M7 4.5h10v4a5 5 0 0 1-10 0v-4Z" />
+      <path d="M7 6H4.5v1.5A3 3 0 0 0 7 10.5M17 6h2.5v1.5a3 3 0 0 1-2.5 4.5" />
+      <path d="M12 13.5V17M9 20h6M9.5 20l.5-3h4l.5 3" />
+    </svg>
+  );
+}
+
 export function IconBook({ size = 18, ...props }: IconProps) {
   return (
     <svg {...base(size)} {...props}>

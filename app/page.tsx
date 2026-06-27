@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useTranslation } from './_i18n/useTranslation';
 import type { TranslationKey } from './_i18n/translations';
 import { gray } from './_theme/colors';
-import { IconBolt, IconTarget, IconLadder, IconChat, IconScales } from './_components/icons';
+import { IconBolt, IconTarget, IconLadder, IconChat, IconScales, IconTrophy } from './_components/icons';
 import { HomeArticles } from './_components/HomeArticles';
 import type { ComponentType, SVGProps } from 'react';
 
@@ -62,6 +62,15 @@ const TOOLS: {
     accent: gray[600],
     gradient: 'from-zinc-500/8 to-zinc-300/8',
     tag: 'Debate',
+  },
+  {
+    href: '/scoreboard',
+    icon: IconTrophy,
+    titleKey: 'home.scoreboard.title',
+    descKey: 'home.scoreboard.description',
+    accent: gray[700],
+    gradient: 'from-zinc-700/8 to-zinc-300/8',
+    tag: 'Scoreboard',
   },
 ];
 
@@ -132,7 +141,7 @@ export default function HomePage() {
       </div>
 
       {/* ツールカード */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-5">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
         {TOOLS.map(({ href, icon: Icon, titleKey, descKey, accent, gradient, tag }, idx) => (
           <Link key={href} href={href}
             className="group relative block overflow-hidden"

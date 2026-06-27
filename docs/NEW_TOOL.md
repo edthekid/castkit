@@ -28,7 +28,7 @@
 
 新ツールのパスを、以下**すべて**に追加する。
 
-- [ ] `app/sitemap.ts` — `staticPages` に1行追加（`priority: 0.8` 目安）。**※記事と違い手動**。
+- [ ] `app/sitemap.ts` — `STATIC_PAGES` に1行追加（`path` / `updated`（公開日 YYYY-MM-DD）/ `changeFrequency` / `priority: 0.8` 目安）。**※記事と違い手動**。
 - [ ] `app/page.tsx` — ホームのツールカード配列（`href` / `icon` / `titleKey` / `descKey`）。
 - [ ] `app/_components/AppShell.tsx` — **2箇所**：①ナビ配列（`href` / `icon` / `labelKey`）②タイトルマップ（`ja` / `en` / `short`）。
 - [ ] `app/_components/RelatedTools.tsx` — 関連ツール配列（`titleJa/En`・`descJa/En`）。
