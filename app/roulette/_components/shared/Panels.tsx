@@ -17,7 +17,7 @@ export function DesignTabs({ current, isSpinning, onChange }: DesignTabsProps) {
   return (
     <div className="flex justify-center">
       <div className="flex gap-2 p-1.5"
-        style={{ background: ck.bg.muted, border: '1px solid #e4e4e7' }}>
+        style={{ background: ck.bg.muted, border: `1px solid ${ck.border.default}` }}>
         {([1, 2] as const).map((d) => (
           <button
             key={d}
@@ -113,7 +113,7 @@ export function WinnersPanel({ winners, onReturnOne, onReturnAll }: WinnersPanel
           <button
             onClick={onReturnAll}
             className="ck-btn text-xs px-3 py-1.5"
-            style={{ background: ck.bg.muted, color: ck.accent.default, border: '1px solid #e4e4e7' }}
+            style={{ background: ck.bg.muted, color: ck.accent.default, border: `1px solid ${ck.border.default}` }}
           >
             {t('winnersPanel.returnAll')}
           </button>
@@ -128,7 +128,7 @@ export function WinnersPanel({ winners, onReturnOne, onReturnAll }: WinnersPanel
           winners.map((item, i) => (
             <div key={i}
               className="flex items-center justify-between px-3 py-2 text-sm font-bold"
-              style={{ background: ck.text.onDark, border: '1px solid #e4e4e7' }}>
+              style={{ background: ck.text.onDark, border: `1px solid ${ck.border.default}` }}>
               <span>{item}</span>
               <button
                 onClick={() => onReturnOne(i)}
