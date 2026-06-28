@@ -5,6 +5,7 @@ import { useTranslation } from '../_i18n/useTranslation';
 import type { TranslationKey } from '../_i18n/translations';
 
 const LEGAL_LINKS: { href: string; labelKey: TranslationKey }[] = [
+  { href: '/about', labelKey: 'footer.about' },
   { href: '/privacy', labelKey: 'footer.privacy' },
   { href: '/contact', labelKey: 'footer.contact' },
 ];
