@@ -53,9 +53,16 @@ Vercel → Settings → Environments → Production →
 3. つながったら `NEXT_PUBLIC_SITE_URL` をそのドメインに更新 → Redeploy
 
 ### 2-5. Search Console
-1. search.google.com/search-console → プロパティ追加（URLプレフィックス）→ `https://cast-kit.com`
-2. 所有権を確認
+1. search.google.com/search-console → プロパティ追加（**ドメイン**）→ `cast-kit.com`
+2. 所有権を確認（DNS TXT。Cloudflare DNS にレコード追加）
 3. サイトマップに `sitemap.xml` を送信
+
+> **現状（2026-06-29 時点）**：以下まで完了済み。
+> - プロパティ登録（**ドメインプロパティ** `cast-kit.com`、2026-06-24 追加）・**所有権確認済み**
+> - **`sitemap.xml` 送信済み**（robots.txt は「すべてのファイルが有効」、Google のクロールも稼働中）
+> - 全ページの**インデックス登録リクエスト済み**（`/about` 含む URL 検査から申請）
+>
+> 以降、新ページ・新記事は `sitemap.xml` が自動更新されるため**再送信は不要**。急ぎたいページのみ「URL 検査 → インデックス登録をリクエスト」する（§6 参照）。
 
 ---
 
