@@ -14,6 +14,7 @@ export const translations = {
     'common.utilityToolkit':  'UTILITY TOOLKIT',
     'common.copyright':       '© 2026 CastKit',
     'common.editTitle':       'タイトルを編集',
+    'footer.about':           '運営者情報',
     'footer.privacy':         'プライバシーポリシー',
     'footer.contact':         'お問い合わせ',
 
@@ -259,6 +260,7 @@ export const translations = {
     'common.utilityToolkit':  'UTILITY TOOLKIT',
     'common.copyright':       '© 2026 CastKit',
     'common.editTitle':       'Edit title',
+    'footer.about':           'About',
     'footer.privacy':         'Privacy Policy',
     'footer.contact':         'Contact',
 

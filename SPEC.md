@@ -57,6 +57,7 @@
 | `/guide` | 静的 | 使い方ガイド（日英・FAQ付き） |
 | `/articles` | 静的 | 記事一覧 |
 | `/articles/[slug]` | SSG | 記事詳細（`generateStaticParams` で全件生成） |
+| `/about` | 静的 | 運営者情報（サイトの目的・運営方針・運営者） |
 | `/privacy` | 静的 | プライバシーポリシー（広告・解析のCookie開示） |
 | `/contact` | 静的 | お問い合わせ（Googleフォームへのリンク） |
 | `/sitemap.xml` `/robots.txt` `/manifest.webmanifest` | 生成 | SEO/PWA |
@@ -97,6 +98,7 @@
 
 ## 7. 規約・問い合わせ
 
+- **運営者情報**: サイトの目的・運営方針（無料・プライバシー重視・日英対応）と運営者を明示（日英）。`/about`
 - **プライバシーポリシー**: localStorage の取り扱い、Google AdSense・アクセス解析の Cookie 利用を開示（日英）
 - **お問い合わせ**: Google フォームへのリンク（メール非公開）。URLは `app/_lib/site.ts` の `CONTACT_FORM_URL`
 
