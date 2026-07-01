@@ -37,18 +37,18 @@ const TRAY_HALF = 4.7;
 const TUMBLE_CAP_MS = 1400; // これを超えたら整え動作に移る（自然停止が先なら早まる）
 const PRESENT_MS = 420;      // 上面を水平に整える補間時間
 
-// 濃色トレイの配色（描画色＝トークン対象外）。白サイコロを浮かび上がらせる。
-const TRAY_BG    = 0x26262b; // 背景（濃いチャコール）
-const TRAY_FLOOR = 0x33333a; // 床（背景より少し明るく＝接地影が見える）
+// 「世界のアソビ大全」風：赤フェルトのトレイ＋角丸クリーム白のサイコロ（描画色＝トークン対象外）。
+const FELT_MID  = '#9c3030'; // フェルト中央（やや明るい赤）
+const FELT_EDGE = '#591616'; // フェルト外周（暗いマルーン）
 
-// オーソドックスな白サイコロの配色（描画色＝トークン対象外）。
-const DIE_BODY   = '#f5f3ee'; // アイボリー寄りの白
-const DIE_HI     = '#fdfcf8'; // 面中央のハイライト
-const DIE_LO     = '#e7e4db'; // 面フチのわずかな陰り
-const PIP_DARK   = '#1b1b1f'; // 黒目
-const PIP_DARK_HI= '#3c3c44';
-const PIP_ONE    = '#c8322b'; // 「1」の目だけ赤（和風のオーソドックス）
-const PIP_ONE_HI = '#e0574e';
+// クリーム白のサイコロ配色（描画色＝トークン対象外）。
+const DIE_TILE_HI = '#faf5ea'; // 角丸タイル面のハイライト
+const DIE_TILE    = '#f0e9d8'; // タイル面の基調（温かみのあるクリーム）
+const DIE_EDGE    = '#d7cebb'; // 面のフチ（角丸の縁として陰る）
+const PIP_DARK    = '#151513'; // 黒目
+const PIP_DARK_HI = '#3a3a37';
+const PIP_ONE     = '#bf2f29'; // 「1」の目だけ赤
+const PIP_ONE_HI  = '#dc554d';
 
 // 目の配置（3×3グリッドの正規化座標）。
 const G = {
@@ -67,38 +67,62 @@ const PIP_LAYOUT: Record<number, (readonly [number, number])[]> = {
 
 /**
  * 1つの面のテクスチャを生成。
- * pips=true ならドット目（1〜6）、false なら数字。中央ハイライトの陰影で
- * 立方体でも“角の丸い”サイコロらしい質感を出す。
+ * 各面を「角丸のドーム状クリームタイル」として描き、立方体でも角が丸く見える質感に。
+ * pips=true ならドット目（1〜6）、false なら数字。
  */
 function faceTexture(value: number, pips: boolean): THREE.CanvasTexture {
-  const S = 256;
+  const S = 256, M = 9, R = 44; // 余白・角丸半径
   const c = document.createElement('canvas');
   c.width = c.height = S;
   const ctx = c.getContext('2d')!;
 
-  // 面地：中央を明るく、フチをわずかに暗くして丸みを演出
-  const vg = ctx.createRadialGradient(S * 0.5, S * 0.42, S * 0.08, S * 0.5, S * 0.5, S * 0.72);
-  vg.addColorStop(0, DIE_HI);
-  vg.addColorStop(0.55, DIE_BODY);
-  vg.addColorStop(1, DIE_LO);
-  ctx.fillStyle = vg;
+  const tile = () => { ctx.beginPath(); ctx.roundRect(M, M, S - 2 * M, S - 2 * M, R); };
+
+  // フチ（面と面の境目＝角の丸みとして少し陰る）
+  ctx.fillStyle = DIE_EDGE;
   ctx.fillRect(0, 0, S, S);
 
+  // 角丸タイル本体（斜めグラデでドーム感）
+  tile();
+  const g = ctx.createLinearGradient(M, M, S - M, S - M);
+  g.addColorStop(0, DIE_TILE_HI);
+  g.addColorStop(1, DIE_TILE);
+  ctx.fillStyle = g;
+  ctx.fill();
+
+  // ベベル：上辺を明るく、下辺を暗くして丸みを強調
+  ctx.save();
+  tile();
+  ctx.clip();
+  const bev = ctx.createLinearGradient(0, M, 0, S - M);
+  bev.addColorStop(0, 'rgba(255,255,255,0.5)');
+  bev.addColorStop(0.14, 'rgba(255,255,255,0)');
+  bev.addColorStop(0.86, 'rgba(0,0,0,0)');
+  bev.addColorStop(1, 'rgba(0,0,0,0.14)');
+  ctx.fillStyle = bev;
+  ctx.fillRect(M, M, S - 2 * M, S - 2 * M);
+  ctx.restore();
+
   const drawPip = (cx: number, cy: number, r: number, dark: boolean) => {
-    // 立体的なくぼみ風のドット（左上をやや明るく）
-    const g = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.35, r * 0.1, cx, cy, r);
-    g.addColorStop(0, dark ? PIP_DARK_HI : PIP_ONE_HI);
-    g.addColorStop(1, dark ? PIP_DARK : PIP_ONE);
-    ctx.fillStyle = g;
+    // わずかな影を落として彫り込み感
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.22)';
+    ctx.shadowBlur = 5;
+    ctx.shadowOffsetY = 2;
+    const gg = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.35, r * 0.1, cx, cy, r);
+    gg.addColorStop(0, dark ? PIP_DARK_HI : PIP_ONE_HI);
+    gg.addColorStop(1, dark ? PIP_DARK : PIP_ONE);
+    ctx.fillStyle = gg;
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
   };
 
   if (pips) {
     const layout = PIP_LAYOUT[value] ?? PIP_LAYOUT[6];
     const isOne = value === 1;
-    const r = isOne ? S * 0.135 : S * 0.098;
+    const r = isOne ? S * 0.14 : S * 0.1;
     for (const [nx, ny] of layout) drawPip(nx * S, ny * S, r, !isOne);
   } else {
     const label = String(value);
@@ -106,15 +130,12 @@ function faceTexture(value: number, pips: boolean): THREE.CanvasTexture {
     ctx.font = `700 ${value >= 100 ? 108 : value >= 10 ? 128 : 150}px "Space Grotesk", system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.18)';
+    ctx.shadowColor = 'rgba(0,0,0,0.2)';
     ctx.shadowBlur = 6;
     ctx.shadowOffsetY = 3;
     ctx.fillText(label, S / 2, S / 2 + 6);
     ctx.shadowColor = 'transparent';
-    // 6・9 は向き識別の下線
-    if (value === 6 || value === 9) {
-      ctx.fillRect(S / 2 - 34, S * 0.5 + 66, 68, 9);
-    }
+    if (value === 6 || value === 9) ctx.fillRect(S / 2 - 34, S * 0.5 + 66, 68, 9);
   }
 
   const tex = new THREE.CanvasTexture(c);
@@ -190,9 +211,9 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
     const envTex = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
     scene.environment = envTex;
 
-    const hemi = new THREE.HemisphereLight(0xffffff, 0xb8bac0, 0.45);
+    const hemi = new THREE.HemisphereLight(0xfff3ea, 0x5a1a1a, 0.4);
     scene.add(hemi);
-    const key = new THREE.DirectionalLight(0xffffff, 1.05);
+    const key = new THREE.DirectionalLight(0xfff1e2, 1.25);
     key.position.set(5.5, 13, 6.5);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
@@ -206,15 +227,30 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
     key.shadow.camera.top = 8;
     key.shadow.camera.bottom = -8;
     scene.add(key);
-    const rim = new THREE.DirectionalLight(0xffffff, 0.25);
+    const rim = new THREE.DirectionalLight(0xffe8d8, 0.22);
     rim.position.set(-6, 6, -6);
     scene.add(rim);
 
-    // 濃色トレイ背景＋やや明るい床。白サイコロが背景から浮き、接地影も見える。
-    scene.background = new THREE.Color(TRAY_BG);
+    // 赤フェルトのトレイ：中央やや明るく外周を暗くしたビネット＋微細な布目。
+    const feltC = document.createElement('canvas');
+    feltC.width = feltC.height = 512;
+    const felt = feltC.getContext('2d')!;
+    const fg = felt.createRadialGradient(256, 256, 40, 256, 256, 340);
+    fg.addColorStop(0, FELT_MID);
+    fg.addColorStop(1, FELT_EDGE);
+    felt.fillStyle = fg;
+    felt.fillRect(0, 0, 512, 512);
+    for (let i = 0; i < 12000; i++) {
+      const a = Math.random() * 0.06;
+      felt.fillStyle = Math.random() < 0.5 ? `rgba(0,0,0,${a})` : `rgba(255,235,220,${a * 0.6})`;
+      felt.fillRect(Math.random() * 512, Math.random() * 512, 1, 1);
+    }
+    const feltTex = new THREE.CanvasTexture(feltC);
+    feltTex.colorSpace = THREE.SRGBColorSpace;
+    scene.background = new THREE.Color(FELT_EDGE);
     const floorMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(60, 60),
-      new THREE.MeshStandardMaterial({ color: TRAY_FLOOR, roughness: 1, metalness: 0 }),
+      new THREE.PlaneGeometry(40, 40),
+      new THREE.MeshStandardMaterial({ map: feltTex, roughness: 0.98, metalness: 0 }),
     );
     floorMesh.rotation.x = -Math.PI / 2;
     floorMesh.receiveShadow = true;
@@ -277,7 +313,7 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
         const materials = faces.map((v) => {
           const tex = faceTexture(v, pips);
           disposeTextures.push(tex);
-          return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.34, metalness: 0.02, envMapIntensity: 0.32 });
+          return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.26, metalness: 0.03, envMapIntensity: 0.6 });
         });
         const mesh = new THREE.Mesh(dieGeo, materials);
         mesh.castShadow = true;
@@ -454,6 +490,7 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
       dieGeo.dispose();
       floorMesh.geometry.dispose();
       (floorMesh.material as THREE.Material).dispose();
+      feltTex.dispose();
       envTex.dispose();
       pmrem.dispose();
       renderer.dispose();

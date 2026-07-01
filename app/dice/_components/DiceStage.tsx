@@ -34,7 +34,7 @@ export function DiceStage({
   return (
     <div
       className="relative w-full overflow-hidden ck-section"
-      style={{ minHeight: 320, background: '#26262b' }}
+      style={{ minHeight: 320, background: '#591616' }}
       aria-label={t('dice.canvasLabel')}
     >
       {started ? (
@@ -46,7 +46,7 @@ export function DiceStage({
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-3" style={{ color: '#8a8a93' }}>
+          <div className="flex flex-col items-center gap-3" style={{ color: '#e6bcbc' }}>
             <IconDice size={48} aria-hidden="true" />
             <span className="text-sm font-bold">{t('dice.emptyHistory')}</span>
           </div>
