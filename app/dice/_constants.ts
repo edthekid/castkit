@@ -60,21 +60,5 @@ export const MAX_HISTORY = 20;
  */
 export const ROLL_DURATION_MS = 2200;
 
-/** localStorage キー（色・モード等の設定を保存）。 */
+/** localStorage キー（モード等の設定を保存）。 */
 export const STORAGE_KEY = 'castkit.dice.v1';
-
-/**
- * ダイスの色プリセット（描画色。トークン対象外）。
- * 配信画面でも見やすい、彩度を抑えた視認性の高い色を厳選。
- */
-export const COLOR_PRESETS: readonly string[] = [
-  '#d64545', // レッド
-  '#3f6a8a', // ブルー
-  '#4f8a5b', // グリーン
-  '#a3702f', // アンバー
-  '#7c5380', // パープル
-  '#2f3136', // チャコール
-  '#e4e4e7', // ホワイト
-];
-
-export const DEFAULT_COLOR = '#d64545';

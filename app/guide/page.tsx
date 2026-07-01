@@ -182,7 +182,7 @@ const TOOLS: Record<Locale, ToolContent[]> = {
       tag: 'Dice',
       icon: IconDice,
       name: 'サイコロ',
-      summary: '3D物理演算でリアルに転がるサイコロツールです。1〜10個・面数自由（d4〜d20）に加え、TRPGでよく使うダイスセットやd100判定にも対応。ダイスの色を変えられ、出目の履歴はDiscord向けのフォーマットでコピーできます。',
+      summary: '3D物理演算でリアルに転がるサイコロツールです。1〜10個・面数自由（d4〜d20）に加え、TRPGでよく使うダイスセットやd100判定にも対応。1〜6はドット目のオーソドックスな白サイコロで、出目の履歴はDiscord向けのフォーマットでコピーできます。',
       steps: [
         'サイコロの数（1〜10個）と面数（d4/d6/d8/d10/d12/d20 など）を選ぶ',
         'または「TRPGモード」でよく使うダイスセットをプリセットから選ぶ',
@@ -190,8 +190,8 @@ const TOOLS: Record<Locale, ToolContent[]> = {
         '止まると各出目と合計が強調表示され、履歴に残る',
       ],
       tips: [
-        'ダイスの色はカラーピッカーで自由に変更でき、プリセットも用意',
-        '色やモードの設定はブラウザに自動保存され、次回も復元される',
+        '1〜6の目は本物のサイコロと同じドット（ピップ）表示、7以上は数字で表示',
+        '個数・面数・モードの設定はブラウザに自動保存され、次回も復元される',
         'd100モードは1〜100のパーセンタイル判定として振れる',
         '履歴の「コピー」で「🎲 2d6 -> [3, 5] = 8」形式のテキストを取得（Discord等に貼り付け）',
       ],
@@ -366,7 +366,7 @@ const TOOLS: Record<Locale, ToolContent[]> = {
       tag: 'Dice',
       icon: IconDice,
       name: 'Dice Roller',
-      summary: 'A dice roller with realistic 3D physics. Roll 1–10 dice with any number of sides (d4–d20), or use TRPG dice sets and d100 rolls. Customize the dice color and copy roll history in a Discord-friendly format.',
+      summary: 'A dice roller with realistic 3D physics. Roll 1–10 dice with any number of sides (d4–d20), or use TRPG dice sets and d100 rolls. Classic white dice show pips for 1–6, and roll history copies in a Discord-friendly format.',
       steps: [
         'Choose the number of dice (1–10) and the number of sides (d4/d6/d8/d10/d12/d20, etc.)',
         'Or switch to "TRPG mode" and pick a preset dice set',
@@ -374,8 +374,8 @@ const TOOLS: Record<Locale, ToolContent[]> = {
         'Once they settle, each face and the total are highlighted and saved to history',
       ],
       tips: [
-        'Change the dice color freely with the color picker, or use a preset',
-        'Your color and mode settings are auto-saved in the browser and restored next time',
+        'Faces 1–6 show real dice pips (dots); 7 and up show numbers',
+        'Your dice count, sides, and mode are auto-saved in the browser and restored next time',
         'd100 mode rolls a 1–100 percentile result',
         'Use "Copy" on any history entry to get text like "🎲 2d6 -> [3, 5] = 8" (paste into Discord and more)',
       ],

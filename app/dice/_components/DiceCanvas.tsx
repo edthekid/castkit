@@ -23,7 +23,6 @@ interface DiceCanvasProps {
   values: number[];
   /** 面数（表示の桁調整用。d100 は100） */
   sides: number;
-  color: string;
   /** roll ごとに変化。変わるたびに振り直す */
   rollKey: number;
   /** 転がりが収まって結果面が見えたときに呼ぶ */
@@ -35,39 +34,58 @@ const TRAY_HALF = 5.2;
 const TUMBLE_CAP_MS = 1250; // これを超えたら整え動作に移る
 const PRESENT_MS = 380;      // 結果面を上に向ける補間時間
 
-/** #RRGGBB の明度から読みやすい文字色を選ぶ。 */
-function readableText(hex: string): string {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
-  if (!m) return '#ffffff';
-  const n = parseInt(m[1], 16);
-  const lum = (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
-  return lum > 0.6 ? '#18181b' : '#ffffff';
-}
+// オーソドックスな白サイコロの配色（描画色＝トークン対象外）。
+const DIE_BODY = '#f7f6f2'; // アイボリー寄りの白
+const PIP_DARK = '#1c1c1e'; // 黒目
+const PIP_ONE  = '#d0342c'; // 「1」の目だけ赤（和風のオーソドックス）
 
-/** 1つの面（数字）のテクスチャを生成。 */
-function faceTexture(value: number, bg: string, fg: string): THREE.CanvasTexture {
+// 目の配置（3×3グリッドの正規化座標）。
+const G = { TL: [0.25, 0.25], TC: [0.5, 0.25], TR: [0.75, 0.25], ML: [0.25, 0.5], MC: [0.5, 0.5], MR: [0.75, 0.5], BL: [0.25, 0.75], BC: [0.5, 0.75], BR: [0.75, 0.75] } as const;
+const PIP_LAYOUT: Record<number, (readonly [number, number])[]> = {
+  1: [G.MC],
+  2: [G.TL, G.BR],
+  3: [G.TL, G.MC, G.BR],
+  4: [G.TL, G.TR, G.BL, G.BR],
+  5: [G.TL, G.TR, G.MC, G.BL, G.BR],
+  6: [G.TL, G.TR, G.ML, G.MR, G.BL, G.BR],
+};
+
+/** 1つの面のテクスチャを生成（1〜6はドット、7以上は数字）。 */
+function faceTexture(value: number): THREE.CanvasTexture {
   const S = 128;
   const c = document.createElement('canvas');
   c.width = c.height = S;
   const ctx = c.getContext('2d')!;
-  ctx.fillStyle = bg;
+  // 面地
+  ctx.fillStyle = DIE_BODY;
   ctx.fillRect(0, 0, S, S);
   // 枠
-  ctx.strokeStyle = fg;
-  ctx.globalAlpha = 0.25;
+  ctx.strokeStyle = PIP_DARK;
+  ctx.globalAlpha = 0.12;
   ctx.lineWidth = 6;
   ctx.strokeRect(8, 8, S - 16, S - 16);
   ctx.globalAlpha = 1;
-  // 数字
-  ctx.fillStyle = fg;
-  ctx.font = `bold ${value >= 100 ? 52 : value >= 10 ? 64 : 72}px "Space Grotesk", system-ui, sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(String(value), S / 2, S / 2 + 4);
-  // 6・9 の下線（向き識別）
-  if (value === 6 || value === 9) {
-    ctx.fillRect(S / 2 - 18, S / 2 + 34, 36, 5);
+
+  const layout = PIP_LAYOUT[value];
+  if (layout) {
+    // オーソドックスなドット表示（1の目は赤）
+    ctx.fillStyle = value === 1 ? PIP_ONE : PIP_DARK;
+    const r = value === 1 ? S * 0.13 : S * 0.1;
+    for (const [nx, ny] of layout) {
+      ctx.beginPath();
+      ctx.arc(nx * S, ny * S, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else {
+    // 7面以上（d8/d20/d100 等）は数字で表示
+    ctx.fillStyle = PIP_DARK;
+    ctx.font = `bold ${value >= 100 ? 52 : value >= 10 ? 64 : 72}px "Space Grotesk", system-ui, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(value), S / 2, S / 2 + 4);
+    if (value === 9) ctx.fillRect(S / 2 - 18, S / 2 + 34, 36, 5); // 向き識別
   }
+
   const tex = new THREE.CanvasTexture(c);
   tex.anisotropy = 4;
   return tex;
@@ -92,13 +110,13 @@ interface Die {
   targetQuat: THREE.Quaternion | null;
 }
 
-export function DiceCanvas({ values, sides, color, rollKey, onSettled }: DiceCanvasProps) {
+export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // 最新の props を参照するための ref（アニメーションループ内で使う）。
-  const propsRef = useRef({ values, sides, color, onSettled });
+  const propsRef = useRef({ values, sides, onSettled });
   useEffect(() => {
-    propsRef.current = { values, sides, color, onSettled };
+    propsRef.current = { values, sides, onSettled };
   });
 
   // three / cannon のセットアップ（マウント時に1度）。
@@ -109,7 +127,7 @@ export function DiceCanvas({ values, sides, color, rollKey, onSettled }: DiceCan
     world: CANNON.World;
     dice: Die[];
     disposeTextures: THREE.Texture[];
-    throwDice: (values: number[], sides: number, color: string) => void;
+    throwDice: (values: number[], sides: number) => void;
   } | null>(null);
 
   useEffect(() => {
@@ -147,10 +165,10 @@ export function DiceCanvas({ values, sides, color, rollKey, onSettled }: DiceCan
     dir.shadow.camera.bottom = -10;
     scene.add(dir);
 
-    // 影を受ける床（透明・影のみ）
+    // テーブル面（白いサイコロを引き立てる淡いニュートラル面。影も受ける）
     const floorMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(60, 60),
-      new THREE.ShadowMaterial({ opacity: 0.14 }),
+      new THREE.MeshStandardMaterial({ color: 0xe7e5e0, roughness: 1 }),
     );
     floorMesh.rotation.x = -Math.PI / 2;
     floorMesh.receiveShadow = true;
@@ -204,9 +222,8 @@ export function DiceCanvas({ values, sides, color, rollKey, onSettled }: DiceCan
       disposeTextures.length = 0;
     };
 
-    const throwDice = (vals: number[], sd: number, col: string) => {
+    const throwDice = (vals: number[], sd: number) => {
       clearDice();
-      const fg = readableText(col);
       const n = vals.length;
 
       vals.forEach((value, i) => {
@@ -214,9 +231,9 @@ export function DiceCanvas({ values, sides, color, rollKey, onSettled }: DiceCan
         // three の BoxGeometry マテリアル順: +X,-X,+Y,-Y,+Z,-Z。結果(faces[0])を +Y に。
         const order = [faces[1], faces[2], faces[0], faces[3], faces[4], faces[5]];
         const materials = order.map((v) => {
-          const tex = faceTexture(v, col, fg);
+          const tex = faceTexture(v);
           disposeTextures.push(tex);
-          return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.45, metalness: 0.05 });
+          return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5, metalness: 0.04 });
         });
         const mesh = new THREE.Mesh(new THREE.BoxGeometry(DIE_SIZE, DIE_SIZE, DIE_SIZE), materials);
         mesh.castShadow = true;
@@ -350,7 +367,7 @@ export function DiceCanvas({ values, sides, color, rollKey, onSettled }: DiceCan
     sceneRef.current = { renderer, scene, camera, world, dice, disposeTextures, throwDice };
 
     // 初回の投擲（マウント時点で rollKey>0）
-    throwDice(propsRef.current.values, propsRef.current.sides, propsRef.current.color);
+    throwDice(propsRef.current.values, propsRef.current.sides);
 
     return () => {
       stopLoop();
@@ -368,7 +385,7 @@ export function DiceCanvas({ values, sides, color, rollKey, onSettled }: DiceCan
   useEffect(() => {
     if (firstRef.current) { firstRef.current = false; return; }
     const s = sceneRef.current;
-    if (s) s.throwDice(propsRef.current.values, propsRef.current.sides, propsRef.current.color);
+    if (s) s.throwDice(propsRef.current.values, propsRef.current.sides);
   }, [rollKey]);
 
   return <div ref={containerRef} className="absolute inset-0" />;

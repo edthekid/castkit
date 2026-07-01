@@ -3,7 +3,6 @@
 import { useDice } from './_hooks/useDice';
 import { DiceStage } from './_components/DiceStage';
 import { DiceControls } from './_components/DiceControls';
-import { ColorPicker } from './_components/ColorPicker';
 import { DiceHistoryPanel } from './_components/DiceHistory';
 import { ToolHeader } from '../_components/ToolHeader';
 import { ToolFooter } from '../_components/ToolFooter';
@@ -20,14 +19,13 @@ export default function DicePage() {
         <DiceStage
           phase={dice.phase}
           current={dice.current}
-          color={dice.color}
           rollKey={dice.rollKey}
           activeValues={dice.activeRoll?.values ?? []}
           activeSides={dice.activeRoll?.sides ?? dice.sides}
           onSettled={dice.reveal}
         />
 
-        {/* 操作パネル + 色設定 */}
+        {/* 操作パネル + 履歴 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <DiceControls
             mode={dice.mode}
@@ -43,16 +41,11 @@ export default function DicePage() {
             onRoll={dice.roll}
           />
 
-          <div className="flex flex-col gap-4">
-            <div className="ck-section">
-              <ColorPicker color={dice.color} onChange={dice.setColor} />
-            </div>
-            <DiceHistoryPanel
-              history={dice.history}
-              onCopy={dice.copyRecord}
-              onClear={dice.clearHistory}
-            />
-          </div>
+          <DiceHistoryPanel
+            history={dice.history}
+            onCopy={dice.copyRecord}
+            onClear={dice.clearHistory}
+          />
         </div>
       </div>
 

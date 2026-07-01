@@ -16,7 +16,6 @@ const DiceCanvas = dynamic(
 interface DiceStageProps {
   phase: RollPhase;
   current: RollRecord | null;
-  color: string;
   rollKey: number;
   /** 現在振っている（確定前含む）出目とその面数 */
   activeValues: number[];
@@ -26,7 +25,7 @@ interface DiceStageProps {
 }
 
 export function DiceStage({
-  phase, current, color, rollKey, activeValues, activeSides, onSettled,
+  phase, current, rollKey, activeValues, activeSides, onSettled,
 }: DiceStageProps) {
   const { t } = useTranslation();
   const showResult = phase === 'result' && current;
@@ -42,7 +41,6 @@ export function DiceStage({
         <DiceCanvas
           values={activeValues}
           sides={activeSides}
-          color={color}
           rollKey={rollKey}
           onSettled={onSettled}
         />

@@ -14,7 +14,6 @@ import {
   MAX_HISTORY,
   ROLL_DURATION_MS,
   STORAGE_KEY,
-  DEFAULT_COLOR,
 } from '../_constants';
 import { notation, rollOne, formatRoll } from '../_utils';
 
@@ -22,7 +21,6 @@ interface PersistedState {
   mode: DiceMode;
   count: number;
   sides: number;
-  color: string;
   history: RollRecord[];
 }
 
@@ -35,7 +33,6 @@ export function useDice() {
   const [mode, setModeState] = useState<DiceMode>('basic');
   const [count, setCount]    = useState(2);
   const [sides, setSides]    = useState(6);
-  const [color, setColor]    = useState<string>(DEFAULT_COLOR);
 
   // ─── ロール状態 ─────────────────────────────────────────
   const [phase, setPhase]     = useState<RollPhase>('idle');
@@ -65,7 +62,6 @@ export function useDice() {
         if (saved.mode === 'basic' || saved.mode === 'trpg') setModeState(saved.mode);
         if (typeof saved.count === 'number') setCount(clampCount(saved.count));
         if (typeof saved.sides === 'number' && saved.sides >= 2) setSides(saved.sides);
-        if (typeof saved.color === 'string') setColor(saved.color);
         if (Array.isArray(saved.history)) setHistory(saved.history.slice(0, MAX_HISTORY));
       }
     } catch {
@@ -79,12 +75,12 @@ export function useDice() {
   useEffect(() => {
     if (!hydrated) return;
     try {
-      const payload: PersistedState = { mode, count, sides, color, history };
+      const payload: PersistedState = { mode, count, sides, history };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch {
       // 容量超過などは無視
     }
-  }, [hydrated, mode, count, sides, color, history]);
+  }, [hydrated, mode, count, sides, history]);
 
   useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
 
@@ -169,7 +165,6 @@ export function useDice() {
     mode, setMode,
     count, setCount, incDie, decDie,
     sides, setSides, setPreset,
-    color, setColor,
     isD100,
     // ロール
     phase,
