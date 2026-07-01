@@ -2,26 +2,29 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import * as CANNON from 'cannon-es';
 
 /*
  * 3Dサイコロの物理演算描画。
  *
  * 【方針】
- * - サイコロは cannon-es の Box 剛体としてトレイ内を転がる（重力・跳ね返り・回転・摩擦）。
- * - 出目は上位（useDice）で確定済み。物理はあくまで演出で、転がりが収まったら
- *   各サイコロを「結果の面が上」を向く姿勢へ短時間で整え（present）、その後 onSettled を呼ぶ。
- *   → 呼び出し側はこのタイミングで合計をポップアップ表示する。
+ * - サイコロは cannon-es の Box 剛体としてトレイ内を自然に転がる（重力・跳ね返り・回転・摩擦）。
+ * - 出目は上位（useDice）で確定済み。物理が静止したら「上を向いた面」を検出し、
+ *   その面に結果を描画してから、ほんの少しだけ姿勢を整える（自然な着地に見せる）。
+ *   仕上がり時に onSettled を呼び、呼び出し側が合計をポップアップ表示する。
  * - キャンバス内の色は描画用途のためトークン対象外（STYLEGUIDE 例外）。
  *
- * 面数が6を超えるダイス（d8/d20 等）や d100 も、視認性重視で「数字を描いた立方体」
- * として表現する（多面体ジオメトリは持たない割り切り）。結果の面は必ず上を向く。
+ * 【面のスタイル】
+ * - 面数が 6 以下のサイコロ（d2〜d6）は全面をドット目（オーソドックスな白サイコロ）。
+ * - 面数が 7 以上（d8/d10/d12/d20/d100 等）は全面を数字。
+ *   ＝1つのサイコロ内でドットと数字が混在しない。
  */
 
 interface DiceCanvasProps {
   /** 各サイコロの確定した出目 */
   values: number[];
-  /** 面数（表示の桁調整用。d100 は100） */
+  /** 面数（d2〜d100）。6以下ならドット、7以上なら数字。 */
   sides: number;
   /** roll ごとに変化。変わるたびに振り直す */
   rollKey: number;
@@ -29,18 +32,26 @@ interface DiceCanvasProps {
   onSettled: () => void;
 }
 
-const DIE_SIZE = 1.5;
-const TRAY_HALF = 5.2;
-const TUMBLE_CAP_MS = 1250; // これを超えたら整え動作に移る
-const PRESENT_MS = 380;      // 結果面を上に向ける補間時間
+const DIE_SIZE = 1.7;
+const TRAY_HALF = 5.0;
+const TUMBLE_CAP_MS = 1400; // これを超えたら整え動作に移る（自然停止が先なら早まる）
+const PRESENT_MS = 420;      // 上面を水平に整える補間時間
 
 // オーソドックスな白サイコロの配色（描画色＝トークン対象外）。
-const DIE_BODY = '#f7f6f2'; // アイボリー寄りの白
-const PIP_DARK = '#1c1c1e'; // 黒目
-const PIP_ONE  = '#d0342c'; // 「1」の目だけ赤（和風のオーソドックス）
+const DIE_BODY   = '#f5f3ee'; // アイボリー寄りの白
+const DIE_HI     = '#fdfcf8'; // 面中央のハイライト
+const DIE_LO     = '#e7e4db'; // 面フチのわずかな陰り
+const PIP_DARK   = '#1b1b1f'; // 黒目
+const PIP_DARK_HI= '#3c3c44';
+const PIP_ONE    = '#c8322b'; // 「1」の目だけ赤（和風のオーソドックス）
+const PIP_ONE_HI = '#e0574e';
 
 // 目の配置（3×3グリッドの正規化座標）。
-const G = { TL: [0.25, 0.25], TC: [0.5, 0.25], TR: [0.75, 0.25], ML: [0.25, 0.5], MC: [0.5, 0.5], MR: [0.75, 0.5], BL: [0.25, 0.75], BC: [0.5, 0.75], BR: [0.75, 0.75] } as const;
+const G = {
+  TL: [0.26, 0.26], TC: [0.5, 0.26], TR: [0.74, 0.26],
+  ML: [0.26, 0.5],  MC: [0.5, 0.5],  MR: [0.74, 0.5],
+  BL: [0.26, 0.74], BC: [0.5, 0.74], BR: [0.74, 0.74],
+} as const;
 const PIP_LAYOUT: Record<number, (readonly [number, number])[]> = {
   1: [G.MC],
   2: [G.TL, G.BR],
@@ -50,63 +61,89 @@ const PIP_LAYOUT: Record<number, (readonly [number, number])[]> = {
   6: [G.TL, G.TR, G.ML, G.MR, G.BL, G.BR],
 };
 
-/** 1つの面のテクスチャを生成（1〜6はドット、7以上は数字）。 */
-function faceTexture(value: number): THREE.CanvasTexture {
-  const S = 128;
+/**
+ * 1つの面のテクスチャを生成。
+ * pips=true ならドット目（1〜6）、false なら数字。中央ハイライトの陰影で
+ * 立方体でも“角の丸い”サイコロらしい質感を出す。
+ */
+function faceTexture(value: number, pips: boolean): THREE.CanvasTexture {
+  const S = 256;
   const c = document.createElement('canvas');
   c.width = c.height = S;
   const ctx = c.getContext('2d')!;
-  // 面地
-  ctx.fillStyle = DIE_BODY;
-  ctx.fillRect(0, 0, S, S);
-  // 枠
-  ctx.strokeStyle = PIP_DARK;
-  ctx.globalAlpha = 0.12;
-  ctx.lineWidth = 6;
-  ctx.strokeRect(8, 8, S - 16, S - 16);
-  ctx.globalAlpha = 1;
 
-  const layout = PIP_LAYOUT[value];
-  if (layout) {
-    // オーソドックスなドット表示（1の目は赤）
-    ctx.fillStyle = value === 1 ? PIP_ONE : PIP_DARK;
-    const r = value === 1 ? S * 0.13 : S * 0.1;
-    for (const [nx, ny] of layout) {
-      ctx.beginPath();
-      ctx.arc(nx * S, ny * S, r, 0, Math.PI * 2);
-      ctx.fill();
-    }
+  // 面地：中央を明るく、フチをわずかに暗くして丸みを演出
+  const vg = ctx.createRadialGradient(S * 0.5, S * 0.42, S * 0.08, S * 0.5, S * 0.5, S * 0.72);
+  vg.addColorStop(0, DIE_HI);
+  vg.addColorStop(0.55, DIE_BODY);
+  vg.addColorStop(1, DIE_LO);
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, S, S);
+
+  const drawPip = (cx: number, cy: number, r: number, dark: boolean) => {
+    // 立体的なくぼみ風のドット（左上をやや明るく）
+    const g = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.35, r * 0.1, cx, cy, r);
+    g.addColorStop(0, dark ? PIP_DARK_HI : PIP_ONE_HI);
+    g.addColorStop(1, dark ? PIP_DARK : PIP_ONE);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+  };
+
+  if (pips) {
+    const layout = PIP_LAYOUT[value] ?? PIP_LAYOUT[6];
+    const isOne = value === 1;
+    const r = isOne ? S * 0.135 : S * 0.098;
+    for (const [nx, ny] of layout) drawPip(nx * S, ny * S, r, !isOne);
   } else {
-    // 7面以上（d8/d20/d100 等）は数字で表示
+    const label = String(value);
     ctx.fillStyle = PIP_DARK;
-    ctx.font = `bold ${value >= 100 ? 52 : value >= 10 ? 64 : 72}px "Space Grotesk", system-ui, sans-serif`;
+    ctx.font = `700 ${value >= 100 ? 108 : value >= 10 ? 128 : 150}px "Space Grotesk", system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(String(value), S / 2, S / 2 + 4);
-    if (value === 9) ctx.fillRect(S / 2 - 18, S / 2 + 34, 36, 5); // 向き識別
+    ctx.shadowColor = 'rgba(0,0,0,0.18)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetY = 3;
+    ctx.fillText(label, S / 2, S / 2 + 6);
+    ctx.shadowColor = 'transparent';
+    // 6・9 は向き識別の下線
+    if (value === 6 || value === 9) {
+      ctx.fillRect(S / 2 - 34, S * 0.5 + 66, 68, 9);
+    }
   }
 
   const tex = new THREE.CanvasTexture(c);
-  tex.anisotropy = 4;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
   return tex;
 }
 
-/** 結果値と、残り5面のダミー値（範囲内で散らす）を作る。index0 が結果（上面）。 */
-function faceValues(result: number, sides: number): number[] {
-  const max = sides === 100 ? 100 : sides;
-  const faces = [result];
-  let guard = 0;
-  while (faces.length < 6 && guard++ < 50) {
-    const v = Math.floor(Math.random() * max) + 1;
-    faces.push(v);
+/** 6面ぶんのダミー値。d6 は本物同様 1〜6、それ以外は範囲内でランダム。 */
+function faceValues(sides: number): number[] {
+  if (sides === 6) {
+    const a = [1, 2, 3, 4, 5, 6];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
   }
-  while (faces.length < 6) faces.push(((faces.length + result) % max) + 1);
-  return faces;
+  return Array.from({ length: 6 }, () => Math.floor(Math.random() * sides) + 1);
 }
+
+// BoxGeometry のマテリアル順に対応する各面の法線（+X,-X,+Y,-Y,+Z,-Z）。
+const FACE_NORMALS = [
+  new THREE.Vector3(1, 0, 0), new THREE.Vector3(-1, 0, 0),
+  new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, -1, 0),
+  new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, -1),
+];
 
 interface Die {
   mesh: THREE.Mesh;
   body: CANNON.Body;
+  result: number;
+  pips: boolean;
   targetQuat: THREE.Quaternion | null;
 }
 
@@ -119,16 +156,7 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
     propsRef.current = { values, sides, onSettled };
   });
 
-  // three / cannon のセットアップ（マウント時に1度）。
-  const sceneRef = useRef<{
-    renderer: THREE.WebGLRenderer;
-    scene: THREE.Scene;
-    camera: THREE.PerspectiveCamera;
-    world: CANNON.World;
-    dice: Die[];
-    disposeTextures: THREE.Texture[];
-    throwDice: (values: number[], sides: number) => void;
-  } | null>(null);
+  const sceneRef = useRef<{ throwDice: (values: number[], sides: number) => void } | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -143,77 +171,101 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
     // ── three ──────────────────────────────────────────
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
-    camera.position.set(0, 12.5, 8.5);
-    camera.lookAt(0, 0.5, 0);
+    camera.position.set(0, 12.5, 7.8);
+    camera.lookAt(0, 0, 0.4);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(width, height);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(renderer.domElement);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.85);
-    scene.add(ambient);
-    const dir = new THREE.DirectionalLight(0xffffff, 1.1);
-    dir.position.set(5, 14, 8);
-    dir.castShadow = true;
-    dir.shadow.mapSize.set(1024, 1024);
-    dir.shadow.camera.left = -10;
-    dir.shadow.camera.right = 10;
-    dir.shadow.camera.top = 10;
-    dir.shadow.camera.bottom = -10;
-    scene.add(dir);
+    // スタジオ風の環境光（白サイコロに柔らかな反射を与えて質感を出す）
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const envTex = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.environment = envTex;
 
-    // テーブル面（白いサイコロを引き立てる淡いニュートラル面。影も受ける）
+    const hemi = new THREE.HemisphereLight(0xffffff, 0xb8bac0, 0.45);
+    scene.add(hemi);
+    const key = new THREE.DirectionalLight(0xffffff, 1.05);
+    key.position.set(5.5, 13, 6.5);
+    key.castShadow = true;
+    key.shadow.mapSize.set(2048, 2048);
+    key.shadow.radius = 7;
+    key.shadow.bias = -0.0004;
+    key.shadow.normalBias = 0.02;
+    key.shadow.camera.near = 1;
+    key.shadow.camera.far = 40;
+    key.shadow.camera.left = -8;
+    key.shadow.camera.right = 8;
+    key.shadow.camera.top = 8;
+    key.shadow.camera.bottom = -8;
+    scene.add(key);
+    const rim = new THREE.DirectionalLight(0xffffff, 0.25);
+    rim.position.set(-6, 6, -6);
+    scene.add(rim);
+
+    // テーブル面：中央を少し明るく、フチを暗くしたビネットのマットで奥行きを出し、
+    // 白サイコロをはっきり引き立てる（描画色＝トークン対象外）。
+    const ftC = document.createElement('canvas');
+    ftC.width = ftC.height = 256;
+    const fctx = ftC.getContext('2d')!;
+    const fgrad = fctx.createRadialGradient(128, 128, 20, 128, 128, 168);
+    fgrad.addColorStop(0, '#dcd8ce');
+    fgrad.addColorStop(1, '#bdb9ae');
+    fctx.fillStyle = fgrad;
+    fctx.fillRect(0, 0, 256, 256);
+    const floorTex = new THREE.CanvasTexture(ftC);
+    floorTex.colorSpace = THREE.SRGBColorSpace;
     const floorMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(60, 60),
-      new THREE.MeshStandardMaterial({ color: 0xe7e5e0, roughness: 1 }),
+      new THREE.PlaneGeometry(26, 26),
+      new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.95, metalness: 0 }),
     );
     floorMesh.rotation.x = -Math.PI / 2;
+    floorMesh.position.y = -0.001;
     floorMesh.receiveShadow = true;
     scene.add(floorMesh);
 
     // ── cannon ─────────────────────────────────────────
-    const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -34, 0) });
+    const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -38, 0) });
     world.allowSleep = true;
+    world.defaultContactMaterial.friction = 0.4;
 
     const dieMat = new CANNON.Material('die');
     const groundMat = new CANNON.Material('ground');
-    world.addContactMaterial(new CANNON.ContactMaterial(dieMat, groundMat, { friction: 0.35, restitution: 0.35 }));
-    world.addContactMaterial(new CANNON.ContactMaterial(dieMat, dieMat, { friction: 0.2, restitution: 0.3 }));
+    world.addContactMaterial(new CANNON.ContactMaterial(dieMat, groundMat, { friction: 0.4, restitution: 0.32 }));
+    world.addContactMaterial(new CANNON.ContactMaterial(dieMat, dieMat, { friction: 0.25, restitution: 0.28 }));
 
-    // 床
     const ground = new CANNON.Body({ mass: 0, material: groundMat, shape: new CANNON.Plane() });
     ground.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
     world.addBody(ground);
 
-    // 壁（見えないトレイ）
     const addWall = (nx: number, nz: number, px: number, pz: number) => {
       const w = new CANNON.Body({ mass: 0, material: groundMat, shape: new CANNON.Plane() });
       w.quaternion.setFromEuler(0, Math.atan2(nx, nz), 0);
       w.position.set(px, 0, pz);
       world.addBody(w);
     };
-    addWall(0, 1, 0, -TRAY_HALF);   // 奥
-    addWall(0, -1, 0, TRAY_HALF);   // 手前
-    addWall(1, 0, -TRAY_HALF, 0);   // 左
-    addWall(-1, 0, TRAY_HALF, 0);   // 右
+    addWall(0, 1, 0, -TRAY_HALF);
+    addWall(0, -1, 0, TRAY_HALF);
+    addWall(1, 0, -TRAY_HALF, 0);
+    addWall(-1, 0, TRAY_HALF, 0);
 
     const dice: Die[] = [];
     const disposeTextures: THREE.Texture[] = [];
+    const dieGeo = new THREE.BoxGeometry(DIE_SIZE, DIE_SIZE, DIE_SIZE);
 
-    // アニメーション状態
     let phase: 'tumble' | 'present' | 'done' = 'done';
     let phaseStart = 0;
     let settledCalled = true;
     const presentFrom: THREE.Quaternion[] = [];
     const presentPos: THREE.Vector3[] = [];
+    const presentPosFrom: THREE.Vector3[] = [];
 
     const clearDice = () => {
       for (const d of dice) {
         scene.remove(d.mesh);
-        d.mesh.geometry.dispose();
         (d.mesh.material as THREE.Material[]).forEach((m) => m.dispose());
         world.removeBody(d.body);
       }
@@ -225,77 +277,99 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
     const throwDice = (vals: number[], sd: number) => {
       clearDice();
       const n = vals.length;
+      const pips = sd <= 6;
 
       vals.forEach((value, i) => {
-        const faces = faceValues(value, sd);
-        // three の BoxGeometry マテリアル順: +X,-X,+Y,-Y,+Z,-Z。結果(faces[0])を +Y に。
-        const order = [faces[1], faces[2], faces[0], faces[3], faces[4], faces[5]];
-        const materials = order.map((v) => {
-          const tex = faceTexture(v);
+        const faces = faceValues(sd);
+        const materials = faces.map((v) => {
+          const tex = faceTexture(v, pips);
           disposeTextures.push(tex);
-          return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5, metalness: 0.04 });
+          return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.34, metalness: 0.02, envMapIntensity: 0.32 });
         });
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(DIE_SIZE, DIE_SIZE, DIE_SIZE), materials);
+        const mesh = new THREE.Mesh(dieGeo, materials);
         mesh.castShadow = true;
+        mesh.receiveShadow = true;
         scene.add(mesh);
 
         const body = new CANNON.Body({
           mass: 1,
           material: dieMat,
           shape: new CANNON.Box(new CANNON.Vec3(DIE_SIZE / 2, DIE_SIZE / 2, DIE_SIZE / 2)),
-          linearDamping: 0.08,
-          angularDamping: 0.12,
+          linearDamping: 0.06,
+          angularDamping: 0.1,
           allowSleep: true,
-          sleepSpeedLimit: 0.15,
-          sleepTimeLimit: 0.3,
+          sleepSpeedLimit: 0.18,
+          sleepTimeLimit: 0.25,
         });
-        // 投げ入れ：奥側の上方から手前へ散らす
-        const spread = Math.min(TRAY_HALF - 1, 1.2 + n * 0.35);
+        // 投げ入れ：奥・上方から手前へ勢いよく散らし、強めのスピンを与える
+        const lane = n > 1 ? (i - (n - 1) / 2) / (n - 1) : 0; // -0.5..0.5
         body.position.set(
-          (i - (n - 1) / 2) * (spread * 2 / Math.max(1, n)) * 0.9,
-          6 + Math.random() * 2.5,
-          -TRAY_HALF + 1 + Math.random() * 1.5,
+          lane * (TRAY_HALF * 1.4) + (Math.random() - 0.5),
+          7 + Math.random() * 3,
+          -TRAY_HALF + 0.8 + Math.random() * 1.2,
         );
         body.quaternion.setFromEuler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-        body.velocity.set((Math.random() - 0.5) * 4, -2, 3.5 + Math.random() * 2.5);
+        body.velocity.set((Math.random() - 0.5) * 5, -3, 4.5 + Math.random() * 3);
         body.angularVelocity.set(
-          (Math.random() - 0.5) * 12,
-          (Math.random() - 0.5) * 12,
-          (Math.random() - 0.5) * 12,
+          (Math.random() - 0.5) * 18,
+          (Math.random() - 0.5) * 18,
+          (Math.random() - 0.5) * 18,
         );
         world.addBody(body);
 
-        dice.push({ mesh, body, targetQuat: null });
+        dice.push({ mesh, body, result: value, pips, targetQuat: null });
       });
 
       phase = 'tumble';
       phaseStart = performance.now();
       settledCalled = false;
-      // モーション低減設定では転がさず、すぐに結果面を提示する。
       if (reduceMotion) beginPresent();
       startLoop();
     };
 
+    // 物理静止後：上を向いた面を検出→結果を描画→その面をぴったり上へ整える。
     const beginPresent = () => {
       phase = 'present';
       phaseStart = performance.now();
       presentFrom.length = 0;
       presentPos.length = 0;
+      presentPosFrom.length = 0;
+      const up = new THREE.Vector3(0, 1, 0);
+
       dice.forEach((d) => {
         d.body.sleep();
-        // 結果面(+Y)を上に向ける。yaw はランダムで自然に。
-        const yaw = Math.random() * Math.PI * 2;
-        d.targetQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, yaw, 0));
-        presentFrom.push(d.mesh.quaternion.clone());
-        // 着地位置（トレイ内にクランプ、床上）
+        const q = d.mesh.quaternion;
+
+        // 上を向いている面を選ぶ
+        let best = 2, bestDot = -Infinity;
+        for (let f = 0; f < 6; f++) {
+          const dot = FACE_NORMALS[f].clone().applyQuaternion(q).dot(up);
+          if (dot > bestDot) { bestDot = dot; best = f; }
+        }
+
+        // その面に結果を描画（差し替え）
+        const mats = d.mesh.material as THREE.MeshStandardMaterial[];
+        const oldMap = mats[best].map;
+        const tex = faceTexture(d.result, d.pips);
+        disposeTextures.push(tex);
+        mats[best].map = tex;
+        mats[best].needsUpdate = true;
+        if (oldMap) oldMap.dispose();
+
+        // 上面を水平にそろえる（最小回転。ほぼ静止済みなので小さな整え）
+        const curNormal = FACE_NORMALS[best].clone().applyQuaternion(q);
+        const align = new THREE.Quaternion().setFromUnitVectors(curNormal, up);
+        d.targetQuat = align.multiply(q.clone());
+
+        presentFrom.push(q.clone());
+        presentPosFrom.push(d.mesh.position.clone());
         const x = THREE.MathUtils.clamp(d.body.position.x, -TRAY_HALF + 1, TRAY_HALF - 1);
         const z = THREE.MathUtils.clamp(d.body.position.z, -TRAY_HALF + 1, TRAY_HALF - 1);
         presentPos.push(new THREE.Vector3(x, DIE_SIZE / 2, z));
       });
     };
 
-    // ── ループ ─────────────────────────────────────────
-    // 転がり/整え中だけ回し、静止（done）したら停止する（無駄な描画を避ける）。
+    // ── ループ（転がり/整え中だけ回す） ─────────────────
     const clock = new THREE.Clock();
     let raf = 0;
     let running = false;
@@ -307,20 +381,20 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
     const startLoop = () => {
       if (running) return;
       running = true;
-      clock.getDelta(); // 溜まった経過をリセット（初回 dt が過大にならないように）
+      clock.getDelta();
       raf = requestAnimationFrame(animate);
     };
 
     const allAsleep = () => dice.length > 0 && dice.every(
       (d) => d.body.sleepState === CANNON.Body.SLEEPING
-        || d.body.velocity.lengthSquared() < 0.05 && d.body.angularVelocity.lengthSquared() < 0.05,
+        || (d.body.velocity.lengthSquared() < 0.04 && d.body.angularVelocity.lengthSquared() < 0.04),
     );
 
     const animate = () => {
       const dt = Math.min(clock.getDelta(), 1 / 30);
 
       if (phase === 'tumble') {
-        world.step(1 / 60, dt, 3);
+        world.step(1 / 120, dt, 4);
         for (const d of dice) {
           d.mesh.position.copy(d.body.position as unknown as THREE.Vector3);
           d.mesh.quaternion.copy(d.body.quaternion as unknown as THREE.Quaternion);
@@ -330,11 +404,10 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
         }
       } else if (phase === 'present') {
         const p = Math.min(1, (performance.now() - phaseStart) / PRESENT_MS);
-        // イージング（ease-out）
-        const e = 1 - Math.pow(1 - p, 3);
+        const e = 1 - Math.pow(1 - p, 3); // ease-out
         dice.forEach((d, i) => {
           if (d.targetQuat) d.mesh.quaternion.slerpQuaternions(presentFrom[i], d.targetQuat, e);
-          d.mesh.position.lerp(presentPos[i], e);
+          d.mesh.position.lerpVectors(presentPosFrom[i], presentPos[i], e);
         });
         if (p >= 1) {
           phase = 'done';
@@ -347,7 +420,6 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
 
       renderer.render(scene, camera);
 
-      // 静止したら最後のフレームを描いてループを止める。
       if (phase === 'done') { stopLoop(); return; }
       raf = requestAnimationFrame(animate);
     };
@@ -359,33 +431,50 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
-      // ループ停止中（静止表示）でもサイズ変更を反映するため1フレーム描く。
       if (!running) renderer.render(scene, camera);
     });
     ro.observe(container);
 
-    sceneRef.current = { renderer, scene, camera, world, dice, disposeTextures, throwDice };
+    // タブ復帰時（可視化時）に静止フレームを描き直す（背景タブでの throttling 対策）。
+    const onVisible = () => {
+      if (document.visibilityState === 'visible' && !running) {
+        const w = container.clientWidth || width;
+        const h = container.clientHeight || height;
+        if (w > 0 && h > 0) {
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(w, h);
+        }
+        renderer.render(scene, camera);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisible);
 
-    // 初回の投擲（マウント時点で rollKey>0）
+    sceneRef.current = { throwDice };
     throwDice(propsRef.current.values, propsRef.current.sides);
 
     return () => {
       stopLoop();
+      document.removeEventListener('visibilitychange', onVisible);
       ro.disconnect();
       clearDice();
+      dieGeo.dispose();
+      floorMesh.geometry.dispose();
+      (floorMesh.material as THREE.Material).dispose();
+      floorTex.dispose();
+      envTex.dispose();
+      pmrem.dispose();
       renderer.dispose();
       renderer.domElement.remove();
       sceneRef.current = null;
     };
-    // マウント時のみ構築。振り直しは下の effect で行う。
   }, []);
 
-  // rollKey が変わるたびに振り直す（初回マウントの投擲は上の effect が担当）。
+  // rollKey が変わるたびに振り直す（初回投擲は上の effect が担当）。
   const firstRef = useRef(true);
   useEffect(() => {
     if (firstRef.current) { firstRef.current = false; return; }
-    const s = sceneRef.current;
-    if (s) s.throwDice(propsRef.current.values, propsRef.current.sides);
+    sceneRef.current?.throwDice(propsRef.current.values, propsRef.current.sides);
   }, [rollKey]);
 
   return <div ref={containerRef} className="absolute inset-0" />;
