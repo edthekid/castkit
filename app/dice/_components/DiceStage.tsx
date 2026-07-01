@@ -34,7 +34,7 @@ export function DiceStage({
   return (
     <div
       className="relative w-full overflow-hidden ck-section"
-      style={{ minHeight: 320, background: 'var(--ck-gray-50)' }}
+      style={{ minHeight: 320, background: '#26262b' }}
       aria-label={t('dice.canvasLabel')}
     >
       {started ? (
@@ -46,14 +46,14 @@ export function DiceStage({
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-3" style={{ color: ck.text.muted }}>
+          <div className="flex flex-col items-center gap-3" style={{ color: '#8a8a93' }}>
             <IconDice size={48} aria-hidden="true" />
             <span className="text-sm font-bold">{t('dice.emptyHistory')}</span>
           </div>
         </div>
       )}
 
-      {/* 合計ポップアップ（静止後に表示） */}
+      {/* 合計ポップアップ（静止後に表示）。濃色トレイ上で目立つよう白基調。 */}
       {showResult && (
         <div
           key={`total-${rollKey}`}
@@ -63,9 +63,9 @@ export function DiceStage({
         >
           <div
             className="flex items-baseline gap-2 px-5 py-2.5 shadow-xl"
-            style={{ background: ck.text.primary, color: ck.text.onDark }}
+            style={{ background: ck.text.onDark, color: ck.text.primary }}
           >
-            <span className="text-xs font-black tracking-widest uppercase opacity-70">{t('dice.total')}</span>
+            <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>{t('dice.total')}</span>
             <span className="text-3xl font-black tabular-nums leading-none">{current.total}</span>
           </div>
         </div>

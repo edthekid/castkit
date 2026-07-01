@@ -32,10 +32,14 @@ interface DiceCanvasProps {
   onSettled: () => void;
 }
 
-const DIE_SIZE = 1.7;
-const TRAY_HALF = 5.0;
+const DIE_SIZE = 1.85;
+const TRAY_HALF = 4.7;
 const TUMBLE_CAP_MS = 1400; // これを超えたら整え動作に移る（自然停止が先なら早まる）
 const PRESENT_MS = 420;      // 上面を水平に整える補間時間
+
+// 濃色トレイの配色（描画色＝トークン対象外）。白サイコロを浮かび上がらせる。
+const TRAY_BG    = 0x26262b; // 背景（濃いチャコール）
+const TRAY_FLOOR = 0x33333a; // 床（背景より少し明るく＝接地影が見える）
 
 // オーソドックスな白サイコロの配色（描画色＝トークン対象外）。
 const DIE_BODY   = '#f5f3ee'; // アイボリー寄りの白
@@ -170,9 +174,9 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
 
     // ── three ──────────────────────────────────────────
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
-    camera.position.set(0, 12.5, 7.8);
-    camera.lookAt(0, 0, 0.4);
+    const camera = new THREE.PerspectiveCamera(44, width / height, 0.1, 100);
+    camera.position.set(0, 11, 7);
+    camera.lookAt(0, 0, 0.35);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -206,12 +210,11 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
     rim.position.set(-6, 6, -6);
     scene.add(rim);
 
-    // 背景は --ck-gray-50（#fafafa）で統一。床は影だけを落とす透明マットにして、
-    // 均一な明るい背景の上に、白サイコロの陰影＋接地影で立体感（形）を出す。
-    scene.background = new THREE.Color(0xfafafa);
+    // 濃色トレイ背景＋やや明るい床。白サイコロが背景から浮き、接地影も見える。
+    scene.background = new THREE.Color(TRAY_BG);
     const floorMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(60, 60),
-      new THREE.ShadowMaterial({ opacity: 0.26 }),
+      new THREE.MeshStandardMaterial({ color: TRAY_FLOOR, roughness: 1, metalness: 0 }),
     );
     floorMesh.rotation.x = -Math.PI / 2;
     floorMesh.receiveShadow = true;
