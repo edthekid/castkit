@@ -31,8 +31,7 @@ export default function DicePage() {
             mode={dice.mode}
             setMode={dice.setMode}
             count={dice.count}
-            incDie={dice.incDie}
-            decDie={dice.decDie}
+            setCount={dice.setCount}
             sides={dice.sides}
             setSides={dice.setSides}
             setPreset={dice.setPreset}

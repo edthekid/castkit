@@ -184,8 +184,8 @@ const TOOLS: Record<Locale, ToolContent[]> = {
       name: 'サイコロ',
       summary: '3D物理演算でリアルに転がるサイコロツールです。1〜10個・面数自由（d4〜d20）に加え、TRPGでよく使うダイスセットやd100判定にも対応。1〜6はドット目のオーソドックスな白サイコロで、出目の履歴はDiscord向けのフォーマットでコピーできます。',
       steps: [
-        'サイコロの数（1〜10個）と面数（d4/d6/d8/d10/d12/d20 など）を選ぶ',
-        'または「TRPGモード」でよく使うダイスセットをプリセットから選ぶ',
+        '基本モードでサイコロの数（1〜10）と面数（2〜100）を数値で入力する',
+        'または「TRPGモード」でよく使うダイスセットをプリセットから選ぶ（個数・面数の入力も可）',
         '「振る」ボタンを押すと3Dサイコロが物理演算で転がる',
         '止まると各出目と合計が強調表示され、履歴に残る',
       ],
@@ -368,8 +368,8 @@ const TOOLS: Record<Locale, ToolContent[]> = {
       name: 'Dice Roller',
       summary: 'A dice roller with realistic 3D physics. Roll 1–10 dice with any number of sides (d4–d20), or use TRPG dice sets and d100 rolls. Classic white dice show pips for 1–6, and roll history copies in a Discord-friendly format.',
       steps: [
-        'Choose the number of dice (1–10) and the number of sides (d4/d6/d8/d10/d12/d20, etc.)',
-        'Or switch to "TRPG mode" and pick a preset dice set',
+        'In Basic mode, enter the number of dice (1–10) and sides (2–100)',
+        'Or switch to "TRPG mode" and pick a preset dice set (manual count/sides also available)',
         'Press "Roll" and the 3D dice tumble with real physics',
         'Once they settle, each face and the total are highlighted and saved to history',
       ],

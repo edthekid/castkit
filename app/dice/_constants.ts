@@ -29,13 +29,11 @@ export interface RollRecord {
 export const MIN_DICE = 1;
 export const MAX_DICE = 10;
 
-/** 基本モードで選べる面数。 */
-export const BASIC_SIDES = [4, 6, 8, 10, 12, 20] as const;
+/** 面数（数値入力）の下限・上限。 */
+export const MIN_SIDES = 2;
+export const MAX_SIDES = 100;
 
-/** TRPGモードで選べるダイス種別（d100 を含む）。 */
-export const TRPG_SIDES = [4, 6, 8, 10, 12, 20, 100] as const;
-
-/** d100 は面数 100 として扱う特別値。 */
+/** d100 は面数 100 として扱う特別値（パーセンタイル判定の注記に使用）。 */
 export const D100 = 100;
 
 /**

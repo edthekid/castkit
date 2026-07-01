@@ -1,17 +1,17 @@
 'use client';
 
+import { useState } from 'react';
 import { useTranslation } from '../../_i18n/useTranslation';
 import { ck } from '../../_theme/colors';
 import { IconDice } from '../../_components/icons';
 import {
   type DiceMode,
   type RollPhase,
-  BASIC_SIDES,
-  TRPG_SIDES,
   TRPG_PRESETS,
   MIN_DICE,
   MAX_DICE,
-  D100,
+  MIN_SIDES,
+  MAX_SIDES,
 } from '../_constants';
 import { notation } from '../_utils';
 
@@ -19,23 +19,87 @@ interface DiceControlsProps {
   mode: DiceMode;
   setMode: (m: DiceMode) => void;
   count: number;
-  incDie: () => void;
-  decDie: () => void;
+  setCount: (n: number) => void;
   sides: number;
-  setSides: (s: number) => void;
+  setSides: (n: number) => void;
   setPreset: (count: number, sides: number) => void;
   isD100: boolean;
   phase: RollPhase;
   onRoll: () => void;
 }
 
-const dieLabel = (s: number) => (s === D100 ? 'd100' : `d${s}`);
+// ─── 数値入力ステッパー（− [入力] +） ───────────────────
+function NumberStepper({
+  value, min, max, onChange, ariaLabel, ariaDec, ariaInc,
+}: {
+  value: number;
+  min: number;
+  max: number;
+  onChange: (n: number) => void;
+  ariaLabel: string;
+  ariaDec: string;
+  ariaInc: string;
+}) {
+  const [draft, setDraft] = useState(String(value));
+  const [last, setLast]   = useState(value);
+
+  // 外部からの変更（プリセット等）に入力欄を追従（レンダリング中の state 調整）。
+  if (value !== last) {
+    setLast(value);
+    setDraft(String(value));
+  }
+
+  const commit = () => {
+    const n = parseInt(draft, 10);
+    if (Number.isFinite(n)) onChange(n);
+    else setDraft(String(value));
+  };
+
+  const btnStyle = { border: `1.5px solid ${ck.border.default}`, background: ck.bg.muted, color: ck.text.primary };
+
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => onChange(value - 1)}
+        disabled={value <= min}
+        aria-label={ariaDec}
+        className="ck-btn w-9 h-9 text-lg font-black leading-none disabled:opacity-30"
+        style={btnStyle}
+      >
+        −
+      </button>
+      <input
+        type="number"
+        inputMode="numeric"
+        value={draft}
+        min={min}
+        max={max}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === 'Enter') { commit(); e.currentTarget.blur(); } }}
+        aria-label={ariaLabel}
+        className="w-16 h-9 text-center text-lg font-black tabular-nums outline-none"
+        style={{ border: `1.5px solid ${ck.border.default}`, background: ck.bg.page, color: ck.text.primary }}
+      />
+      <button
+        type="button"
+        onClick={() => onChange(value + 1)}
+        disabled={value >= max}
+        aria-label={ariaInc}
+        className="ck-btn w-9 h-9 text-lg font-black leading-none disabled:opacity-30"
+        style={btnStyle}
+      >
+        +
+      </button>
+    </div>
+  );
+}
 
 export function DiceControls({
-  mode, setMode, count, incDie, decDie, sides, setSides, setPreset, isD100, phase, onRoll,
+  mode, setMode, count, setCount, sides, setSides, setPreset, isD100, phase, onRoll,
 }: DiceControlsProps) {
   const { t } = useTranslation();
-  const sidesOptions = mode === 'trpg' ? TRPG_SIDES : BASIC_SIDES;
   const rolling = phase === 'rolling';
 
   return (
@@ -58,38 +122,6 @@ export function DiceControls({
             {m === 'basic' ? t('dice.mode.basic') : t('dice.mode.trpg')}
           </button>
         ))}
-      </div>
-
-      {/* サイコロの数 */}
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
-          {t('dice.diceCount')}
-        </span>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={decDie}
-            disabled={count <= MIN_DICE}
-            aria-label={t('dice.removeDie')}
-            className="ck-btn w-9 h-9 text-lg font-black leading-none disabled:opacity-30"
-            style={{ border: `1.5px solid ${ck.border.default}`, background: ck.bg.muted, color: ck.text.primary }}
-          >
-            −
-          </button>
-          <span className="w-8 text-center text-xl font-black tabular-nums" style={{ color: ck.text.primary }}>
-            {count}
-          </span>
-          <button
-            type="button"
-            onClick={incDie}
-            disabled={count >= MAX_DICE}
-            aria-label={t('dice.addDie')}
-            className="ck-btn w-9 h-9 text-lg font-black leading-none disabled:opacity-30"
-            style={{ border: `1.5px solid ${ck.border.default}`, background: ck.bg.muted, color: ck.text.primary }}
-          >
-            +
-          </button>
-        </div>
       </div>
 
       {/* TRPGクイックプリセット（ダイスセット） */}
@@ -119,33 +151,42 @@ export function DiceControls({
               );
             })}
           </div>
+          <p className="text-xs" style={{ color: ck.text.muted }}>{t('dice.trpgHint')}</p>
         </div>
       )}
 
-      {/* 面数 / ダイス種別 */}
-      <div className="flex flex-col gap-2">
+      {/* サイコロの数（数値入力） */}
+      <div className="flex items-center justify-between gap-3">
         <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
-          {t('dice.sides')}
+          {t('dice.diceCount')}
         </span>
-        <div className="flex flex-wrap gap-2" role="group" aria-label={t('dice.sides')}>
-          {sidesOptions.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setSides(s)}
-              aria-pressed={sides === s}
-              className="ck-btn text-sm font-black px-3 py-1.5 min-w-[3rem]"
-              style={{
-                background: sides === s ? ck.text.primary : ck.bg.muted,
-                color:      sides === s ? ck.text.onDark  : ck.text.primary,
-                border: `1.5px solid ${sides === s ? ck.text.primary : ck.border.default}`,
-              }}
-            >
-              {dieLabel(s)}
-            </button>
-          ))}
+        <NumberStepper
+          value={count}
+          min={MIN_DICE}
+          max={MAX_DICE}
+          onChange={setCount}
+          ariaLabel={t('dice.diceCount')}
+          ariaDec={t('dice.removeDie')}
+          ariaInc={t('dice.addDie')}
+        />
+      </div>
+
+      {/* 面数（数値入力） */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
+            {t('dice.sides')}
+          </span>
+          <NumberStepper
+            value={sides}
+            min={MIN_SIDES}
+            max={MAX_SIDES}
+            onChange={setSides}
+            ariaLabel={t('dice.sides')}
+            ariaDec={t('dice.sidesDown')}
+            ariaInc={t('dice.sidesUp')}
+          />
         </div>
-        {mode === 'trpg' && <p className="text-xs" style={{ color: ck.text.muted }}>{t('dice.trpgHint')}</p>}
         {isD100 && <p className="text-xs font-bold" style={{ color: ck.text.secondary }}>{t('dice.d100Note')}</p>}
       </div>
 

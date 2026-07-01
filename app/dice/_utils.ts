@@ -1,5 +1,4 @@
 import type { RollRecord } from './_constants';
-import { D100 } from './_constants';
 
 /** ダイス記法（例: "2d6" / "1d100"）。 */
 export function notation(count: number, sides: number): string {
@@ -11,9 +10,9 @@ export function randInt(max: number): number {
   return Math.floor(Math.random() * max) + 1;
 }
 
-/** 面数に応じた1個分の出目を引く（d100 は 1〜100）。 */
+/** 面数に応じた1個分の出目を引く（1〜sides）。 */
 export function rollOne(sides: number): number {
-  return randInt(sides === D100 ? 100 : sides);
+  return randInt(sides);
 }
 
 /**

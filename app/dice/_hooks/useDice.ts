@@ -10,6 +10,8 @@ import {
   type RollRecord,
   MIN_DICE,
   MAX_DICE,
+  MIN_SIDES,
+  MAX_SIDES,
   D100,
   MAX_HISTORY,
   ROLL_DURATION_MS,
@@ -25,14 +27,19 @@ interface PersistedState {
 }
 
 const clampCount = (n: number) => Math.max(MIN_DICE, Math.min(MAX_DICE, n));
+const clampSides = (n: number) => Math.max(MIN_SIDES, Math.min(MAX_SIDES, Math.round(n)));
 
 export function useDice() {
   const { t } = useTranslation();
 
   // ─── 設定（SSR と一致させるため初期値は固定） ───────────
-  const [mode, setModeState] = useState<DiceMode>('basic');
-  const [count, setCount]    = useState(2);
-  const [sides, setSides]    = useState(6);
+  const [mode, setModeState]   = useState<DiceMode>('basic');
+  const [count, setCountState] = useState(2);
+  const [sides, setSidesState] = useState(6);
+
+  // 個数・面数は数値入力。範囲外はクランプする。
+  const setCount = useCallback((n: number) => setCountState(clampCount(n)), []);
+  const setSides = useCallback((n: number) => setSidesState(clampSides(n)), []);
 
   // ─── ロール状態 ─────────────────────────────────────────
   const [phase, setPhase]     = useState<RollPhase>('idle');
@@ -60,8 +67,8 @@ export function useDice() {
       if (raw) {
         const saved = JSON.parse(raw) as Partial<PersistedState>;
         if (saved.mode === 'basic' || saved.mode === 'trpg') setModeState(saved.mode);
-        if (typeof saved.count === 'number') setCount(clampCount(saved.count));
-        if (typeof saved.sides === 'number' && saved.sides >= 2) setSides(saved.sides);
+        if (typeof saved.count === 'number') setCountState(clampCount(saved.count));
+        if (typeof saved.sides === 'number') setSidesState(clampSides(saved.sides));
         if (Array.isArray(saved.history)) setHistory(saved.history.slice(0, MAX_HISTORY));
       }
     } catch {
@@ -85,21 +92,13 @@ export function useDice() {
   useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
 
   // ─── 設定変更 ───────────────────────────────────────────
-  // モード切替時、面数がそのモードで無効ならフォールバックさせる。
-  const setMode = useCallback((next: DiceMode) => {
-    setModeState(next);
-    if (next === 'basic') {
-      setSides((s) => (s === D100 ? 20 : s));
-    }
-  }, []);
-
-  const incDie = useCallback(() => setCount((c) => clampCount(c + 1)), []);
-  const decDie = useCallback(() => setCount((c) => clampCount(c - 1)), []);
+  // モードは個数・面数の入力方法（プリセット有無）が異なるだけで、値は引き継ぐ。
+  const setMode = useCallback((next: DiceMode) => setModeState(next), []);
 
   // TRPGプリセット：個数と面数をまとめて設定する。
   const setPreset = useCallback((nextCount: number, nextSides: number) => {
-    setCount(clampCount(nextCount));
-    setSides(nextSides);
+    setCountState(clampCount(nextCount));
+    setSidesState(clampSides(nextSides));
   }, []);
 
   // ─── 出目の確定（静止後に呼ぶ） ─────────────────────────
@@ -163,7 +162,7 @@ export function useDice() {
   return {
     // 設定
     mode, setMode,
-    count, setCount, incDie, decDie,
+    count, setCount,
     sides, setSides, setPreset,
     isD100,
     // ロール
