@@ -34,22 +34,24 @@ const DIE_SIZE = 1.85;
 const DIE_RADIUS = DIE_SIZE * 0.16; // 角丸の半径
 const TRAY_HALF = 4.7;
 
-// 着地の補正（continuous physics で自然に収束させるためのパラメータ）。
-const SETTLE_LIN_VEL2 = 2.25;   // これ未満まで減速したら補正を開始（|v| < 1.5）
-const SETTLE_ANG_VEL2 = 9;      // 同上（角速度）（|w| < 3）
-const ALIGN_GAIN = 5;           // 残り角度に比例した補正角速度のゲイン
-const ALIGN_MAX_SPEED = 3.0;    // 補正角速度の上限（速すぎる回転に見えないように）
-const ALIGN_DONE_ANGLE = 0.05;  // 約3°以内なら「揃った」とみなす
-const ALIGN_DONE_VEL2 = 0.03;   // 速度がこれ未満なら「静止した」とみなす
-const SETTLE_TIMEOUT_S = 4.2; // フォールバックの安全上限（シミュレーション時間・秒。通常はここまでかからない）
+// 転がり中、速度が落ちてきた個体に「結果面(+Y)を上へ」向ける弱いバイアスをかける
+// （最後の flatten の回転量を小さくして自然に見せるためのお膳立て）。
+const BIAS_ACTIVE_SPEED2 = 36;  // lin²+ang² がこれ未満のときだけ弱くバイアス
+const BIAS_ANGVEL_GAIN = 4;
+const BIAS_MAX_ANGVEL = 2.4;
+const ALIGN_DONE_ANGLE = 0.04;
 
-// 隣のサイコロに寄りかかって回転補正だけでは揃わない（斜めのまま動かない）場合に、
-// ごく小さく弾ませて仕切り直すためのパラメータ。
-const UNSTICK_AFTER_S = 0.45;
-const UNSTICK_IMPULSE = 2.4;
+// tumble →（仕上げの）flatten への移行判定。
+const MIN_TUMBLE_S = 0.9;      // 最低これだけは自由に転がす（シミュ秒）
+const LAND_LIN2 = 1.0;         // 全個体の並進速度²がこれ未満＝跳ね終えて落ち着いた
+const SETTLE_TIMEOUT_S = 3.6;  // 落ち着かなくてもここで flatten へ（安全上限・シミュ秒）
+
+// flatten：結果面を上に向け、床に接地させ、重なりを解消して静止させる短い仕上げ。
+// これにより「斜めのまま止まる／重なる」が構造的に起きない。
+const FLATTEN_MS = 300;
 
 // サイコロ同士が重ならないための最小間隔と、近づいたときに押し離す強さ。
-const SEPARATE_DIST = DIE_SIZE * 1.02;
+const SEPARATE_DIST = DIE_SIZE * 1.05;
 const SEPARATE_PUSH = 1.8;
 
 // 赤フェルト
@@ -180,10 +182,6 @@ interface Die {
   group: THREE.Group;
   body: CANNON.Body | null;
   decalMats: THREE.MeshStandardMaterial[];
-  /** 結果面(+Y)が世界の上に揃ったら true（以降は補正しない）。 */
-  aligned: boolean;
-  /** 回転補正を続けている経過時間（シミュレーション秒）の開始時刻。まだなら null。 */
-  correctingSinceSim: number | null;
 }
 
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
@@ -276,7 +274,7 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
     const dieMat = new CANNON.Material('die');
     const groundMat = new CANNON.Material('ground');
     // 地面に当たったときもはっきり弾むように反発を強める。
-    world.addContactMaterial(new CANNON.ContactMaterial(dieMat, groundMat, { friction: 0.35, restitution: 0.7 }));
+    world.addContactMaterial(new CANNON.ContactMaterial(dieMat, groundMat, { friction: 0.35, restitution: 0.78 }));
     // サイコロ同士はよく弾む（＝ぶつかったらはじけて散らばる）ように反発を強め、
     // 摩擦を下げてくっつきにくくする。
     world.addContactMaterial(new CANNON.ContactMaterial(dieMat, dieMat, { friction: 0.02, restitution: 0.9 }));
@@ -300,11 +298,18 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
 
     const dice: Die[] = [];
 
-    let phase: 'tumble' | 'done' = 'done';
+    let phase: 'tumble' | 'flatten' | 'done' = 'done';
     // シミュレーション経過秒（タブが背面で rAF が間引かれても、実時間ではなく
-    // 物理が実際に進んだ秒数で安全上限を判定するため）。
+    // 物理が実際に進んだ秒数で移行・安全上限を判定するため）。
     let elapsedSim = 0;
     let settledCalled = true;
+
+    // flatten フェーズの補間データ（beginFlatten で確定）。
+    const flatFromQ: THREE.Quaternion[] = [];
+    const flatToQ: THREE.Quaternion[] = [];
+    const flatFromP: THREE.Vector3[] = [];
+    const flatToP: THREE.Vector3[] = [];
+    let flattenStartMs = 0;
 
     const clearDice = () => {
       for (const d of dice) {
@@ -354,7 +359,7 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
         vals.forEach((value, i) => {
           const { group, decalMats } = buildDie(value, sd, pips);
           group.position.set(layout[i].x, DIE_SIZE / 2, layout[i].z);
-          dice.push({ group, body: null, decalMats, aligned: true, correctingSinceSim: null });
+          dice.push({ group, body: null, decalMats });
         });
         phase = 'done';
         settledCalled = false;
@@ -385,11 +390,11 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
         // グリッドで確保した間隔を保ったまま弾ませる）。
         body.position.set(
           layout[i].x,
-          7.5 + Math.random() * 3,
+          8 + Math.random() * 3,
           layout[i].z,
         );
         body.quaternion.setFromEuler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-        body.velocity.set((Math.random() - 0.5) * 2.2, -6 - Math.random() * 2.5, (Math.random() - 0.5) * 2.2);
+        body.velocity.set((Math.random() - 0.5) * 2.2, -7 - Math.random() * 3, (Math.random() - 0.5) * 2.2);
         body.angularVelocity.set(
           (Math.random() - 0.5) * 26,
           (Math.random() - 0.5) * 26,
@@ -397,7 +402,7 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
         );
         world.addBody(body);
 
-        dice.push({ group, body, decalMats, aligned: false, correctingSinceSim: null });
+        dice.push({ group, body, decalMats });
       });
 
       phase = 'tumble';
@@ -418,66 +423,80 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
     const tmpAxis = new THREE.Vector3();
 
     /**
-     * 1体ぶんの着地補正。速度が下がってきた個体にだけ、結果面を上へ向ける
-     * ごく小さな角速度を「加算」し続ける（既存の重力・摩擦・反発はそのまま）。
-     * スナップやテレポートは行わない＝物理として連続な動きのまま自然に収束する。
+     * 転がりが落ち着いてきた個体に、結果面(+Y)を上へ向ける「弱いバイアス」をかける。
+     * 強制ではなく、あくまで最後の flatten での回転量を小さくするためのお膳立て。
+     * 並進はごく軽く減衰させ、寄りかかりで転がり続けないようにする。
      */
-    const stepAlign = (d: Die, dt: number) => {
+    const stepBias = (d: Die) => {
       const body = d.body!;
+      const lin2 = body.velocity.lengthSquared();
+      const ang2 = body.angularVelocity.lengthSquared();
+      if (lin2 + ang2 > BIAS_ACTIVE_SPEED2) return; // まだ勢いよく跳ね・転がり中：物理に任せる
 
-      // 角度は sleepState に関わらず毎回チェックする。cannon 内部のタイマーが
-      // 補正の途中で（傾いたまま）先にスリープさせてしまうことがあるため、
-      // 「揃っていないのに寝ている」場合は起こして補正を継続する。
       tmpQ.set(body.quaternion.x, body.quaternion.y, body.quaternion.z, body.quaternion.w);
       tmpUp.copy(LOCAL_UP).applyQuaternion(tmpQ);
       const angle = tmpUp.angleTo(WORLD_UP);
+      if (angle <= ALIGN_DONE_ANGLE) return;
 
-      if (angle <= ALIGN_DONE_ANGLE) {
-        d.aligned = true;
-        d.correctingSinceSim = null;
-        if (body.sleepState === CANNON.Body.SLEEPING) return; // 既に正しい向きで静止済み
-        const linSq = body.velocity.lengthSquared();
-        const angSq = body.angularVelocity.lengthSquared();
-        if (linSq < ALIGN_DONE_VEL2 && angSq < ALIGN_DONE_VEL2) {
-          body.velocity.set(0, 0, 0);
-          body.angularVelocity.set(0, 0, 0);
-          body.sleep();
-        }
-        return;
-      }
-
-      d.aligned = false;
       if (body.sleepState === CANNON.Body.SLEEPING) body.wakeUp();
-
-      const linSq = body.velocity.lengthSquared();
-      const angSq = body.angularVelocity.lengthSquared();
-      if (linSq >= SETTLE_LIN_VEL2 || angSq >= SETTLE_ANG_VEL2) {
-        d.correctingSinceSim = null; // まだ豪快に転がり中：補正タイマーはリセットして介入しない
-        return;
-      }
-
-      // 隣のサイコロなどに寄りかかって回転補正だけではなかなか揃わない場合、
-      // ごく小さく弾ませて仕切り直す（寄りかかりから自力で抜け出させる）。
-      if (d.correctingSinceSim === null) d.correctingSinceSim = elapsedSim;
-      if (elapsedSim - d.correctingSinceSim > UNSTICK_AFTER_S) {
-        body.velocity.y += UNSTICK_IMPULSE;
-        d.correctingSinceSim = elapsedSim;
-      }
-
-      body.wakeUp();
       tmpAxis.crossVectors(tmpUp, WORLD_UP);
       if (tmpAxis.lengthSq() < 1e-6) tmpAxis.set(1, 0, 0);
       else tmpAxis.normalize();
-      const speed = Math.min(angle * ALIGN_GAIN, ALIGN_MAX_SPEED);
-      // cannon 側の自動スリープ判定（速度がしきい値未満のまま sleepTimeLimit 経過）に
-      // 先を越されないよう、目標角速度まで素早く立ち上げる。
-      const lerpT = Math.min(1, dt * 18);
-      body.angularVelocity.x += (tmpAxis.x * speed - body.angularVelocity.x) * lerpT;
-      body.angularVelocity.y += (tmpAxis.y * speed - body.angularVelocity.y) * lerpT;
-      body.angularVelocity.z += (tmpAxis.z * speed - body.angularVelocity.z) * lerpT;
-      // 横滑りを軽く抑えて「その場で少し転がって揃う」ように見せる
-      body.velocity.x *= 0.92;
-      body.velocity.z *= 0.92;
+      const target = Math.min(angle * BIAS_ANGVEL_GAIN, BIAS_MAX_ANGVEL);
+      body.angularVelocity.x += (tmpAxis.x * target - body.angularVelocity.x) * 0.14;
+      body.angularVelocity.y += (tmpAxis.y * target - body.angularVelocity.y) * 0.14;
+      body.angularVelocity.z += (tmpAxis.z * target - body.angularVelocity.z) * 0.14;
+      body.velocity.x *= 0.9;
+      body.velocity.z *= 0.9;
+    };
+
+    /**
+     * 仕上げ（flatten）の目標を確定する。物理を止め、各サイコロを
+     * 「結果面(+Y)を真上・床に接地・互いに重ならない位置」へ短時間で補間する。
+     * これにより斜め・重なり・エッジ立ちが構造的に起きない。
+     */
+    const beginFlatten = () => {
+      phase = 'flatten';
+      flattenStartMs = performance.now();
+
+      // 重なり解消：現在のXZから、間隔を空けた目標XZを反復緩和で求める。
+      const tx = dice.map((d) => (d.body ? d.body.position.x : d.group.position.x));
+      const tz = dice.map((d) => (d.body ? d.body.position.z : d.group.position.z));
+      for (let it = 0; it < 16; it++) {
+        for (let i = 0; i < dice.length; i++) {
+          for (let j = i + 1; j < dice.length; j++) {
+            let dx = tx[i] - tx[j];
+            let dz = tz[i] - tz[j];
+            let d2 = dx * dx + dz * dz;
+            if (d2 > SEPARATE_DIST * SEPARATE_DIST) continue;
+            if (d2 < 1e-6) { dx = Math.random() - 0.5; dz = Math.random() - 0.5; d2 = dx * dx + dz * dz; }
+            const dist = Math.sqrt(d2);
+            const push = (SEPARATE_DIST - dist) / 2;
+            const nx = dx / dist;
+            const nz = dz / dist;
+            tx[i] += nx * push; tz[i] += nz * push;
+            tx[j] -= nx * push; tz[j] -= nz * push;
+          }
+        }
+      }
+      const lim = TRAY_HALF - DIE_SIZE / 2 - 0.1;
+
+      flatFromQ.length = 0; flatToQ.length = 0; flatFromP.length = 0; flatToP.length = 0;
+      dice.forEach((d, i) => {
+        if (d.body) { d.body.velocity.set(0, 0, 0); d.body.angularVelocity.set(0, 0, 0); d.body.sleep(); }
+        const fromQ = d.group.quaternion.clone();
+        tmpUp.copy(LOCAL_UP).applyQuaternion(fromQ);
+        // 現在の +Y をワールド上向きへ最小回転で合わせる（＝ヨーはそのまま水平化）。
+        const toQ = new THREE.Quaternion().setFromUnitVectors(tmpUp, WORLD_UP).multiply(fromQ);
+        flatFromQ.push(fromQ);
+        flatToQ.push(toQ);
+        flatFromP.push(d.group.position.clone());
+        flatToP.push(new THREE.Vector3(
+          THREE.MathUtils.clamp(tx[i], -lim, lim),
+          DIE_SIZE / 2,
+          THREE.MathUtils.clamp(tz[i], -lim, lim),
+        ));
+      });
     };
 
     const syncMesh = (d: Die) => {
@@ -523,23 +542,22 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
       if (phase === 'tumble') {
         world.step(1 / 120, dt, 4);
         stepSeparate();
-        for (const d of dice) { stepAlign(d, dt); syncMesh(d); }
+        for (const d of dice) { stepBias(d); syncMesh(d); }
         elapsedSim += dt;
 
-        const allDone = dice.every((d) => d.body === null || d.body.sleepState === CANNON.Body.SLEEPING);
-        const timedOut = elapsedSim > SETTLE_TIMEOUT_S;
-        if (allDone || timedOut) {
-          if (timedOut) {
-            // フォールバック：稀にここまでかかった個体だけ最終的に静止させる
-            // （その時点で既にほぼ揃っているはずなので視覚的な飛びはごく小さい）。
-            for (const d of dice) {
-              if (d.body && d.body.sleepState !== CANNON.Body.SLEEPING) {
-                d.body.angularVelocity.set(0, 0, 0);
-                d.body.velocity.set(0, 0, 0);
-                d.body.sleep();
-              }
-            }
-          }
+        // 十分転がって跳ね終え、全個体の並進が落ち着いたら仕上げへ。落ち着かなくても上限で移行。
+        const landed = dice.every((d) => d.body === null || d.body.velocity.lengthSquared() < LAND_LIN2);
+        if ((elapsedSim > MIN_TUMBLE_S && landed) || elapsedSim > SETTLE_TIMEOUT_S) {
+          beginFlatten();
+        }
+      } else if (phase === 'flatten') {
+        const p = Math.min(1, (performance.now() - flattenStartMs) / FLATTEN_MS);
+        const e = 1 - Math.pow(1 - p, 3); // ease-out
+        for (let i = 0; i < dice.length; i++) {
+          dice[i].group.quaternion.slerpQuaternions(flatFromQ[i], flatToQ[i], e);
+          dice[i].group.position.lerpVectors(flatFromP[i], flatToP[i], e);
+        }
+        if (p >= 1) {
           phase = 'done';
           if (!settledCalled) { settledCalled = true; propsRef.current.onSettled(); }
         }
