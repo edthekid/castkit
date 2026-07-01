@@ -56,7 +56,7 @@ export const MAX_HISTORY = 20;
  * この時間内に必ず静止するよう、それより十分長い値をセーフティとして設定する。
  * 物理側から早期に settle 通知（onSettled）が来た場合は、この値を待たずに確定する。
  */
-export const ROLL_DURATION_MS = 3600;
+export const ROLL_DURATION_MS = 4800;
 
 /** localStorage キー（モード等の設定を保存）。 */
 export const STORAGE_KEY = 'castkit.dice.v1';

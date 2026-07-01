@@ -41,7 +41,12 @@ const ALIGN_GAIN = 5;           // 残り角度に比例した補正角速度の
 const ALIGN_MAX_SPEED = 3.0;    // 補正角速度の上限（速すぎる回転に見えないように）
 const ALIGN_DONE_ANGLE = 0.05;  // 約3°以内なら「揃った」とみなす
 const ALIGN_DONE_VEL2 = 0.03;   // 速度がこれ未満なら「静止した」とみなす
-const SETTLE_TIMEOUT_S = 3.2; // フォールバックの安全上限（シミュレーション時間・秒。通常はここまでかからない）
+const SETTLE_TIMEOUT_S = 4.2; // フォールバックの安全上限（シミュレーション時間・秒。通常はここまでかからない）
+
+// 隣のサイコロに寄りかかって回転補正だけでは揃わない（斜めのまま動かない）場合に、
+// ごく小さく弾ませて仕切り直すためのパラメータ。
+const UNSTICK_AFTER_S = 0.45;
+const UNSTICK_IMPULSE = 2.4;
 
 // サイコロ同士が重ならないための最小間隔と、近づいたときに押し離す強さ。
 const SEPARATE_DIST = DIE_SIZE * 1.02;
@@ -177,6 +182,8 @@ interface Die {
   decalMats: THREE.MeshStandardMaterial[];
   /** 結果面(+Y)が世界の上に揃ったら true（以降は補正しない）。 */
   aligned: boolean;
+  /** 回転補正を続けている経過時間（シミュレーション秒）の開始時刻。まだなら null。 */
+  correctingSinceSim: number | null;
 }
 
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
@@ -269,7 +276,7 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
     const dieMat = new CANNON.Material('die');
     const groundMat = new CANNON.Material('ground');
     // 地面に当たったときもはっきり弾むように反発を強める。
-    world.addContactMaterial(new CANNON.ContactMaterial(dieMat, groundMat, { friction: 0.35, restitution: 0.58 }));
+    world.addContactMaterial(new CANNON.ContactMaterial(dieMat, groundMat, { friction: 0.35, restitution: 0.7 }));
     // サイコロ同士はよく弾む（＝ぶつかったらはじけて散らばる）ように反発を強め、
     // 摩擦を下げてくっつきにくくする。
     world.addContactMaterial(new CANNON.ContactMaterial(dieMat, dieMat, { friction: 0.02, restitution: 0.9 }));
@@ -347,7 +354,7 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
         vals.forEach((value, i) => {
           const { group, decalMats } = buildDie(value, sd, pips);
           group.position.set(layout[i].x, DIE_SIZE / 2, layout[i].z);
-          dice.push({ group, body: null, decalMats, aligned: true });
+          dice.push({ group, body: null, decalMats, aligned: true, correctingSinceSim: null });
         });
         phase = 'done';
         settledCalled = false;
@@ -378,11 +385,11 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
         // グリッドで確保した間隔を保ったまま弾ませる）。
         body.position.set(
           layout[i].x,
-          6.5 + Math.random() * 3,
+          7.5 + Math.random() * 3,
           layout[i].z,
         );
         body.quaternion.setFromEuler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-        body.velocity.set((Math.random() - 0.5) * 2.2, -4 - Math.random() * 2, (Math.random() - 0.5) * 2.2);
+        body.velocity.set((Math.random() - 0.5) * 2.2, -6 - Math.random() * 2.5, (Math.random() - 0.5) * 2.2);
         body.angularVelocity.set(
           (Math.random() - 0.5) * 26,
           (Math.random() - 0.5) * 26,
@@ -390,7 +397,7 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
         );
         world.addBody(body);
 
-        dice.push({ group, body, decalMats, aligned: false });
+        dice.push({ group, body, decalMats, aligned: false, correctingSinceSim: null });
       });
 
       phase = 'tumble';
@@ -427,6 +434,7 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
 
       if (angle <= ALIGN_DONE_ANGLE) {
         d.aligned = true;
+        d.correctingSinceSim = null;
         if (body.sleepState === CANNON.Body.SLEEPING) return; // 既に正しい向きで静止済み
         const linSq = body.velocity.lengthSquared();
         const angSq = body.angularVelocity.lengthSquared();
@@ -443,7 +451,18 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
 
       const linSq = body.velocity.lengthSquared();
       const angSq = body.angularVelocity.lengthSquared();
-      if (linSq >= SETTLE_LIN_VEL2 || angSq >= SETTLE_ANG_VEL2) return; // まだ豪快に転がり中：介入しない
+      if (linSq >= SETTLE_LIN_VEL2 || angSq >= SETTLE_ANG_VEL2) {
+        d.correctingSinceSim = null; // まだ豪快に転がり中：補正タイマーはリセットして介入しない
+        return;
+      }
+
+      // 隣のサイコロなどに寄りかかって回転補正だけではなかなか揃わない場合、
+      // ごく小さく弾ませて仕切り直す（寄りかかりから自力で抜け出させる）。
+      if (d.correctingSinceSim === null) d.correctingSinceSim = elapsedSim;
+      if (elapsedSim - d.correctingSinceSim > UNSTICK_AFTER_S) {
+        body.velocity.y += UNSTICK_IMPULSE;
+        d.correctingSinceSim = elapsedSim;
+      }
 
       body.wakeUp();
       tmpAxis.crossVectors(tmpUp, WORLD_UP);
