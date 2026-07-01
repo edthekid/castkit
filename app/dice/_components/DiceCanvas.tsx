@@ -206,24 +206,14 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
     rim.position.set(-6, 6, -6);
     scene.add(rim);
 
-    // テーブル面：中央を少し明るく、フチを暗くしたビネットのマットで奥行きを出し、
-    // 白サイコロをはっきり引き立てる（描画色＝トークン対象外）。
-    const ftC = document.createElement('canvas');
-    ftC.width = ftC.height = 256;
-    const fctx = ftC.getContext('2d')!;
-    const fgrad = fctx.createRadialGradient(128, 128, 20, 128, 128, 168);
-    fgrad.addColorStop(0, '#dcd8ce');
-    fgrad.addColorStop(1, '#bdb9ae');
-    fctx.fillStyle = fgrad;
-    fctx.fillRect(0, 0, 256, 256);
-    const floorTex = new THREE.CanvasTexture(ftC);
-    floorTex.colorSpace = THREE.SRGBColorSpace;
+    // 背景は --ck-gray-50（#fafafa）で統一。床は影だけを落とす透明マットにして、
+    // 均一な明るい背景の上に、白サイコロの陰影＋接地影で立体感（形）を出す。
+    scene.background = new THREE.Color(0xfafafa);
     const floorMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(26, 26),
-      new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.95, metalness: 0 }),
+      new THREE.PlaneGeometry(60, 60),
+      new THREE.ShadowMaterial({ opacity: 0.26 }),
     );
     floorMesh.rotation.x = -Math.PI / 2;
-    floorMesh.position.y = -0.001;
     floorMesh.receiveShadow = true;
     scene.add(floorMesh);
 
@@ -461,7 +451,6 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
       dieGeo.dispose();
       floorMesh.geometry.dispose();
       (floorMesh.material as THREE.Material).dispose();
-      floorTex.dispose();
       envTex.dispose();
       pmrem.dispose();
       renderer.dispose();

@@ -34,7 +34,7 @@ export function DiceStage({
   return (
     <div
       className="relative w-full overflow-hidden ck-section"
-      style={{ minHeight: 320 }}
+      style={{ minHeight: 320, background: 'var(--ck-gray-50)' }}
       aria-label={t('dice.canvasLabel')}
     >
       {started ? (
