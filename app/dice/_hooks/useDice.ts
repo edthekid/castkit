@@ -100,6 +100,12 @@ export function useDice() {
   const incDie = useCallback(() => setCount((c) => clampCount(c + 1)), []);
   const decDie = useCallback(() => setCount((c) => clampCount(c - 1)), []);
 
+  // TRPGプリセット：個数と面数をまとめて設定する。
+  const setPreset = useCallback((nextCount: number, nextSides: number) => {
+    setCount(clampCount(nextCount));
+    setSides(nextSides);
+  }, []);
+
   // ─── 出目の確定（静止後に呼ぶ） ─────────────────────────
   const reveal = useCallback(() => {
     const pending = pendingRef.current;
@@ -162,7 +168,7 @@ export function useDice() {
     // 設定
     mode, setMode,
     count, setCount, incDie, decDie,
-    sides, setSides,
+    sides, setSides, setPreset,
     color, setColor,
     isD100,
     // ロール

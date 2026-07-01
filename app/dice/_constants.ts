@@ -38,6 +38,19 @@ export const TRPG_SIDES = [4, 6, 8, 10, 12, 20, 100] as const;
 /** d100 は面数 100 として扱う特別値。 */
 export const D100 = 100;
 
+/**
+ * TRPGモードのダイスセット・プリセット（個数＋面数をまとめて設定）。
+ * よく使う構成をワンタップで組めるようにする。
+ */
+export const TRPG_PRESETS: readonly { count: number; sides: number }[] = [
+  { count: 1, sides: 20 },  // 判定・攻撃（D&D 等）
+  { count: 2, sides: 6 },   // 2d6 系（多数のシステム）
+  { count: 3, sides: 6 },   // 能力値
+  { count: 4, sides: 6 },   // 能力値（4個）
+  { count: 2, sides: 10 },  // 2d10
+  { count: 1, sides: 100 }, // パーセンタイル
+];
+
 export const MAX_HISTORY = 20;
 
 /**

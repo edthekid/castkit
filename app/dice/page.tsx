@@ -37,6 +37,7 @@ export default function DicePage() {
             decDie={dice.decDie}
             sides={dice.sides}
             setSides={dice.setSides}
+            setPreset={dice.setPreset}
             isD100={dice.isD100}
             phase={dice.phase}
             onRoll={dice.roll}

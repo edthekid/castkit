@@ -8,6 +8,7 @@ import {
   type RollPhase,
   BASIC_SIDES,
   TRPG_SIDES,
+  TRPG_PRESETS,
   MIN_DICE,
   MAX_DICE,
   D100,
@@ -22,6 +23,7 @@ interface DiceControlsProps {
   decDie: () => void;
   sides: number;
   setSides: (s: number) => void;
+  setPreset: (count: number, sides: number) => void;
   isD100: boolean;
   phase: RollPhase;
   onRoll: () => void;
@@ -30,7 +32,7 @@ interface DiceControlsProps {
 const dieLabel = (s: number) => (s === D100 ? 'd100' : `d${s}`);
 
 export function DiceControls({
-  mode, setMode, count, incDie, decDie, sides, setSides, isD100, phase, onRoll,
+  mode, setMode, count, incDie, decDie, sides, setSides, setPreset, isD100, phase, onRoll,
 }: DiceControlsProps) {
   const { t } = useTranslation();
   const sidesOptions = mode === 'trpg' ? TRPG_SIDES : BASIC_SIDES;
@@ -90,10 +92,40 @@ export function DiceControls({
         </div>
       </div>
 
+      {/* TRPGクイックプリセット（ダイスセット） */}
+      {mode === 'trpg' && (
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
+            {t('dice.trpgPreset')}
+          </span>
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t('dice.trpgPreset')}>
+            {TRPG_PRESETS.map((p) => {
+              const active = count === p.count && sides === p.sides;
+              return (
+                <button
+                  key={`${p.count}d${p.sides}`}
+                  type="button"
+                  onClick={() => setPreset(p.count, p.sides)}
+                  aria-pressed={active}
+                  className="ck-btn text-sm font-black px-3 py-1.5"
+                  style={{
+                    background: active ? ck.text.primary : ck.bg.muted,
+                    color:      active ? ck.text.onDark  : ck.text.primary,
+                    border: `1.5px solid ${active ? ck.text.primary : ck.border.default}`,
+                  }}
+                >
+                  {notation(p.count, p.sides)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* 面数 / ダイス種別 */}
       <div className="flex flex-col gap-2">
         <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
-          {mode === 'trpg' ? t('dice.trpgPreset') : t('dice.sides')}
+          {t('dice.sides')}
         </span>
         <div className="flex flex-wrap gap-2" role="group" aria-label={t('dice.sides')}>
           {sidesOptions.map((s) => (
