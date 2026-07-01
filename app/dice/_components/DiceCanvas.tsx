@@ -268,10 +268,11 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
 
     const dieMat = new CANNON.Material('die');
     const groundMat = new CANNON.Material('ground');
-    world.addContactMaterial(new CANNON.ContactMaterial(dieMat, groundMat, { friction: 0.35, restitution: 0.42 }));
+    // 地面に当たったときもはっきり弾むように反発を強める。
+    world.addContactMaterial(new CANNON.ContactMaterial(dieMat, groundMat, { friction: 0.35, restitution: 0.58 }));
     // サイコロ同士はよく弾む（＝ぶつかったらはじけて散らばる）ように反発を強め、
     // 摩擦を下げてくっつきにくくする。
-    world.addContactMaterial(new CANNON.ContactMaterial(dieMat, dieMat, { friction: 0.12, restitution: 0.6 }));
+    world.addContactMaterial(new CANNON.ContactMaterial(dieMat, dieMat, { friction: 0.02, restitution: 0.9 }));
 
     const ground = new CANNON.Body({ mass: 0, material: groundMat, shape: new CANNON.Plane() });
     ground.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
@@ -371,7 +372,7 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
           angularDamping: 0.06,
           allowSleep: true,
           sleepSpeedLimit: 0.2,
-          sleepTimeLimit: 0.25,
+          sleepTimeLimit: 0.35,
         });
         // 躍動感：高所から勢いよく落として強いスピンを与える（水平方向はごく小さく、
         // グリッドで確保した間隔を保ったまま弾ませる）。
@@ -416,14 +417,17 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
      */
     const stepAlign = (d: Die, dt: number) => {
       const body = d.body!;
-      if (body.sleepState === CANNON.Body.SLEEPING) { d.aligned = true; return; }
 
+      // 角度は sleepState に関わらず毎回チェックする。cannon 内部のタイマーが
+      // 補正の途中で（傾いたまま）先にスリープさせてしまうことがあるため、
+      // 「揃っていないのに寝ている」場合は起こして補正を継続する。
       tmpQ.set(body.quaternion.x, body.quaternion.y, body.quaternion.z, body.quaternion.w);
       tmpUp.copy(LOCAL_UP).applyQuaternion(tmpQ);
       const angle = tmpUp.angleTo(WORLD_UP);
 
       if (angle <= ALIGN_DONE_ANGLE) {
         d.aligned = true;
+        if (body.sleepState === CANNON.Body.SLEEPING) return; // 既に正しい向きで静止済み
         const linSq = body.velocity.lengthSquared();
         const angSq = body.angularVelocity.lengthSquared();
         if (linSq < ALIGN_DONE_VEL2 && angSq < ALIGN_DONE_VEL2) {
@@ -435,6 +439,8 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
       }
 
       d.aligned = false;
+      if (body.sleepState === CANNON.Body.SLEEPING) body.wakeUp();
+
       const linSq = body.velocity.lengthSquared();
       const angSq = body.angularVelocity.lengthSquared();
       if (linSq >= SETTLE_LIN_VEL2 || angSq >= SETTLE_ANG_VEL2) return; // まだ豪快に転がり中：介入しない
@@ -444,7 +450,9 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
       if (tmpAxis.lengthSq() < 1e-6) tmpAxis.set(1, 0, 0);
       else tmpAxis.normalize();
       const speed = Math.min(angle * ALIGN_GAIN, ALIGN_MAX_SPEED);
-      const lerpT = Math.min(1, dt * 10);
+      // cannon 側の自動スリープ判定（速度がしきい値未満のまま sleepTimeLimit 経過）に
+      // 先を越されないよう、目標角速度まで素早く立ち上げる。
+      const lerpT = Math.min(1, dt * 18);
       body.angularVelocity.x += (tmpAxis.x * speed - body.angularVelocity.x) * lerpT;
       body.angularVelocity.y += (tmpAxis.y * speed - body.angularVelocity.y) * lerpT;
       body.angularVelocity.z += (tmpAxis.z * speed - body.angularVelocity.z) * lerpT;
