@@ -52,11 +52,11 @@ export const TRPG_PRESETS: readonly { count: number; sides: number }[] = [
 export const MAX_HISTORY = 20;
 
 /**
- * ロール演出の最大時間（ms）。3D物理演算がこの時間内に静止するよう調整し、
- * 静止後に合計をポップアップ表示する。物理側から早期に settle 通知が来た場合も
- * この値を上限のセーフティとして使う。
+ * ロール演出の最大時間（ms）。3D物理演算（DiceCanvas の SETTLE_TIMEOUT_MS）が
+ * この時間内に必ず静止するよう、それより十分長い値をセーフティとして設定する。
+ * 物理側から早期に settle 通知（onSettled）が来た場合は、この値を待たずに確定する。
  */
-export const ROLL_DURATION_MS = 2600;
+export const ROLL_DURATION_MS = 3600;
 
 /** localStorage キー（モード等の設定を保存）。 */
 export const STORAGE_KEY = 'castkit.dice.v1';

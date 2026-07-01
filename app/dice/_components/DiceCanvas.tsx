@@ -12,9 +12,13 @@ import * as CANNON from 'cannon-es';
  * 【方針】
  * - サイコロ本体は角丸ジオメトリ（RoundedBoxGeometry）。目/数字は各面に貼る
  *   半透明デカール（板）で表現する（＝面ごとに柄を出し分けられる）。
- * - 出目は最初から「上面(+Y)」に配置しておき、転がりが収まったら +Y が上を向くよう
- *   小さくホップしながら整える。テクスチャの差し替えをしないので、
- *   「止まった瞬間に出目が変わる」ことがない。
+ * - 出目は最初から「上面(+Y)」に配置しておき、テクスチャの差し替えは一切しない
+ *   （＝止まった瞬間に出目が変わることがない）。
+ * - 着地の決め方：物理でのチャチャな転がりが自然に収まりかけたら（速度が下がったら）、
+ *   結果面(+Y)を上に向ける「ごく小さな補正角速度」を毎フレーム加算し続ける。
+ *   スクリプトでホップさせたり瞬間移動させたりせず、あくまで通常の重力・摩擦・
+ *   衝突応答の中で自然に収束させる（＝実物のサイコロが最後に少し転がって
+ *   面を決めるような、continuous physics の一部として着地する）。
  * - 面数が6以下はドット目、7以上は数字（1つのサイコロ内で混在しない）。
  * - キャンバス内の色は描画用途のためトークン対象外（STYLEGUIDE 例外）。
  */
@@ -29,9 +33,15 @@ interface DiceCanvasProps {
 const DIE_SIZE = 1.85;
 const DIE_RADIUS = DIE_SIZE * 0.16; // 角丸の半径
 const TRAY_HALF = 4.7;
-const TUMBLE_CAP_MS = 1600;
-const PRESENT_MS = 520;   // 上面を上へ整える（ホップ）時間
-const HOP_HEIGHT = 0.7;
+
+// 着地の補正（continuous physics で自然に収束させるためのパラメータ）。
+const SETTLE_LIN_VEL2 = 2.25;   // これ未満まで減速したら補正を開始（|v| < 1.5）
+const SETTLE_ANG_VEL2 = 9;      // 同上（角速度）（|w| < 3）
+const ALIGN_GAIN = 5;           // 残り角度に比例した補正角速度のゲイン
+const ALIGN_MAX_SPEED = 3.0;    // 補正角速度の上限（速すぎる回転に見えないように）
+const ALIGN_DONE_ANGLE = 0.05;  // 約3°以内なら「揃った」とみなす
+const ALIGN_DONE_VEL2 = 0.03;   // 速度がこれ未満なら「静止した」とみなす
+const SETTLE_TIMEOUT_S = 3.2; // フォールバックの安全上限（シミュレーション時間・秒。通常はここまでかからない）
 
 // 赤フェルト
 const FELT_MID  = '#9c3030';
@@ -134,13 +144,14 @@ const FACE_SLOTS: { pos: [number, number, number]; rot: [number, number, number]
 
 interface Die {
   group: THREE.Group;
-  body: CANNON.Body;
+  body: CANNON.Body | null;
   decalMats: THREE.MeshStandardMaterial[];
-  target: THREE.Quaternion | null;
-  fromQ: THREE.Quaternion;
-  fromPos: THREE.Vector3;
-  toPos: THREE.Vector3;
+  /** 結果面(+Y)が世界の上に揃ったら true（以降は補正しない）。 */
+  aligned: boolean;
 }
+
+const WORLD_UP = new THREE.Vector3(0, 1, 0);
+const LOCAL_UP = new THREE.Vector3(0, 1, 0);
 
 export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -250,17 +261,46 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
 
     const dice: Die[] = [];
 
-    let phase: 'tumble' | 'present' | 'done' = 'done';
-    let phaseStart = 0;
+    let phase: 'tumble' | 'done' = 'done';
+    // シミュレーション経過秒（タブが背面で rAF が間引かれても、実時間ではなく
+    // 物理が実際に進んだ秒数で安全上限を判定するため）。
+    let elapsedSim = 0;
     let settledCalled = true;
 
     const clearDice = () => {
       for (const d of dice) {
         scene.remove(d.group);
         d.decalMats.forEach((m) => { m.map?.dispose(); m.dispose(); });
-        world.removeBody(d.body);
+        if (d.body) world.removeBody(d.body);
       }
       dice.length = 0;
+    };
+
+    const buildDie = (value: number, sd: number, pips: boolean) => {
+      const group = new THREE.Group();
+      const mesh = new THREE.Mesh(bodyGeo, bodyMat);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      group.add(mesh);
+
+      const fv = faceVals(value, sd);
+      const decalMats: THREE.MeshStandardMaterial[] = [];
+      FACE_SLOTS.forEach((slot, f) => {
+        const mat = new THREE.MeshStandardMaterial({
+          map: markTexture(fv[f], pips),
+          transparent: true,
+          depthWrite: false,
+          roughness: 0.55,
+          metalness: 0,
+        });
+        decalMats.push(mat);
+        const plane = new THREE.Mesh(decalGeo, mat);
+        plane.position.set(...slot.pos);
+        plane.rotation.set(...slot.rot);
+        group.add(plane);
+      });
+      scene.add(group);
+      return { group, decalMats };
     };
 
     const throwDice = (vals: number[], sd: number) => {
@@ -268,32 +308,28 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
       const n = vals.length;
       const pips = sd <= 6;
 
-      vals.forEach((value, i) => {
-        const group = new THREE.Group();
-        const body = new THREE.Mesh(bodyGeo, bodyMat);
-        body.castShadow = true;
-        body.receiveShadow = true;
-        group.add(body);
-
-        const fv = faceVals(value, sd);
-        const decalMats: THREE.MeshStandardMaterial[] = [];
-        FACE_SLOTS.forEach((slot, f) => {
-          const mat = new THREE.MeshStandardMaterial({
-            map: markTexture(fv[f], pips),
-            transparent: true,
-            depthWrite: false,
-            roughness: 0.55,
-            metalness: 0,
-          });
-          decalMats.push(mat);
-          const plane = new THREE.Mesh(decalGeo, mat);
-          plane.position.set(...slot.pos);
-          plane.rotation.set(...slot.rot);
-          group.add(plane);
+      if (reduceMotion) {
+        // モーション低減設定：転がさず静的に配置。local +Y は常に結果面なので、
+        // 回転させずそのまま置くだけで正しい出目が最初から見えている。
+        vals.forEach((value, i) => {
+          const { group, decalMats } = buildDie(value, sd, pips);
+          const lane = n > 1 ? (i - (n - 1) / 2) / (n - 1) : 0;
+          group.position.set(lane * TRAY_HALF * 1.1, DIE_SIZE / 2, 0.3);
+          dice.push({ group, body: null, decalMats, aligned: true });
         });
-        scene.add(group);
+        phase = 'done';
+        settledCalled = false;
+        renderer.render(scene, camera);
+        requestAnimationFrame(() => {
+          if (!settledCalled) { settledCalled = true; propsRef.current.onSettled(); }
+        });
+        return;
+      }
 
-        const cbody = new CANNON.Body({
+      vals.forEach((value, i) => {
+        const { group, decalMats } = buildDie(value, sd, pips);
+
+        const body = new CANNON.Body({
           mass: 1,
           material: dieMat,
           shape: new CANNON.Box(new CANNON.Vec3(DIE_SIZE / 2, DIE_SIZE / 2, DIE_SIZE / 2)),
@@ -305,50 +341,27 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
         });
         // 躍動感：奥・高所から手前へ勢いよく投げ、強いスピンを与える
         const lane = n > 1 ? (i - (n - 1) / 2) / (n - 1) : 0;
-        cbody.position.set(
+        body.position.set(
           lane * (TRAY_HALF * 1.3) + (Math.random() - 0.5) * 1.2,
           7.5 + Math.random() * 3.5,
           -TRAY_HALF + 0.6 + Math.random() * 1.4,
         );
-        cbody.quaternion.setFromEuler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-        cbody.velocity.set((Math.random() - 0.5) * 6, -3.5, 5.5 + Math.random() * 3.5);
-        cbody.angularVelocity.set(
+        body.quaternion.setFromEuler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+        body.velocity.set((Math.random() - 0.5) * 6, -3.5, 5.5 + Math.random() * 3.5);
+        body.angularVelocity.set(
           (Math.random() - 0.5) * 26,
           (Math.random() - 0.5) * 26,
           (Math.random() - 0.5) * 26,
         );
-        world.addBody(cbody);
+        world.addBody(body);
 
-        dice.push({
-          group, body: cbody, decalMats, target: null,
-          fromQ: new THREE.Quaternion(), fromPos: new THREE.Vector3(), toPos: new THREE.Vector3(),
-        });
+        dice.push({ group, body, decalMats, aligned: false });
       });
 
       phase = 'tumble';
-      phaseStart = performance.now();
+      elapsedSim = 0;
       settledCalled = false;
-      if (reduceMotion) beginPresent();
       startLoop();
-    };
-
-    // 静止後：結果面(+Y)を上へ向ける最小回転を目標に、小さくホップして着地。
-    const beginPresent = () => {
-      phase = 'present';
-      phaseStart = performance.now();
-      const up = new THREE.Vector3(0, 1, 0);
-      dice.forEach((d) => {
-        d.body.sleep();
-        const q = d.group.quaternion.clone();
-        const curUp = up.clone().applyQuaternion(q); // 現在の局所+Yのワールド向き
-        const align = new THREE.Quaternion().setFromUnitVectors(curUp, up);
-        d.target = align.multiply(q);
-        d.fromQ = d.group.quaternion.clone();
-        d.fromPos = d.group.position.clone();
-        const x = THREE.MathUtils.clamp(d.body.position.x, -TRAY_HALF + 1, TRAY_HALF - 1);
-        const z = THREE.MathUtils.clamp(d.body.position.z, -TRAY_HALF + 1, TRAY_HALF - 1);
-        d.toPos = new THREE.Vector3(x, DIE_SIZE / 2, z);
-      });
     };
 
     // ── ループ ─────────────────────────────────────────
@@ -358,12 +371,56 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
     const stopLoop = () => { running = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } };
     const startLoop = () => { if (running) return; running = true; clock.getDelta(); raf = requestAnimationFrame(animate); };
 
-    const allAsleep = () => dice.length > 0 && dice.every(
-      (d) => d.body.sleepState === CANNON.Body.SLEEPING
-        || (d.body.velocity.lengthSquared() < 0.05 && d.body.angularVelocity.lengthSquared() < 0.05),
-    );
+    const tmpQ = new THREE.Quaternion();
+    const tmpUp = new THREE.Vector3();
+    const tmpAxis = new THREE.Vector3();
+
+    /**
+     * 1体ぶんの着地補正。速度が下がってきた個体にだけ、結果面を上へ向ける
+     * ごく小さな角速度を「加算」し続ける（既存の重力・摩擦・反発はそのまま）。
+     * スナップやテレポートは行わない＝物理として連続な動きのまま自然に収束する。
+     */
+    const stepAlign = (d: Die, dt: number) => {
+      const body = d.body!;
+      if (body.sleepState === CANNON.Body.SLEEPING) { d.aligned = true; return; }
+
+      tmpQ.set(body.quaternion.x, body.quaternion.y, body.quaternion.z, body.quaternion.w);
+      tmpUp.copy(LOCAL_UP).applyQuaternion(tmpQ);
+      const angle = tmpUp.angleTo(WORLD_UP);
+
+      if (angle <= ALIGN_DONE_ANGLE) {
+        d.aligned = true;
+        const linSq = body.velocity.lengthSquared();
+        const angSq = body.angularVelocity.lengthSquared();
+        if (linSq < ALIGN_DONE_VEL2 && angSq < ALIGN_DONE_VEL2) {
+          body.velocity.set(0, 0, 0);
+          body.angularVelocity.set(0, 0, 0);
+          body.sleep();
+        }
+        return;
+      }
+
+      d.aligned = false;
+      const linSq = body.velocity.lengthSquared();
+      const angSq = body.angularVelocity.lengthSquared();
+      if (linSq >= SETTLE_LIN_VEL2 || angSq >= SETTLE_ANG_VEL2) return; // まだ豪快に転がり中：介入しない
+
+      body.wakeUp();
+      tmpAxis.crossVectors(tmpUp, WORLD_UP);
+      if (tmpAxis.lengthSq() < 1e-6) tmpAxis.set(1, 0, 0);
+      else tmpAxis.normalize();
+      const speed = Math.min(angle * ALIGN_GAIN, ALIGN_MAX_SPEED);
+      const lerpT = Math.min(1, dt * 10);
+      body.angularVelocity.x += (tmpAxis.x * speed - body.angularVelocity.x) * lerpT;
+      body.angularVelocity.y += (tmpAxis.y * speed - body.angularVelocity.y) * lerpT;
+      body.angularVelocity.z += (tmpAxis.z * speed - body.angularVelocity.z) * lerpT;
+      // 横滑りを軽く抑えて「その場で少し転がって揃う」ように見せる
+      body.velocity.x *= 0.92;
+      body.velocity.z *= 0.92;
+    };
 
     const syncMesh = (d: Die) => {
+      if (!d.body) return;
       d.group.position.copy(d.body.position as unknown as THREE.Vector3);
       d.group.quaternion.copy(d.body.quaternion as unknown as THREE.Quaternion);
     };
@@ -373,19 +430,23 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
 
       if (phase === 'tumble') {
         world.step(1 / 120, dt, 4);
-        for (const d of dice) syncMesh(d);
-        if (performance.now() - phaseStart > TUMBLE_CAP_MS || allAsleep()) beginPresent();
-      } else if (phase === 'present') {
-        const p = Math.min(1, (performance.now() - phaseStart) / PRESENT_MS);
-        const e = 1 - Math.pow(1 - p, 3);          // ease-out（回転・水平移動）
-        const hop = HOP_HEIGHT * 4 * p * (1 - p);  // 放物線ホップ
-        dice.forEach((d) => {
-          if (d.target) d.group.quaternion.slerpQuaternions(d.fromQ, d.target, e);
-          d.group.position.x = THREE.MathUtils.lerp(d.fromPos.x, d.toPos.x, e);
-          d.group.position.z = THREE.MathUtils.lerp(d.fromPos.z, d.toPos.z, e);
-          d.group.position.y = THREE.MathUtils.lerp(d.fromPos.y, d.toPos.y, e) + hop;
-        });
-        if (p >= 1) {
+        for (const d of dice) { stepAlign(d, dt); syncMesh(d); }
+        elapsedSim += dt;
+
+        const allDone = dice.every((d) => d.body === null || d.body.sleepState === CANNON.Body.SLEEPING);
+        const timedOut = elapsedSim > SETTLE_TIMEOUT_S;
+        if (allDone || timedOut) {
+          if (timedOut) {
+            // フォールバック：稀にここまでかかった個体だけ最終的に静止させる
+            // （その時点で既にほぼ揃っているはずなので視覚的な飛びはごく小さい）。
+            for (const d of dice) {
+              if (d.body && d.body.sleepState !== CANNON.Body.SLEEPING) {
+                d.body.angularVelocity.set(0, 0, 0);
+                d.body.velocity.set(0, 0, 0);
+                d.body.sleep();
+              }
+            }
+          }
           phase = 'done';
           if (!settledCalled) { settledCalled = true; propsRef.current.onSettled(); }
         }
