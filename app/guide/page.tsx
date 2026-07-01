@@ -192,7 +192,7 @@ const TOOLS: Record<Locale, ToolContent[]> = {
       tips: [
         'ダイスの色はカラーピッカーで自由に変更でき、プリセットも用意',
         '色やモードの設定はブラウザに自動保存され、次回も復元される',
-        'd100モードは十の位・一の位のダイスで00〜99を判定',
+        'd100モードは1〜100のパーセンタイル判定として振れる',
         '履歴の「コピー」で「🎲 2d6 -> [3, 5] = 8」形式のテキストを取得（Discord等に貼り付け）',
       ],
       usecases: [
@@ -376,7 +376,7 @@ const TOOLS: Record<Locale, ToolContent[]> = {
       tips: [
         'Change the dice color freely with the color picker, or use a preset',
         'Your color and mode settings are auto-saved in the browser and restored next time',
-        'd100 mode uses tens and ones dice to roll 00–99',
+        'd100 mode rolls a 1–100 percentile result',
         'Use "Copy" on any history entry to get text like "🎲 2d6 -> [3, 5] = 8" (paste into Discord and more)',
       ],
       usecases: [
