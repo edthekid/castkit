@@ -1,33 +1,36 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useTranslation } from '../../_i18n/useTranslation';
 import { ck } from '../../_theme/colors';
 import { IconDice } from '../../_components/icons';
 import type { RollPhase, RollRecord } from '../_constants';
 
+// Three.js / cannon-es は重いので、初回ロール時にだけ動的読み込みする。
+// ssr:false でサーバー実行を避け、他ページのバンドルにも含めない。
+const DiceCanvas = dynamic(
+  () => import('./DiceCanvas').then((m) => ({ default: m.DiceCanvas })),
+  { ssr: false },
+);
+
 interface DiceStageProps {
   phase: RollPhase;
   current: RollRecord | null;
   color: string;
-  /** roll ごとに変わるキー（アニメーション再生用） */
   rollKey: number;
+  /** 現在振っている（確定前含む）出目とその面数 */
+  activeValues: number[];
+  activeSides: number;
+  /** 転がりが収まったときに呼ばれる（合計ポップアップの起点） */
+  onSettled: () => void;
 }
 
-/** #RRGGBB の明度から、上に載せる文字色（黒/白）を選ぶ。 */
-function readableText(hex: string): string {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
-  if (!m) return '#ffffff';
-  const n = parseInt(m[1], 16);
-  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
-  // 相対輝度（近似）
-  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return lum > 0.6 ? '#18181b' : '#ffffff';
-}
-
-export function DiceStage({ phase, current, color, rollKey }: DiceStageProps) {
+export function DiceStage({
+  phase, current, color, rollKey, activeValues, activeSides, onSettled,
+}: DiceStageProps) {
   const { t } = useTranslation();
-  const textColor = readableText(color);
   const showResult = phase === 'result' && current;
+  const started = rollKey > 0;
 
   return (
     <div
@@ -35,40 +38,28 @@ export function DiceStage({ phase, current, color, rollKey }: DiceStageProps) {
       style={{ minHeight: 320 }}
       aria-label={t('dice.canvasLabel')}
     >
-      {/* サイコロ表示（Step 3 で3Dキャンバスに置き換える） */}
-      <div className="absolute inset-0 flex items-center justify-center p-6">
-        {current ? (
-          <div key={rollKey} className="flex flex-wrap items-center justify-center gap-3">
-            {current.values.map((v, i) => (
-              <div
-                key={i}
-                className="ck-dice-pop flex items-center justify-center rounded-xl font-black tabular-nums shadow-lg"
-                style={{
-                  width: 64,
-                  height: 64,
-                  background: color,
-                  color: textColor,
-                  fontSize: 24,
-                  animationDelay: `${i * 0.05}s`,
-                }}
-              >
-                {v}
-              </div>
-            ))}
-          </div>
-        ) : (
+      {started ? (
+        <DiceCanvas
+          values={activeValues}
+          sides={activeSides}
+          color={color}
+          rollKey={rollKey}
+          onSettled={onSettled}
+        />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3" style={{ color: ck.text.muted }}>
             <IconDice size={48} aria-hidden="true" />
             <span className="text-sm font-bold">{t('dice.emptyHistory')}</span>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* 合計ポップアップ（静止後に表示） */}
       {showResult && (
         <div
           key={`total-${rollKey}`}
-          className="absolute left-1/2 bottom-5 -translate-x-1/2 ck-dice-pop"
+          className="absolute left-1/2 bottom-5 -translate-x-1/2 ck-dice-pop pointer-events-none"
           role="status"
           aria-live="polite"
         >

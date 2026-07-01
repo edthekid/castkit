@@ -43,6 +43,8 @@ export function useDice() {
   const [history, setHistory] = useState<RollRecord[]>([]);
   // 物理演算の再生をやり直すためのキー（roll ごとに +1）。
   const [rollKey, setRollKey] = useState(0);
+  // 3D描画に渡す、確定前の出目（roll 時に決まる目標値）。
+  const [activeRoll, setActiveRoll] = useState<{ values: number[]; sides: number } | null>(null);
 
   const [hydrated, setHydrated] = useState(false);
 
@@ -131,6 +133,7 @@ export function useDice() {
       value: rollOne(sides),
     }));
     pendingRef.current = values;
+    setActiveRoll({ values: values.map((d) => d.value), sides });
     setPhase('rolling');
     setRollKey((k) => k + 1);
 
@@ -166,6 +169,7 @@ export function useDice() {
     phase,
     current,
     rollKey,
+    activeRoll,
     roll,
     reveal,
     getPending: () => pendingRef.current,

@@ -22,6 +22,9 @@ export default function DicePage() {
           current={dice.current}
           color={dice.color}
           rollKey={dice.rollKey}
+          activeValues={dice.activeRoll?.values ?? []}
+          activeSides={dice.activeRoll?.sides ?? dice.sides}
+          onSettled={dice.reveal}
         />
 
         {/* 操作パネル + 色設定 */}
