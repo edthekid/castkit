@@ -56,7 +56,7 @@ export const MAX_HISTORY = 20;
  * 静止後に合計をポップアップ表示する。物理側から早期に settle 通知が来た場合も
  * この値を上限のセーフティとして使う。
  */
-export const ROLL_DURATION_MS = 2200;
+export const ROLL_DURATION_MS = 2600;
 
 /** localStorage キー（モード等の設定を保存）。 */
 export const STORAGE_KEY = 'castkit.dice.v1';
