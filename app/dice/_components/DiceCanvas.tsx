@@ -43,6 +43,10 @@ const ALIGN_DONE_ANGLE = 0.05;  // 約3°以内なら「揃った」とみなす
 const ALIGN_DONE_VEL2 = 0.03;   // 速度がこれ未満なら「静止した」とみなす
 const SETTLE_TIMEOUT_S = 3.2; // フォールバックの安全上限（シミュレーション時間・秒。通常はここまでかからない）
 
+// サイコロ同士が重ならないための最小間隔と、近づいたときに押し離す強さ。
+const SEPARATE_DIST = DIE_SIZE * 1.02;
+const SEPARATE_PUSH = 1.8;
+
 // 赤フェルト
 const FELT_MID  = '#9c3030';
 const FELT_EDGE = '#591616';
@@ -129,6 +133,31 @@ function faceVals(result: number, sides: number): number[] {
   const arr = [result];
   while (arr.length < 6) arr.push(Math.floor(Math.random() * sides) + 1);
   return arr;
+}
+
+/**
+ * n個のサイコロを、重ならない間隔のグリッド状に散らして配置する（XZ座標）。
+ * 物理演算の投げ入れ位置と、モーション低減時の静的配置の両方で共有する。
+ */
+function gridLayout(n: number): { x: number; z: number }[] {
+  const cols = Math.max(1, Math.ceil(Math.sqrt(n)));
+  const rows = Math.max(1, Math.ceil(n / cols));
+  const usableHalf = TRAY_HALF - DIE_SIZE / 2 - 0.35;
+  const spacingX = cols > 1 ? Math.min((2 * usableHalf) / (cols - 1), DIE_SIZE * 2.1) : 0;
+  const spacingZ = rows > 1 ? Math.min((2 * usableHalf) / (rows - 1), DIE_SIZE * 2.1) : 0;
+
+  const positions: { x: number; z: number }[] = [];
+  for (let i = 0; i < n; i++) {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const jx = (Math.random() - 0.5) * spacingX * 0.22;
+    const jz = (Math.random() - 0.5) * spacingZ * 0.22;
+    positions.push({
+      x: THREE.MathUtils.clamp((col - (cols - 1) / 2) * spacingX + jx, -usableHalf, usableHalf),
+      z: THREE.MathUtils.clamp((row - (rows - 1) / 2) * spacingZ + jz, -usableHalf, usableHalf),
+    });
+  }
+  return positions;
 }
 
 // 各面デカールの配置（法線方向 + 面向きの回転）。index0 = +Y（上面）。
@@ -240,7 +269,9 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
     const dieMat = new CANNON.Material('die');
     const groundMat = new CANNON.Material('ground');
     world.addContactMaterial(new CANNON.ContactMaterial(dieMat, groundMat, { friction: 0.35, restitution: 0.42 }));
-    world.addContactMaterial(new CANNON.ContactMaterial(dieMat, dieMat, { friction: 0.2, restitution: 0.35 }));
+    // サイコロ同士はよく弾む（＝ぶつかったらはじけて散らばる）ように反発を強め、
+    // 摩擦を下げてくっつきにくくする。
+    world.addContactMaterial(new CANNON.ContactMaterial(dieMat, dieMat, { friction: 0.12, restitution: 0.6 }));
 
     const ground = new CANNON.Body({ mass: 0, material: groundMat, shape: new CANNON.Plane() });
     ground.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
@@ -311,10 +342,10 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
       if (reduceMotion) {
         // モーション低減設定：転がさず静的に配置。local +Y は常に結果面なので、
         // 回転させずそのまま置くだけで正しい出目が最初から見えている。
+        const layout = gridLayout(n);
         vals.forEach((value, i) => {
           const { group, decalMats } = buildDie(value, sd, pips);
-          const lane = n > 1 ? (i - (n - 1) / 2) / (n - 1) : 0;
-          group.position.set(lane * TRAY_HALF * 1.1, DIE_SIZE / 2, 0.3);
+          group.position.set(layout[i].x, DIE_SIZE / 2, layout[i].z);
           dice.push({ group, body: null, decalMats, aligned: true });
         });
         phase = 'done';
@@ -326,6 +357,9 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
         return;
       }
 
+      // 重ならないグリッドに散らして落とす。各マスの真上から個別に投げ入れるので、
+      // 勢いよく弾んでも「元の場所付近」に散らばって着地し、団子状に固まらない。
+      const layout = gridLayout(n);
       vals.forEach((value, i) => {
         const { group, decalMats } = buildDie(value, sd, pips);
 
@@ -339,15 +373,15 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
           sleepSpeedLimit: 0.2,
           sleepTimeLimit: 0.25,
         });
-        // 躍動感：奥・高所から手前へ勢いよく投げ、強いスピンを与える
-        const lane = n > 1 ? (i - (n - 1) / 2) / (n - 1) : 0;
+        // 躍動感：高所から勢いよく落として強いスピンを与える（水平方向はごく小さく、
+        // グリッドで確保した間隔を保ったまま弾ませる）。
         body.position.set(
-          lane * (TRAY_HALF * 1.3) + (Math.random() - 0.5) * 1.2,
-          7.5 + Math.random() * 3.5,
-          -TRAY_HALF + 0.6 + Math.random() * 1.4,
+          layout[i].x,
+          6.5 + Math.random() * 3,
+          layout[i].z,
         );
         body.quaternion.setFromEuler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-        body.velocity.set((Math.random() - 0.5) * 6, -3.5, 5.5 + Math.random() * 3.5);
+        body.velocity.set((Math.random() - 0.5) * 2.2, -4 - Math.random() * 2, (Math.random() - 0.5) * 2.2);
         body.angularVelocity.set(
           (Math.random() - 0.5) * 26,
           (Math.random() - 0.5) * 26,
@@ -425,11 +459,43 @@ export function DiceCanvas({ values, sides, rollKey, onSettled }: DiceCanvasProp
       d.group.quaternion.copy(d.body.quaternion as unknown as THREE.Quaternion);
     };
 
+    /**
+     * サイコロ同士が水平方向に近づきすぎていたら、毎フレーム軽く押し離す。
+     * 通常の衝突応答に重ねる追加の反発で、団子状に固まって重なるのを防ぐ
+     * （押された側は sleep 中でも wakeUp して弾け合う）。
+     */
+    const stepSeparate = () => {
+      for (let i = 0; i < dice.length; i++) {
+        const a = dice[i].body;
+        if (!a) continue;
+        for (let j = i + 1; j < dice.length; j++) {
+          const b = dice[j].body;
+          if (!b) continue;
+          const dx = a.position.x - b.position.x;
+          const dz = a.position.z - b.position.z;
+          const distSq = dx * dx + dz * dz;
+          if (distSq >= SEPARATE_DIST * SEPARATE_DIST || distSq < 1e-8) continue;
+          const dist = Math.sqrt(distSq);
+          const nx = dx / dist;
+          const nz = dz / dist;
+          const overlap = SEPARATE_DIST - dist;
+          const push = Math.min(SEPARATE_PUSH, overlap * 6);
+          a.wakeUp();
+          b.wakeUp();
+          a.velocity.x += nx * push * 0.5;
+          a.velocity.z += nz * push * 0.5;
+          b.velocity.x -= nx * push * 0.5;
+          b.velocity.z -= nz * push * 0.5;
+        }
+      }
+    };
+
     const animate = () => {
       const dt = Math.min(clock.getDelta(), 1 / 30);
 
       if (phase === 'tumble') {
         world.step(1 / 120, dt, 4);
+        stepSeparate();
         for (const d of dice) { stepAlign(d, dt); syncMesh(d); }
         elapsedSim += dt;
 
