@@ -374,6 +374,19 @@ export function IconX({ size = 18, ...props }: IconProps) {
   );
 }
 
+export function IconDice({ size = 18, ...props }: IconProps) {
+  return (
+    <svg {...base(size)} {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <circle cx="8.5" cy="8.5" r="1.15" fill="currentColor" stroke="none" />
+      <circle cx="15.5" cy="8.5" r="1.15" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.15" fill="currentColor" stroke="none" />
+      <circle cx="8.5" cy="15.5" r="1.15" fill="currentColor" stroke="none" />
+      <circle cx="15.5" cy="15.5" r="1.15" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 // ─── アイコンID → コンポーネントのマップ ─────────────────
 // topic/_data/topics.ts のような、データファイル側で文字列として
 // アイコンを指定したい場合に使う（JSXを直接データに書けないため）。

@@ -18,6 +18,7 @@ const STATIC_PAGES: { path: string; updated: string; changeFrequency: ChangeFreq
   { path: '/topic',         updated: '2026-06-22', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/debate',        updated: '2026-06-22', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/scoreboard',    updated: '2026-06-28', changeFrequency: 'monthly', priority: 0.8 },
+  { path: '/dice',          updated: '2026-07-01', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/guide',         updated: '2026-06-22', changeFrequency: 'monthly', priority: 0.9 },
   { path: '/articles',      updated: '2026-06-22', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/about',         updated: '2026-06-29', changeFrequency: 'yearly',  priority: 0.3 },

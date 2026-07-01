@@ -54,6 +54,13 @@ export const TOOL_SHARE: ToolShare[] = [
       en: '🏆 Live team scoreboard for streams and gaming events — CastKit Scoreboard #CastKit',
     },
   },
+  {
+    href: '/dice',
+    shareText: {
+      ja: '🎲 3D物理演算で転がる無料サイコロツール「CastKit サイコロ」TRPG（d4〜d100）にも対応 #CastKit',
+      en: '🎲 Free 3D dice roller with realistic physics — TRPG dice sets (d4–d100) — CastKit Dice #CastKit',
+    },
+  },
 ];
 
 /** パスから対応するシェア文言を取得 */

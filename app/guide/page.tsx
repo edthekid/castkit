@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useTranslation } from '../_i18n/useTranslation';
-import { IconBolt, IconTarget, IconLadder, IconChat, IconScales, IconTrophy } from '../_components/icons';
+import { IconBolt, IconTarget, IconLadder, IconChat, IconScales, IconTrophy, IconDice } from '../_components/icons';
 import type { ComponentType, SVGProps } from 'react';
 
 type Locale = 'ja' | 'en';
@@ -177,6 +177,32 @@ const TOOLS: Record<Locale, ToolContent[]> = {
       ],
       related: ['/team-division', '/roulette'],
     },
+    {
+      href: '/dice',
+      tag: 'Dice',
+      icon: IconDice,
+      name: 'サイコロ',
+      summary: '3D物理演算でリアルに転がるサイコロツールです。1〜10個・面数自由（d4〜d20）に加え、TRPGでよく使うダイスセットやd100判定にも対応。ダイスの色を変えられ、出目の履歴はDiscord向けのフォーマットでコピーできます。',
+      steps: [
+        'サイコロの数（1〜10個）と面数（d4/d6/d8/d10/d12/d20 など）を選ぶ',
+        'または「TRPGモード」でよく使うダイスセットをプリセットから選ぶ',
+        '「振る」ボタンを押すと3Dサイコロが物理演算で転がる',
+        '止まると各出目と合計が強調表示され、履歴に残る',
+      ],
+      tips: [
+        'ダイスの色はカラーピッカーで自由に変更でき、プリセットも用意',
+        '色やモードの設定はブラウザに自動保存され、次回も復元される',
+        'd100モードは十の位・一の位のダイスで00〜99を判定',
+        '履歴の「コピー」で「🎲 2d6 -> [3, 5] = 8」形式のテキストを取得（Discord等に貼り付け）',
+      ],
+      usecases: [
+        'TRPG（クトゥルフ・D&D など）のオンラインセッション',
+        'ボードゲーム配信でのダイス代わり',
+        '罰ゲームや順番決めのランダム抽選',
+        'すごろく・ゲーム企画の目的別ダイス',
+      ],
+      related: ['/roulette', '/scoreboard'],
+    },
   ],
   en: [
     {
@@ -335,6 +361,32 @@ const TOOLS: Record<Locale, ToolContent[]> = {
       ],
       related: ['/team-division', '/roulette'],
     },
+    {
+      href: '/dice',
+      tag: 'Dice',
+      icon: IconDice,
+      name: 'Dice Roller',
+      summary: 'A dice roller with realistic 3D physics. Roll 1–10 dice with any number of sides (d4–d20), or use TRPG dice sets and d100 rolls. Customize the dice color and copy roll history in a Discord-friendly format.',
+      steps: [
+        'Choose the number of dice (1–10) and the number of sides (d4/d6/d8/d10/d12/d20, etc.)',
+        'Or switch to "TRPG mode" and pick a preset dice set',
+        'Press "Roll" and the 3D dice tumble with real physics',
+        'Once they settle, each face and the total are highlighted and saved to history',
+      ],
+      tips: [
+        'Change the dice color freely with the color picker, or use a preset',
+        'Your color and mode settings are auto-saved in the browser and restored next time',
+        'd100 mode uses tens and ones dice to roll 00–99',
+        'Use "Copy" on any history entry to get text like "🎲 2d6 -> [3, 5] = 8" (paste into Discord and more)',
+      ],
+      usecases: [
+        'Online TRPG sessions (Call of Cthulhu, D&D, and more)',
+        'A stand-in for physical dice in board game streams',
+        'Random draws for forfeits or turn order',
+        'Purpose-built dice for tabletop and game segments',
+      ],
+      related: ['/roulette', '/scoreboard'],
+    },
   ],
 };
 
@@ -345,6 +397,7 @@ const TOOL_MAP: Record<string, { name: { ja: string; en: string } }> = {
   '/topic':         { name: { ja: 'お題ガチャ',   en: 'Topic Picker' } },
   '/debate':        { name: { ja: 'ディベート',   en: 'Debate' } },
   '/scoreboard':    { name: { ja: 'スコアボード', en: 'Scoreboard' } },
+  '/dice':          { name: { ja: 'サイコロ',     en: 'Dice Roller' } },
 };
 
 const FAQ: Record<Locale, { q: string; a: string }[]> = {

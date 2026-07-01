@@ -16,7 +16,7 @@ import { AppToaster } from './AppToaster';
 import { Footer } from './Footer';
 import { useTranslation } from '../_i18n/useTranslation';
 import type { TranslationKey } from '../_i18n/translations';
-import { IconHome, IconBolt, IconTarget, IconLadder, IconChat, IconScales, IconTrophy, IconBook, IconNews } from './icons';
+import { IconHome, IconBolt, IconTarget, IconLadder, IconChat, IconScales, IconTrophy, IconDice, IconBook, IconNews } from './icons';
 import type { ComponentType, SVGProps } from 'react';
 
 const TOOL_NAV_ITEMS: { href: string; icon: ComponentType<SVGProps<SVGSVGElement> & { size?: number }>; labelKey: TranslationKey }[] = [
@@ -27,6 +27,7 @@ const TOOL_NAV_ITEMS: { href: string; icon: ComponentType<SVGProps<SVGSVGElement
   { href: '/topic',         icon: IconChat,   labelKey: 'nav.topic' },
   { href: '/debate',        icon: IconScales, labelKey: 'nav.debate' },
   { href: '/scoreboard',    icon: IconTrophy, labelKey: 'nav.scoreboard' },
+  { href: '/dice',          icon: IconDice,   labelKey: 'nav.dice' },
 ];
 
 const CONTENT_NAV_ITEMS: { href: string; icon: ComponentType<SVGProps<SVGSVGElement> & { size?: number }>; labelKey: TranslationKey }[] = [
@@ -104,6 +105,7 @@ const PAGE_TITLES: Record<string, { ja: string; en: string; short: { ja: string;
   '/topic':         { ja: '無料お題ガチャ | CastKit',            en: 'Topic Picker | CastKit', short: { ja: 'お題ガチャ',   en: 'Topic Picker' } },
   '/debate':        { ja: '無料ディベートツール | CastKit',       en: 'Debate | CastKit',       short: { ja: 'ディベート',   en: 'Debate' } },
   '/scoreboard':    { ja: '無料スコアボード・得点管理ツール | CastKit', en: 'Scoreboard | CastKit', short: { ja: 'スコアボード', en: 'Scoreboard' } },
+  '/dice':          { ja: '無料サイコロツール | CastKit',           en: 'Dice Roller | CastKit',  short: { ja: 'サイコロ',     en: 'Dice' } },
   '/guide':         { ja: '使い方ガイド | CastKit',              en: 'How to Use | CastKit',   short: { ja: '使い方ガイド', en: 'Guide' } },
   '/articles':      { ja: '記事一覧 | CastKit',                 en: 'Articles | CastKit',     short: { ja: '記事',         en: 'Articles' } },
   '/privacy':       { ja: 'プライバシーポリシー | CastKit',       en: 'Privacy Policy | CastKit', short: { ja: 'プライバシーポリシー', en: 'Privacy' } },
