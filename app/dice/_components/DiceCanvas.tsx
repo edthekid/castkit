@@ -35,7 +35,7 @@ interface DiceCanvasProps {
 
 const DIE_SIZE = 1.85;
 const DIE_RADIUS = DIE_SIZE * 0.16; // 角丸の半径
-const TRAY_HALF = 6.2;
+const TRAY_HALF = 8.0;
 
 // tumble →（仕上げの）settle への移行判定。全個体が「並進も回転もほぼ止まって、
 // かつ上面がほぼ水平（自然に平らに落ちた）」状態になったら settle へ。
@@ -146,9 +146,10 @@ function gridLayout(n: number): { x: number; z: number }[] {
   const cols = Math.max(1, Math.ceil(Math.sqrt(n)));
   const rows = Math.max(1, Math.ceil(n / cols));
   const halfX = TRAY_HALF - DIE_SIZE / 2 - 0.4;
-  const halfZ = TRAY_HALF - DIE_SIZE / 2 - 1.0;
-  const spacingX = cols > 1 ? Math.min((2 * halfX) / (cols - 1), DIE_SIZE * 2.4) : 0;
-  const spacingZ = rows > 1 ? Math.min((2 * halfZ) / (rows - 1), DIE_SIZE * 2.4) : 0;
+  // 横(X)は広く散らす。奥行き(Z)はカメラ画角に収まるよう控えめに保つ。
+  const halfZ = 3.8;
+  const spacingX = cols > 1 ? Math.min((2 * halfX) / (cols - 1), DIE_SIZE * 3.4) : 0;
+  const spacingZ = rows > 1 ? Math.min((2 * halfZ) / (rows - 1), DIE_SIZE * 2.2) : 0;
 
   const positions: { x: number; z: number }[] = [];
   for (let i = 0; i < n; i++) {
@@ -214,7 +215,7 @@ export function DiceCanvas({ count, sides, rollKey, onSettled }: DiceCanvasProps
     // ── three ──────────────────────────────────────────
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(46, width / height, 0.1, 100);
-    camera.position.set(0, 16.5, 12);
+    camera.position.set(0, 20, 14.5);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
@@ -239,10 +240,10 @@ export function DiceCanvas({ count, sides, rollKey, onSettled }: DiceCanvasProps
     key.shadow.normalBias = 0.02;
     key.shadow.camera.near = 1;
     key.shadow.camera.far = 40;
-    key.shadow.camera.left = -8;
-    key.shadow.camera.right = 8;
-    key.shadow.camera.top = 8;
-    key.shadow.camera.bottom = -8;
+    key.shadow.camera.left = -11;
+    key.shadow.camera.right = 11;
+    key.shadow.camera.top = 11;
+    key.shadow.camera.bottom = -11;
     scene.add(key);
     const rim = new THREE.DirectionalLight(0xffe8d8, 0.22);
     rim.position.set(-6, 6, -6);
@@ -394,15 +395,16 @@ export function DiceCanvas({ count, sides, rollKey, onSettled }: DiceCanvasProps
           sleepSpeedLimit: 0.2,
           sleepTimeLimit: 0.3,
         });
-        // 躍動感＆散らばり：高所から勢いよく落とし、水平方向にもランダムな初速を与えて
-        // バラけて着地させる（広いトレイと分離力で団子状にならない）。
+        // 散らばり：広く取ったグリッド位置（大きめジッター付き）の真上から落とす。
+        // 水平初速は控えめにして、落ちた場所付近＝広く散った状態のまま着地させる
+        // （初速を上げると壁反射＋ランダムで中央に寄ってしまうため）。
         body.position.set(
           layout[i].x,
           8 + Math.random() * 3,
           layout[i].z,
         );
         body.quaternion.setFromEuler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-        body.velocity.set((Math.random() - 0.5) * 6, -7 - Math.random() * 3, (Math.random() - 0.5) * 6);
+        body.velocity.set((Math.random() - 0.5) * 2.4, -7 - Math.random() * 3, (Math.random() - 0.5) * 2.4);
         body.angularVelocity.set(
           (Math.random() - 0.5) * 26,
           (Math.random() - 0.5) * 26,
