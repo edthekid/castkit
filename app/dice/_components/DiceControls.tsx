@@ -38,6 +38,16 @@ const MODE_LABEL: Record<DiceMode, TranslationKey> = {
   chinchiro: 'dice.mode.chinchiro',
 };
 
+// チンチロの役と倍率（強い順）。pip=true は倍率が「目の数」で可変、loss=true は敗北役。
+const CHINCHIRO_LEGEND: { name: TranslationKey; mult?: number; pip?: boolean; loss?: boolean }[] = [
+  { name: 'dice.chinchiro.legendPinzoro', mult: 3 },
+  { name: 'dice.chinchiro.legendZorome',  mult: 3 },
+  { name: 'dice.chinchiro.legendShigoro', mult: 2 },
+  { name: 'dice.chinchiro.legendNormal',  pip: true },
+  { name: 'dice.chinchiro.legendHifumi',  mult: 1, loss: true },
+  { name: 'dice.chinchiro.legendMenashi', mult: 0, loss: true },
+];
+
 // ─── 数値入力ステッパー（− [入力] +） ───────────────────
 function NumberStepper({
   value, min, max, onChange, ariaLabel, ariaDec, ariaInc,
@@ -215,10 +225,33 @@ export function DiceControls({
         </>
       )}
 
-      {/* チンチロ：ルール説明＋投数インジケータ */}
+      {/* チンチロ：ルール説明＋役一覧（倍率表）＋投数インジケータ */}
       {isChin && (
         <div className="flex flex-col gap-3">
           <p className="text-xs leading-relaxed" style={{ color: ck.text.muted }}>{t('dice.chinchiro.hint')}</p>
+
+          {/* 役と倍率の一覧（強い順） */}
+          <div style={{ border: `1px solid ${ck.border.default}`, background: ck.bg.card }}>
+            <p className="text-[10px] font-black tracking-widest uppercase px-3 pt-2 pb-1" style={{ color: ck.text.secondary }}>
+              {t('dice.chinchiro.legendTitle')}
+            </p>
+            <ul>
+              {CHINCHIRO_LEGEND.map((row) => (
+                <li
+                  key={row.name}
+                  className="flex items-center justify-between px-3 py-1 text-xs"
+                  style={{ borderTop: `1px solid ${ck.border.default}`, opacity: row.loss ? 0.6 : 1 }}
+                >
+                  <span className="font-bold" style={{ color: ck.text.primary }}>{t(row.name)}</span>
+                  <span className="font-black tabular-nums shrink-0" style={{ color: row.loss ? ck.text.secondary : ck.text.primary }}>
+                    {row.pip ? t('dice.chinchiro.multiplierPip') : t('dice.chinchiro.multiplier', { n: row.mult! })}
+                    {row.loss && <span className="ml-1 font-bold" style={{ color: ck.text.muted }}>{t('dice.chinchiro.lose')}</span>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           <div className="flex items-center gap-2" aria-label={t('dice.chinchiro.rollsLabel')}>
             <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
               {t('dice.chinchiro.rollsLabel')}
