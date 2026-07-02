@@ -35,7 +35,7 @@ interface DiceCanvasProps {
 
 const DIE_SIZE = 1.85;
 const DIE_RADIUS = DIE_SIZE * 0.16; // 角丸の半径
-const TRAY_HALF = 4.7;
+const TRAY_HALF = 6.2;
 
 // tumble →（仕上げの）settle への移行判定。全個体が「並進も回転もほぼ止まって、
 // かつ上面がほぼ水平（自然に平らに落ちた）」状態になったら settle へ。
@@ -145,22 +145,21 @@ function faceVals(sides: number): number[] {
 function gridLayout(n: number): { x: number; z: number }[] {
   const cols = Math.max(1, Math.ceil(Math.sqrt(n)));
   const rows = Math.max(1, Math.ceil(n / cols));
-  const halfX = TRAY_HALF - DIE_SIZE / 2 - 0.35;
-  // 奥行き(Z)はカメラの画角に収まるよう浅めにし、やや手前寄せにする。
-  const halfZ = 2.3;
-  const zOffset = 0.3;
-  const spacingX = cols > 1 ? Math.min((2 * halfX) / (cols - 1), DIE_SIZE * 2.0) : 0;
-  const spacingZ = rows > 1 ? Math.min((2 * halfZ) / (rows - 1), DIE_SIZE * 1.5) : 0;
+  const halfX = TRAY_HALF - DIE_SIZE / 2 - 0.4;
+  const halfZ = TRAY_HALF - DIE_SIZE / 2 - 1.0;
+  const spacingX = cols > 1 ? Math.min((2 * halfX) / (cols - 1), DIE_SIZE * 2.4) : 0;
+  const spacingZ = rows > 1 ? Math.min((2 * halfZ) / (rows - 1), DIE_SIZE * 2.4) : 0;
 
   const positions: { x: number; z: number }[] = [];
   for (let i = 0; i < n; i++) {
     const col = i % cols;
     const row = Math.floor(i / cols);
-    const jx = (Math.random() - 0.5) * spacingX * 0.2;
-    const jz = (Math.random() - 0.5) * spacingZ * 0.2;
+    // ランダムに散らばって見えるようジッターを大きめに。
+    const jx = (Math.random() - 0.5) * spacingX * 0.45;
+    const jz = (Math.random() - 0.5) * spacingZ * 0.45;
     positions.push({
       x: THREE.MathUtils.clamp((col - (cols - 1) / 2) * spacingX + jx, -halfX, halfX),
-      z: THREE.MathUtils.clamp((row - (rows - 1) / 2) * spacingZ + jz + zOffset, -halfZ + zOffset, halfZ + zOffset),
+      z: THREE.MathUtils.clamp((row - (rows - 1) / 2) * spacingZ + jz, -halfZ, halfZ),
     });
   }
   return positions;
@@ -215,8 +214,8 @@ export function DiceCanvas({ count, sides, rollKey, onSettled }: DiceCanvasProps
     // ── three ──────────────────────────────────────────
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(46, width / height, 0.1, 100);
-    camera.position.set(0, 13.5, 9.5);
-    camera.lookAt(0, 0, -0.2);
+    camera.position.set(0, 16.5, 12);
+    camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -395,15 +394,15 @@ export function DiceCanvas({ count, sides, rollKey, onSettled }: DiceCanvasProps
           sleepSpeedLimit: 0.2,
           sleepTimeLimit: 0.3,
         });
-        // 躍動感：高所から勢いよく落として強いスピンを与える（水平方向はごく小さく、
-        // グリッドで確保した間隔を保ったまま弾ませる）。
+        // 躍動感＆散らばり：高所から勢いよく落とし、水平方向にもランダムな初速を与えて
+        // バラけて着地させる（広いトレイと分離力で団子状にならない）。
         body.position.set(
           layout[i].x,
           8 + Math.random() * 3,
           layout[i].z,
         );
         body.quaternion.setFromEuler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-        body.velocity.set((Math.random() - 0.5) * 2.2, -7 - Math.random() * 3, (Math.random() - 0.5) * 2.2);
+        body.velocity.set((Math.random() - 0.5) * 6, -7 - Math.random() * 3, (Math.random() - 0.5) * 6);
         body.angularVelocity.set(
           (Math.random() - 0.5) * 26,
           (Math.random() - 0.5) * 26,
