@@ -6,7 +6,7 @@
 //
 //   目なし   : 倍率0  / 強さ0   （敗北）
 //   ヒフミ   : 倍率1  / 強さ1   （敗北扱い）
-//   通常役   : 倍率=目 / 強さ=1+目  （目1→2 … 目6→7）
+//   通常役   : 倍率1  / 強さ=1+目  （倍率は同額固定。目1〜6は強さ＝順位だけを決める）
 //   シゴロ   : 倍率2  / 強さ10
 //   ゾロ目   : 倍率3  / 強さ20+ゾロの数 （222→22 … 666→26）
 //   ピンゾロ : 倍率3  / 強さ30  （111・最強）
@@ -76,7 +76,8 @@ export function judgeChinchiro(dice: readonly number[]): ChinchiroResult {
   if (a === b) pip = c;          // 例: [3,3,5] → 目=5
   else if (b === c) pip = a;     // 例: [2,5,5] → 目=2
   if (pip !== null) {
-    return { role: 'normal', name: `${pip}の目`, multiplier: pip, strength: 1 + pip, value: pip, isLoss: false };
+    // 通常役の倍率は 1（同額）。目の数は強さ（順位）だけを決める。
+    return { role: 'normal', name: `${pip}の目`, multiplier: 1, strength: 1 + pip, value: pip, isLoss: false };
   }
 
   // どれにも当てはまらない＝目なし（敗北）

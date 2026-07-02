@@ -70,11 +70,11 @@ export function DiceStage({
               <span
                 className="text-sm font-black tabular-nums leading-none px-1.5 py-0.5"
                 style={{
-                  color: current.chinchiro.multiplier > 0 ? ck.text.onDark : ck.text.secondary,
-                  background: current.chinchiro.multiplier > 0 ? ck.text.primary : 'transparent',
+                  color: current.chinchiro.isLoss ? ck.text.secondary : ck.text.onDark,
+                  background: current.chinchiro.isLoss ? 'transparent' : ck.text.primary,
                 }}
               >
-                {current.chinchiro.multiplier > 0 ? t('dice.chinchiro.multiplier', { n: current.chinchiro.multiplier }) : t('dice.chinchiro.lose')}
+                {current.chinchiro.isLoss ? t('dice.chinchiro.lose') : t('dice.chinchiro.multiplier', { n: current.chinchiro.multiplier })}
               </span>
             </div>
           ) : (
