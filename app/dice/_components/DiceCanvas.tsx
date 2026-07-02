@@ -53,8 +53,7 @@ const SETTLE_MS = 180;
 const SEPARATE_DIST = DIE_SIZE * 1.08;
 const SEPARATE_PUSH = 2.2;
 
-// 赤フェルト
-const FELT_MID  = '#9c3030';
+// 赤フェルト（暗い赤で床・背景を統一）
 const FELT_EDGE = '#591616';
 // クリーム白サイコロ
 const DIE_COLOR   = 0xf1ead9;
@@ -215,7 +214,7 @@ export function DiceCanvas({ count, sides, rollKey, onSettled }: DiceCanvasProps
     // ── three ──────────────────────────────────────────
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(46, width / height, 0.1, 100);
-    camera.position.set(0, 20, 14.5);
+    camera.position.set(0, 20, 9);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
@@ -249,14 +248,11 @@ export function DiceCanvas({ count, sides, rollKey, onSettled }: DiceCanvasProps
     rim.position.set(-6, 6, -6);
     scene.add(rim);
 
-    // 赤フェルト（ビネット＋布目）
+    // 赤フェルト（暗い赤で一様＋布目）。背景（FELT_EDGE）と同色でトレイ全体を統一。
     const feltC = document.createElement('canvas');
     feltC.width = feltC.height = 512;
     const felt = feltC.getContext('2d')!;
-    const fg = felt.createRadialGradient(256, 256, 40, 256, 256, 340);
-    fg.addColorStop(0, FELT_MID);
-    fg.addColorStop(1, FELT_EDGE);
-    felt.fillStyle = fg;
+    felt.fillStyle = FELT_EDGE;
     felt.fillRect(0, 0, 512, 512);
     for (let i = 0; i < 12000; i++) {
       const a = Math.random() * 0.06;
@@ -266,13 +262,23 @@ export function DiceCanvas({ count, sides, rollKey, onSettled }: DiceCanvasProps
     const feltTex = new THREE.CanvasTexture(feltC);
     feltTex.colorSpace = THREE.SRGBColorSpace;
     scene.background = new THREE.Color(FELT_EDGE);
+    // 床は「ライティングを受けない一様な暗い赤」（MeshBasic）。中央だけ明るくならず
+    // 背景と完全に同色でトレイ全体が統一される。
     const floorMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(40, 40),
-      new THREE.MeshStandardMaterial({ map: feltTex, roughness: 0.98, metalness: 0 }),
+      new THREE.PlaneGeometry(60, 60),
+      new THREE.MeshBasicMaterial({ map: feltTex }),
     );
     floorMesh.rotation.x = -Math.PI / 2;
-    floorMesh.receiveShadow = true;
     scene.add(floorMesh);
+    // サイコロの影だけを別レイヤー（半透明）で床の上に落とす。
+    const shadowPlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(60, 60),
+      new THREE.ShadowMaterial({ opacity: 0.34 }),
+    );
+    shadowPlane.rotation.x = -Math.PI / 2;
+    shadowPlane.position.y = 0.006;
+    shadowPlane.receiveShadow = true;
+    scene.add(shadowPlane);
 
     // ── cannon ─────────────────────────────────────────
     const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -40, 0) });
@@ -586,6 +592,8 @@ export function DiceCanvas({ count, sides, rollKey, onSettled }: DiceCanvasProps
       decalGeo.dispose();
       floorMesh.geometry.dispose();
       (floorMesh.material as THREE.Material).dispose();
+      shadowPlane.geometry.dispose();
+      (shadowPlane.material as THREE.Material).dispose();
       feltTex.dispose();
       envTex.dispose();
       pmrem.dispose();
