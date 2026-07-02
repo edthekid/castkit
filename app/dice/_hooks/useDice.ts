@@ -6,7 +6,6 @@ import { useTranslation } from '../../_i18n/useTranslation';
 import {
   type DiceMode,
   type RollPhase,
-  type DieResult,
   type RollRecord,
   MIN_DICE,
   MAX_DICE,
@@ -47,13 +46,14 @@ export function useDice() {
   const [history, setHistory] = useState<RollRecord[]>([]);
   // 物理演算の再生をやり直すためのキー（roll ごとに +1）。
   const [rollKey, setRollKey] = useState(0);
-  // 3D描画に渡す、確定前の出目（roll 時に決まる目標値）。
-  const [activeRoll, setActiveRoll] = useState<{ values: number[]; sides: number } | null>(null);
+  // 3D描画に渡す、今回振る本数と面数（出目は物理が自然に決める）。
+  const [activeRoll, setActiveRoll] = useState<{ count: number; sides: number } | null>(null);
 
   const [hydrated, setHydrated] = useState(false);
 
-  // 静止待ちの出目（reveal で確定させる）。描画（DiceCanvas）はこれを目標値に使う。
-  const pendingRef = useRef<DieResult[] | null>(null);
+  // 出目は物理演算（DiceCanvas）が自然な着地で決める。確定は reveal(values) で1回だけ。
+  const revealedRef = useRef(true);      // 今回のロールが確定済みか（二重確定防止）
+  const rollSidesRef = useRef(6);        // 今回のロールの面数（確定時に使用）
   const timerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
   const idRef      = useRef(0);
 
@@ -101,45 +101,48 @@ export function useDice() {
     setSidesState(clampSides(nextSides));
   }, []);
 
-  // ─── 出目の確定（静止後に呼ぶ） ─────────────────────────
-  const reveal = useCallback(() => {
-    const pending = pendingRef.current;
-    if (!pending) return;
+  // ─── 出目の確定（静止後、物理側が実際の出目を渡して呼ぶ） ──
+  // 各サイコロは自然に着地し、上を向いた面の値がそのまま出目になる。
+  const reveal = useCallback((values: number[]) => {
+    if (revealedRef.current) return;      // 既に確定済み（二重確定を防ぐ）
+    if (values.length === 0) return;
+    revealedRef.current = true;
     if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
-    pendingRef.current = null;
 
-    const values = pending.map((d) => d.value);
-    const total  = values.reduce((a, b) => a + b, 0);
+    const rollSides = rollSidesRef.current;
+    const total = values.reduce((a, b) => a + b, 0);
     const record: RollRecord = {
       id: `roll-${Date.now()}-${idRef.current++}`,
-      notation: notation(pending.length, pending[0]?.sides ?? sides),
+      notation: notation(values.length, rollSides),
       values,
       total,
-      sides: pending[0]?.sides ?? sides,
-      count: pending.length,
-      isD100: (pending[0]?.sides ?? sides) === D100,
+      sides: rollSides,
+      count: values.length,
+      isD100: rollSides === D100,
     };
     setCurrent(record);
     setHistory((prev) => [record, ...prev].slice(0, MAX_HISTORY));
     setPhase('result');
-  }, [sides]);
+  }, []);
 
   // ─── ロール開始 ─────────────────────────────────────────
   const roll = useCallback(() => {
     if (phase === 'rolling') return;
     if (timerRef.current) clearTimeout(timerRef.current);
 
-    const values: DieResult[] = Array.from({ length: count }, () => ({
-      sides,
-      value: rollOne(sides),
-    }));
-    pendingRef.current = values;
-    setActiveRoll({ values: values.map((d) => d.value), sides });
+    revealedRef.current = false;
+    rollSidesRef.current = sides;
+    setActiveRoll({ count, sides });
     setPhase('rolling');
     setRollKey((k) => k + 1);
 
-    // セーフティ：物理側の settle 通知が来なくてもこの時間で必ず確定する。
-    timerRef.current = setTimeout(() => reveal(), ROLL_DURATION_MS);
+    // セーフティ：物理側の settle 通知が来なくてもこの時間で確定する
+    // （通常は DiceCanvas が自然な着地後に実際の出目を渡して確定する）。
+    const fallbackCount = count;
+    const fallbackSides = sides;
+    timerRef.current = setTimeout(() => {
+      reveal(Array.from({ length: fallbackCount }, () => rollOne(fallbackSides)));
+    }, ROLL_DURATION_MS);
   }, [phase, count, sides, reveal]);
 
   // ─── 履歴 ───────────────────────────────────────────────
@@ -172,7 +175,6 @@ export function useDice() {
     activeRoll,
     roll,
     reveal,
-    getPending: () => pendingRef.current,
     // 履歴
     history,
     clearHistory,

@@ -20,7 +20,7 @@ export default function DicePage() {
           phase={dice.phase}
           current={dice.current}
           rollKey={dice.rollKey}
-          activeValues={dice.activeRoll?.values ?? []}
+          activeCount={dice.activeRoll?.count ?? dice.count}
           activeSides={dice.activeRoll?.sides ?? dice.sides}
           onSettled={dice.reveal}
         />

@@ -17,15 +17,15 @@ interface DiceStageProps {
   phase: RollPhase;
   current: RollRecord | null;
   rollKey: number;
-  /** 現在振っている（確定前含む）出目とその面数 */
-  activeValues: number[];
+  /** 今回振る本数と面数（出目は物理が自然な着地で決める） */
+  activeCount: number;
   activeSides: number;
-  /** 転がりが収まったときに呼ばれる（合計ポップアップの起点） */
-  onSettled: () => void;
+  /** 着地して上面が確定したときに、実際の出目を渡して呼ばれる */
+  onSettled: (values: number[]) => void;
 }
 
 export function DiceStage({
-  phase, current, rollKey, activeValues, activeSides, onSettled,
+  phase, current, rollKey, activeCount, activeSides, onSettled,
 }: DiceStageProps) {
   const { t } = useTranslation();
   const showResult = phase === 'result' && current;
@@ -39,7 +39,7 @@ export function DiceStage({
     >
       {started ? (
         <DiceCanvas
-          values={activeValues}
+          count={activeCount}
           sides={activeSides}
           rollKey={rollKey}
           onSettled={onSettled}
