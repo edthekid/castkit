@@ -241,10 +241,10 @@ export function DiceControls({
                 <li
                   key={row.name}
                   className="flex items-center justify-between px-3 py-1 text-xs"
-                  style={{ borderTop: `1px solid ${ck.border.default}`, opacity: row.mult <= 0 ? 0.6 : 1 }}
+                  style={{ borderTop: `1px solid ${ck.border.default}` }}
                 >
                   <span className="font-bold" style={{ color: ck.text.primary }}>{t(row.name)}</span>
-                  <span className="font-black tabular-nums shrink-0" style={{ color: row.mult > 0 ? ck.text.primary : ck.text.secondary }}>
+                  <span className="font-black tabular-nums shrink-0" style={{ color: ck.text.primary }}>
                     {row.mult !== 0 ? t('dice.chinchiro.multiplier', { n: row.mult }) : ''}
                   </span>
                 </li>
