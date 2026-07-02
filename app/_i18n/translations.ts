@@ -258,7 +258,7 @@ export const translations = {
 
     // ─── サイコロ ─────────────────────────────────────
     'dice.title':    'サイコロ',
-    'dice.subtitle': '3D物理演算でリアルに転がるサイコロ。TRPGにも対応',
+    'dice.subtitle': 'サイコロを振って手軽に決めよう。TRPG・チンチロにも対応',
     'dice.mode.basic': '基本',
     'dice.mode.trpg':  'TRPG',
     'dice.mode.chinchiro': 'チンチロ',
@@ -557,7 +557,7 @@ export const translations = {
 
     // ─── Dice ─────────────────────────────────────────
     'dice.title':    'Dice Roller',
-    'dice.subtitle': 'Roll realistic 3D dice with physics — TRPG ready',
+    'dice.subtitle': 'Roll the dice to decide anything — TRPG and Chinchiro modes',
     'dice.mode.basic': 'Basic',
     'dice.mode.trpg':  'TRPG',
     'dice.mode.chinchiro': 'Chinchiro',
