@@ -5,6 +5,7 @@ import { useTranslation } from '../../_i18n/useTranslation';
 import { ck } from '../../_theme/colors';
 import { IconDice } from '../../_components/icons';
 import type { RollPhase, RollRecord } from '../_constants';
+import { chinchiroName } from '../_utils';
 
 // Three.js / cannon-es は重いので、初回ロール時にだけ動的読み込みする。
 // ssr:false でサーバー実行を避け、他ページのバンドルにも含めない。
@@ -53,7 +54,7 @@ export function DiceStage({
         </div>
       )}
 
-      {/* 合計ポップアップ（静止後に表示）。濃色トレイ上で目立つよう白基調。 */}
+      {/* 結果ポップアップ（静止後に表示）。濃色トレイ上で目立つよう白基調。 */}
       {showResult && (
         <div
           key={`total-${rollKey}`}
@@ -61,13 +62,30 @@ export function DiceStage({
           role="status"
           aria-live="polite"
         >
-          <div
-            className="flex items-baseline gap-2 px-5 py-2.5 shadow-xl"
-            style={{ background: ck.text.onDark, color: ck.text.primary }}
-          >
-            <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>{t('dice.total')}</span>
-            <span className="text-3xl font-black tabular-nums leading-none">{current.total}</span>
-          </div>
+          {current.chinchiro ? (
+            <div className="flex items-center gap-2 px-5 py-2.5 shadow-xl" style={{ background: ck.text.onDark }}>
+              <span className="text-2xl font-black leading-none" style={{ color: ck.text.primary }}>
+                {chinchiroName(current.chinchiro.role, current.chinchiro.value, t)}
+              </span>
+              <span
+                className="text-sm font-black tabular-nums leading-none px-1.5 py-0.5"
+                style={{
+                  color: current.chinchiro.multiplier > 0 ? ck.text.onDark : ck.text.secondary,
+                  background: current.chinchiro.multiplier > 0 ? ck.text.primary : 'transparent',
+                }}
+              >
+                {current.chinchiro.multiplier > 0 ? t('dice.chinchiro.multiplier', { n: current.chinchiro.multiplier }) : t('dice.chinchiro.lose')}
+              </span>
+            </div>
+          ) : (
+            <div
+              className="flex items-baseline gap-2 px-5 py-2.5 shadow-xl"
+              style={{ background: ck.text.onDark, color: ck.text.primary }}
+            >
+              <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>{t('dice.total')}</span>
+              <span className="text-3xl font-black tabular-nums leading-none">{current.total}</span>
+            </div>
+          )}
         </div>
       )}
     </div>

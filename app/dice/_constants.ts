@@ -2,9 +2,13 @@
 // ここで定義する色は「サイコロ盤面の描画色」であり、STYLEGUIDE の
 // 描画用途の例外に該当するためハードコードを許容する（トークン非対象）。
 
-export type DiceMode = 'basic' | 'trpg';
+export type DiceMode = 'basic' | 'trpg' | 'chinchiro';
 
 export type RollPhase = 'idle' | 'rolling' | 'result';
+
+/** チンチロで使うサイコロ数・面数（固定）。 */
+export const CHINCHIRO_COUNT = 3;
+export const CHINCHIRO_SIDES = 6;
 
 /** 1回分の出目（各サイコロの面数と出た値）。 */
 export interface DieResult {
@@ -24,6 +28,8 @@ export interface RollRecord {
   count: number;
   /** d100（パーセンタイル 1〜100）かどうか */
   isD100: boolean;
+  /** チンチロの結果（チンチロモードのみ）。表示は role+value を i18n で解決する。 */
+  chinchiro?: { role: string; value: number | null; multiplier: number };
 }
 
 export const MIN_DICE = 1;

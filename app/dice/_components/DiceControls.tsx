@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from '../../_i18n/useTranslation';
+import type { TranslationKey } from '../../_i18n/translations';
 import { ck } from '../../_theme/colors';
 import { IconDice } from '../../_components/icons';
 import {
@@ -13,6 +14,7 @@ import {
   MIN_SIDES,
   MAX_SIDES,
 } from '../_constants';
+import { type ChinchiroTurn, CHINCHIRO_MAX_ROLLS } from '../_chinchiro';
 import { notation } from '../_utils';
 
 interface DiceControlsProps {
@@ -26,7 +28,15 @@ interface DiceControlsProps {
   isD100: boolean;
   phase: RollPhase;
   onRoll: () => void;
+  chinchiroTurn: ChinchiroTurn;
 }
+
+const MODES: DiceMode[] = ['basic', 'trpg', 'chinchiro'];
+const MODE_LABEL: Record<DiceMode, TranslationKey> = {
+  basic: 'dice.mode.basic',
+  trpg: 'dice.mode.trpg',
+  chinchiro: 'dice.mode.chinchiro',
+};
 
 // ─── 数値入力ステッパー（− [入力] +） ───────────────────
 function NumberStepper({
@@ -97,16 +107,28 @@ function NumberStepper({
 }
 
 export function DiceControls({
-  mode, setMode, count, setCount, sides, setSides, setPreset, isD100, phase, onRoll,
+  mode, setMode, count, setCount, sides, setSides, setPreset, isD100, phase, onRoll, chinchiroTurn,
 }: DiceControlsProps) {
   const { t } = useTranslation();
   const rolling = phase === 'rolling';
+  const isChin = mode === 'chinchiro';
+
+  // チンチロのロールボタン表示（振る / 振り直す / もう一度）とサブラベル。
+  const rollsLeft = CHINCHIRO_MAX_ROLLS - chinchiroTurn.rollsUsed;
+  let mainLabel = t('dice.roll');
+  let subLabel = notation(count, sides);
+  if (isChin) {
+    subLabel = `3d6`;
+    if (chinchiroTurn.rollsUsed === 0) mainLabel = t('dice.roll');
+    else if (!chinchiroTurn.decided) { mainLabel = t('dice.chinchiro.reroll'); subLabel = t('dice.chinchiro.rollsLeft', { n: rollsLeft }); }
+    else mainLabel = t('dice.chinchiro.again');
+  }
 
   return (
     <div className="ck-section flex flex-col gap-5">
       {/* モード切替 */}
       <div className="flex gap-2" role="group" aria-label={t('dice.mode.basic')}>
-        {(['basic', 'trpg'] as DiceMode[]).map((m) => (
+        {MODES.map((m) => (
           <button
             key={m}
             type="button"
@@ -119,7 +141,7 @@ export function DiceControls({
               border: `1.5px solid ${mode === m ? ck.text.primary : ck.border.default}`,
             }}
           >
-            {m === 'basic' ? t('dice.mode.basic') : t('dice.mode.trpg')}
+            {t(MODE_LABEL[m])}
           </button>
         ))}
       </div>
@@ -155,40 +177,65 @@ export function DiceControls({
         </div>
       )}
 
-      {/* サイコロの数（数値入力） */}
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
-          {t('dice.diceCount')}
-        </span>
-        <NumberStepper
-          value={count}
-          min={MIN_DICE}
-          max={MAX_DICE}
-          onChange={setCount}
-          ariaLabel={t('dice.diceCount')}
-          ariaDec={t('dice.removeDie')}
-          ariaInc={t('dice.addDie')}
-        />
-      </div>
+      {/* 個数・面数（基本 / TRPG のみ） */}
+      {!isChin && (
+        <>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
+              {t('dice.diceCount')}
+            </span>
+            <NumberStepper
+              value={count}
+              min={MIN_DICE}
+              max={MAX_DICE}
+              onChange={setCount}
+              ariaLabel={t('dice.diceCount')}
+              ariaDec={t('dice.removeDie')}
+              ariaInc={t('dice.addDie')}
+            />
+          </div>
 
-      {/* 面数（数値入力） */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
-            {t('dice.sides')}
-          </span>
-          <NumberStepper
-            value={sides}
-            min={MIN_SIDES}
-            max={MAX_SIDES}
-            onChange={setSides}
-            ariaLabel={t('dice.sides')}
-            ariaDec={t('dice.sidesDown')}
-            ariaInc={t('dice.sidesUp')}
-          />
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
+                {t('dice.sides')}
+              </span>
+              <NumberStepper
+                value={sides}
+                min={MIN_SIDES}
+                max={MAX_SIDES}
+                onChange={setSides}
+                ariaLabel={t('dice.sides')}
+                ariaDec={t('dice.sidesDown')}
+                ariaInc={t('dice.sidesUp')}
+              />
+            </div>
+            {isD100 && <p className="text-xs font-bold" style={{ color: ck.text.secondary }}>{t('dice.d100Note')}</p>}
+          </div>
+        </>
+      )}
+
+      {/* チンチロ：ルール説明＋投数インジケータ */}
+      {isChin && (
+        <div className="flex flex-col gap-3">
+          <p className="text-xs leading-relaxed" style={{ color: ck.text.muted }}>{t('dice.chinchiro.hint')}</p>
+          <div className="flex items-center gap-2" aria-label={t('dice.chinchiro.rollsLabel')}>
+            <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
+              {t('dice.chinchiro.rollsLabel')}
+            </span>
+            <span className="flex gap-1.5">
+              {Array.from({ length: CHINCHIRO_MAX_ROLLS }, (_, i) => (
+                <span
+                  key={i}
+                  className="w-3 h-3 rounded-full"
+                  style={{ background: i < chinchiroTurn.rollsUsed ? ck.text.primary : ck.border.default }}
+                  aria-hidden="true"
+                />
+              ))}
+            </span>
+          </div>
         </div>
-        {isD100 && <p className="text-xs font-bold" style={{ color: ck.text.secondary }}>{t('dice.d100Note')}</p>}
-      </div>
+      )}
 
       {/* ロールボタン */}
       <button
@@ -199,8 +246,8 @@ export function DiceControls({
         className="ck-btn ck-btn-primary w-full text-base h-14 tracking-widest flex items-center justify-center gap-2 disabled:opacity-60"
       >
         <IconDice size={20} aria-hidden="true" />
-        <span>{rolling ? t('dice.rolling') : t('dice.roll')}</span>
-        <span className="text-xs font-bold opacity-70 tabular-nums">{notation(count, sides)}</span>
+        <span>{rolling ? t('dice.rolling') : mainLabel}</span>
+        <span className="text-xs font-bold opacity-70 tabular-nums">{subLabel}</span>
       </button>
     </div>
   );

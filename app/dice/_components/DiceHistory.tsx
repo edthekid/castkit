@@ -4,6 +4,7 @@ import { useTranslation } from '../../_i18n/useTranslation';
 import { ck } from '../../_theme/colors';
 import { IconCopy, IconTrash } from '../../_components/icons';
 import type { RollRecord } from '../_constants';
+import { chinchiroName } from '../_utils';
 
 interface DiceHistoryProps {
   history: RollRecord[];
@@ -51,9 +52,18 @@ export function DiceHistoryPanel({ history, onCopy, onClear }: DiceHistoryProps)
               <span className="text-xs font-medium tabular-nums truncate flex-1" style={{ color: ck.text.primary }}>
                 [{r.values.join(', ')}]
               </span>
-              <span className="text-sm font-black tabular-nums shrink-0" style={{ color: ck.text.primary }}>
-                = {r.total}
-              </span>
+              {r.chinchiro ? (
+                <span className="text-sm font-black shrink-0" style={{ color: ck.text.primary }}>
+                  {chinchiroName(r.chinchiro.role, r.chinchiro.value, t)}
+                  <span className="ml-1 text-xs" style={{ color: ck.text.secondary }}>
+                    {r.chinchiro.multiplier > 0 ? t('dice.chinchiro.multiplier', { n: r.chinchiro.multiplier }) : t('dice.chinchiro.lose')}
+                  </span>
+                </span>
+              ) : (
+                <span className="text-sm font-black tabular-nums shrink-0" style={{ color: ck.text.primary }}>
+                  = {r.total}
+                </span>
+              )}
               <button
                 type="button"
                 onClick={() => onCopy(r)}

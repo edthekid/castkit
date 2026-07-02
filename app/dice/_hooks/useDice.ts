@@ -15,8 +15,15 @@ import {
   MAX_HISTORY,
   ROLL_DURATION_MS,
   STORAGE_KEY,
+  CHINCHIRO_COUNT,
+  CHINCHIRO_SIDES,
 } from '../_constants';
 import { notation, rollOne, formatRoll } from '../_utils';
+import {
+  type ChinchiroTurn,
+  initialChinchiroTurn,
+  applyChinchiroRoll,
+} from '../_chinchiro';
 
 interface PersistedState {
   mode: DiceMode;
@@ -54,8 +61,14 @@ export function useDice() {
   // 出目は物理演算（DiceCanvas）が自然な着地で決める。確定は reveal(values) で1回だけ。
   const revealedRef = useRef(true);      // 今回のロールが確定済みか（二重確定防止）
   const rollSidesRef = useRef(6);        // 今回のロールの面数（確定時に使用）
+  const rollModeRef  = useRef<DiceMode>('basic'); // 今回のロールのモード
   const timerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
   const idRef      = useRef(0);
+
+  // ─── チンチロ：ターン管理（最大3投・目なしなら振り直し） ──
+  const [chinchiroTurn, setChinchiroTurn] = useState<ChinchiroTurn>(initialChinchiroTurn);
+  const chinTurnRef = useRef<ChinchiroTurn>(chinchiroTurn); // roll 内で最新参照
+  const chinBaseRef = useRef<ChinchiroTurn>(chinchiroTurn); // reveal で積む基準（新ターンか継続か）
 
   const isD100 = mode === 'trpg' && sides === D100;
 
@@ -66,7 +79,7 @@ export function useDice() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const saved = JSON.parse(raw) as Partial<PersistedState>;
-        if (saved.mode === 'basic' || saved.mode === 'trpg') setModeState(saved.mode);
+        if (saved.mode === 'basic' || saved.mode === 'trpg' || saved.mode === 'chinchiro') setModeState(saved.mode);
         if (typeof saved.count === 'number') setCountState(clampCount(saved.count));
         if (typeof saved.sides === 'number') setSidesState(clampSides(saved.sides));
         if (Array.isArray(saved.history)) setHistory(saved.history.slice(0, MAX_HISTORY));
@@ -93,7 +106,16 @@ export function useDice() {
 
   // ─── 設定変更 ───────────────────────────────────────────
   // モードは個数・面数の入力方法（プリセット有無）が異なるだけで、値は引き継ぐ。
-  const setMode = useCallback((next: DiceMode) => setModeState(next), []);
+  // モード切替時はチンチロのターンと直近結果をリセットする。
+  const setMode = useCallback((next: DiceMode) => {
+    setModeState(next);
+    const fresh = initialChinchiroTurn();
+    chinTurnRef.current = fresh;
+    chinBaseRef.current = fresh;
+    setChinchiroTurn(fresh);
+    setCurrent(null);
+    setPhase('idle');
+  }, []);
 
   // TRPGプリセット：個数と面数をまとめて設定する。
   const setPreset = useCallback((nextCount: number, nextSides: number) => {
@@ -110,18 +132,32 @@ export function useDice() {
     if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
 
     const rollSides = rollSidesRef.current;
+    const isChin = rollModeRef.current === 'chinchiro';
     const total = values.reduce((a, b) => a + b, 0);
     const record: RollRecord = {
       id: `roll-${Date.now()}-${idRef.current++}`,
-      notation: notation(values.length, rollSides),
+      notation: isChin ? 'チンチロ' : notation(values.length, rollSides),
       values,
       total,
       sides: rollSides,
       count: values.length,
       isD100: rollSides === D100,
     };
-    setCurrent(record);
-    setHistory((prev) => [record, ...prev].slice(0, MAX_HISTORY));
+
+    if (isChin) {
+      // ターンを進め、判定結果を記録。目なしで振り直せる間は履歴に積まない
+      // （そのターンの最終結果だけを履歴に残す）。
+      const next = applyChinchiroRoll(chinBaseRef.current, values);
+      chinTurnRef.current = next;
+      const r = next.result!;
+      record.chinchiro = { role: r.role, value: r.value, multiplier: r.multiplier };
+      setChinchiroTurn(next);
+      setCurrent(record);
+      if (next.decided) setHistory((prev) => [record, ...prev].slice(0, MAX_HISTORY));
+    } else {
+      setCurrent(record);
+      setHistory((prev) => [record, ...prev].slice(0, MAX_HISTORY));
+    }
     setPhase('result');
   }, []);
 
@@ -130,20 +166,29 @@ export function useDice() {
     if (phase === 'rolling') return;
     if (timerRef.current) clearTimeout(timerRef.current);
 
+    // チンチロは常に 3d6。それ以外はユーザー設定の個数・面数。
+    const isChin = mode === 'chinchiro';
+    const rollCount = isChin ? CHINCHIRO_COUNT : count;
+    const rollSides = isChin ? CHINCHIRO_SIDES : sides;
+
+    // チンチロ：直前のターンが確定済みなら新ターン、目なしで未確定なら振り直し（継続）。
+    if (isChin) {
+      chinBaseRef.current = chinTurnRef.current.decided ? initialChinchiroTurn() : chinTurnRef.current;
+    }
+
     revealedRef.current = false;
-    rollSidesRef.current = sides;
-    setActiveRoll({ count, sides });
+    rollSidesRef.current = rollSides;
+    rollModeRef.current = mode;
+    setActiveRoll({ count: rollCount, sides: rollSides });
     setPhase('rolling');
     setRollKey((k) => k + 1);
 
     // セーフティ：物理側の settle 通知が来なくてもこの時間で確定する
     // （通常は DiceCanvas が自然な着地後に実際の出目を渡して確定する）。
-    const fallbackCount = count;
-    const fallbackSides = sides;
     timerRef.current = setTimeout(() => {
-      reveal(Array.from({ length: fallbackCount }, () => rollOne(fallbackSides)));
+      reveal(Array.from({ length: rollCount }, () => rollOne(rollSides)));
     }, ROLL_DURATION_MS);
-  }, [phase, count, sides, reveal]);
+  }, [phase, mode, count, sides, reveal]);
 
   // ─── 履歴 ───────────────────────────────────────────────
   const clearHistory = useCallback(() => {
@@ -159,8 +204,8 @@ export function useDice() {
   }, [t]);
 
   const copyRecord = useCallback((record: RollRecord) => {
-    copyText(formatRoll(record));
-  }, [copyText]);
+    copyText(formatRoll(record, t));
+  }, [copyText, t]);
 
   return {
     // 設定
@@ -175,6 +220,8 @@ export function useDice() {
     activeRoll,
     roll,
     reveal,
+    // チンチロ
+    chinchiroTurn,
     // 履歴
     history,
     clearHistory,

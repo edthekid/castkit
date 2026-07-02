@@ -214,7 +214,7 @@ export function DiceCanvas({ count, sides, rollKey, onSettled }: DiceCanvasProps
     // ── three ──────────────────────────────────────────
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(46, width / height, 0.1, 100);
-    camera.position.set(0, 20, 9);
+    camera.position.set(0, 20, 4);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });

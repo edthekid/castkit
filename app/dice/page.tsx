@@ -38,6 +38,7 @@ export default function DicePage() {
             isD100={dice.isD100}
             phase={dice.phase}
             onRoll={dice.roll}
+            chinchiroTurn={dice.chinchiroTurn}
           />
 
           <DiceHistoryPanel
