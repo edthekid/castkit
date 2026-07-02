@@ -38,15 +38,15 @@ const MODE_LABEL: Record<DiceMode, TranslationKey> = {
   chinchiro: 'dice.mode.chinchiro',
 };
 
-// チンチロの役と倍率（強い順）。loss=true は敗北役（倍率でなく「敗北」を表示）。
+// チンチロの役と倍率（強い順）。mult===0 の役（目なし）は倍率を表示しない。
 // 通常役（○の目）は同額の 1倍。目の数は強さ＝順位を決めるだけで倍率は変わらない。
-const CHINCHIRO_LEGEND: { name: TranslationKey; mult?: number; loss?: boolean }[] = [
+const CHINCHIRO_LEGEND: { name: TranslationKey; mult: number }[] = [
   { name: 'dice.chinchiro.legendPinzoro', mult: 3 },
   { name: 'dice.chinchiro.legendZorome',  mult: 3 },
   { name: 'dice.chinchiro.legendShigoro', mult: 2 },
   { name: 'dice.chinchiro.legendNormal',  mult: 1 },
-  { name: 'dice.chinchiro.legendHifumi',  loss: true },
-  { name: 'dice.chinchiro.legendMenashi', loss: true },
+  { name: 'dice.chinchiro.legendMenashi', mult: 0 },
+  { name: 'dice.chinchiro.legendHifumi',  mult: -2 },
 ];
 
 // ─── 数値入力ステッパー（− [入力] +） ───────────────────
@@ -241,11 +241,11 @@ export function DiceControls({
                 <li
                   key={row.name}
                   className="flex items-center justify-between px-3 py-1 text-xs"
-                  style={{ borderTop: `1px solid ${ck.border.default}`, opacity: row.loss ? 0.6 : 1 }}
+                  style={{ borderTop: `1px solid ${ck.border.default}`, opacity: row.mult <= 0 ? 0.6 : 1 }}
                 >
                   <span className="font-bold" style={{ color: ck.text.primary }}>{t(row.name)}</span>
-                  <span className="font-black tabular-nums shrink-0" style={{ color: row.loss ? ck.text.secondary : ck.text.primary }}>
-                    {row.loss ? t('dice.chinchiro.lose') : t('dice.chinchiro.multiplier', { n: row.mult! })}
+                  <span className="font-black tabular-nums shrink-0" style={{ color: row.mult > 0 ? ck.text.primary : ck.text.secondary }}>
+                    {row.mult !== 0 ? t('dice.chinchiro.multiplier', { n: row.mult }) : ''}
                   </span>
                 </li>
               ))}

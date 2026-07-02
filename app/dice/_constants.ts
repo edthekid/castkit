@@ -29,7 +29,7 @@ export interface RollRecord {
   /** d100（パーセンタイル 1〜100）かどうか */
   isD100: boolean;
   /** チンチロの結果（チンチロモードのみ）。表示は role+value を i18n で解決する。 */
-  chinchiro?: { role: string; value: number | null; multiplier: number; isLoss: boolean };
+  chinchiro?: { role: string; value: number | null; multiplier: number };
 }
 
 export const MIN_DICE = 1;

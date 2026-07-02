@@ -4,8 +4,9 @@
 // 役と倍率／強さスコアはルール定義に従う。強さスコアは勝敗比較用の
 // 単調な整数で、値が大きいほど強い（ピンゾロが最強）。
 //
-//   目なし   : 倍率0  / 強さ0   （敗北）
-//   ヒフミ   : 倍率1  / 強さ1   （敗北扱い）
+// 強さ（弱い→強い）：ヒフミ ＜ 目なし ＜ ○の目(1→6) ＜ シゴロ ＜ ゾロ目 ＜ ピンゾロ
+//   ヒフミ   : 倍率-2 / 強さ0   （最弱・2倍払い）
+//   目なし   : 倍率0  / 強さ1   （勝敗なし・倍率表記なし）
 //   通常役   : 倍率1  / 強さ=1+目  （倍率は同額固定。目1〜6は強さ＝順位だけを決める）
 //   シゴロ   : 倍率2  / 強さ10
 //   ゾロ目   : 倍率3  / 強さ20+ゾロの数 （222→22 … 666→26）
@@ -66,9 +67,9 @@ export function judgeChinchiro(dice: readonly number[]): ChinchiroResult {
     return { role: 'shigoro', name: 'シゴロ', multiplier: 2, strength: SHIGORO_STRENGTH, value: null, isLoss: false };
   }
 
-  // ヒフミ（1-2-3）＝敗北役
+  // ヒフミ（1-2-3）＝最弱の敗北役（2倍払い）
   if (a === 1 && b === 2 && c === 3) {
-    return { role: 'hifumi', name: 'ヒフミ', multiplier: 1, strength: 1, value: null, isLoss: true };
+    return { role: 'hifumi', name: 'ヒフミ', multiplier: -2, strength: 0, value: null, isLoss: true };
   }
 
   // 通常役：2つ同じ＋残り1つが「目」。昇順なので、対にならない側が「目」。
@@ -80,8 +81,8 @@ export function judgeChinchiro(dice: readonly number[]): ChinchiroResult {
     return { role: 'normal', name: `${pip}の目`, multiplier: 1, strength: 1 + pip, value: pip, isLoss: false };
   }
 
-  // どれにも当てはまらない＝目なし（敗北）
-  return { role: 'menashi', name: '目なし', multiplier: 0, strength: 0, value: null, isLoss: true };
+  // どれにも当てはまらない＝目なし（ヒフミより上・倍率なし）
+  return { role: 'menashi', name: '目なし', multiplier: 0, strength: 1, value: null, isLoss: true };
 }
 
 // ─────────────────────────────────────────────────────────────

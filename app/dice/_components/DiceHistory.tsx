@@ -55,9 +55,11 @@ export function DiceHistoryPanel({ history, onCopy, onClear }: DiceHistoryProps)
               {r.chinchiro ? (
                 <span className="text-sm font-black shrink-0" style={{ color: ck.text.primary }}>
                   {chinchiroName(r.chinchiro.role, r.chinchiro.value, t)}
-                  <span className="ml-1 text-xs" style={{ color: ck.text.secondary }}>
-                    {r.chinchiro.isLoss ? t('dice.chinchiro.lose') : t('dice.chinchiro.multiplier', { n: r.chinchiro.multiplier })}
-                  </span>
+                  {r.chinchiro.multiplier !== 0 && (
+                    <span className="ml-1 text-xs" style={{ color: ck.text.secondary }}>
+                      {t('dice.chinchiro.multiplier', { n: r.chinchiro.multiplier })}
+                    </span>
+                  )}
                 </span>
               ) : (
                 <span className="text-sm font-black tabular-nums shrink-0" style={{ color: ck.text.primary }}>

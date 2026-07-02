@@ -67,15 +67,17 @@ export function DiceStage({
               <span className="text-2xl font-black leading-none" style={{ color: ck.text.primary }}>
                 {chinchiroName(current.chinchiro.role, current.chinchiro.value, t)}
               </span>
-              <span
-                className="text-sm font-black tabular-nums leading-none px-1.5 py-0.5"
-                style={{
-                  color: current.chinchiro.isLoss ? ck.text.secondary : ck.text.onDark,
-                  background: current.chinchiro.isLoss ? 'transparent' : ck.text.primary,
-                }}
-              >
-                {current.chinchiro.isLoss ? t('dice.chinchiro.lose') : t('dice.chinchiro.multiplier', { n: current.chinchiro.multiplier })}
-              </span>
+              {current.chinchiro.multiplier !== 0 && (
+                <span
+                  className="text-sm font-black tabular-nums leading-none px-1.5 py-0.5"
+                  style={{
+                    color: current.chinchiro.multiplier > 0 ? ck.text.onDark : ck.text.secondary,
+                    background: current.chinchiro.multiplier > 0 ? ck.text.primary : 'transparent',
+                  }}
+                >
+                  {t('dice.chinchiro.multiplier', { n: current.chinchiro.multiplier })}
+                </span>
+              )}
             </div>
           ) : (
             <div

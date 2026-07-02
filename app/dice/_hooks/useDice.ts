@@ -150,7 +150,7 @@ export function useDice() {
       const next = applyChinchiroRoll(chinBaseRef.current, values);
       chinTurnRef.current = next;
       const r = next.result!;
-      record.chinchiro = { role: r.role, value: r.value, multiplier: r.multiplier, isLoss: r.isLoss };
+      record.chinchiro = { role: r.role, value: r.value, multiplier: r.multiplier };
       setChinchiroTurn(next);
       setCurrent(record);
       if (next.decided) setHistory((prev) => [record, ...prev].slice(0, MAX_HISTORY));
