@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
 import { pageAlternates, webAppJsonLd, breadcrumbJsonLd } from '../_lib/seo';
 
-const DESC = '無料のサイコロツール。1〜10個・面数自由（d4/d6/d8/d10/d12/d20/d100）。TRPGモード＆3D物理演算でリアルに転がる。1〜6はドット目のオーソドックスな白サイコロ。履歴コピー対応。登録不要、ブラウザだけで使える。 / Free 3D dice roller with realistic physics. TRPG dice sets (d4–d100), classic pipped dice, and copyable history. No sign-up required.';
+const DESC = '無料のサイコロツール。1〜10個・面数自由（d4/d6/d8/d10/d12/d20/d100）。TRPG・チンチロにも対応。1〜6はドット目のオーソドックスな白サイコロ。履歴コピー対応。登録不要、ブラウザだけで使える。 / Free online dice roller. Roll 1–10 dice with any sides (d4–d100), plus TRPG and Chinchiro modes, classic pipped dice, and copyable history. No sign-up required.';
 
 export const metadata: Metadata = {
-  title: '無料サイコロツール（3D物理演算・TRPG対応）',
+  title: '無料サイコロツール（TRPG・チンチロ対応）',
   description: DESC,
   openGraph: {
     title: 'サイコロ | CastKit',
-    description: '無料のサイコロツール。3D物理演算でリアルに転がる。TRPG（d4〜d100）・ドット目・履歴コピー対応。登録不要で無料。 / Free 3D dice roller with realistic physics and TRPG dice sets.',
+    description: '無料のサイコロツール。TRPG（d4〜d100）・チンチロ・ドット目・履歴コピー対応。登録不要で無料。 / Free online dice roller with TRPG dice sets and a Chinchiro mode.',
     locale: 'ja_JP',
     alternateLocale: 'en_US',
   },

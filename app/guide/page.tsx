@@ -182,11 +182,11 @@ const TOOLS: Record<Locale, ToolContent[]> = {
       tag: 'Dice',
       icon: IconDice,
       name: 'サイコロ',
-      summary: '3D物理演算でリアルに転がるサイコロツールです。1〜10個・面数自由（d4〜d20）に加え、TRPGでよく使うダイスセットやd100判定にも対応。1〜6はドット目のオーソドックスな白サイコロで、出目の履歴はDiscord向けのフォーマットでコピーできます。',
+      summary: '手軽に振れる無料のサイコロツールです。1〜10個・面数自由（d4〜d20）に加え、TRPGでよく使うダイスセットやd100判定、チンチロにも対応。1〜6はドット目のオーソドックスな白サイコロで、出目の履歴はDiscord向けのフォーマットでコピーできます。',
       steps: [
         '基本モードでサイコロの数（1〜10）と面数（2〜100）を数値で入力する',
         'または「TRPGモード」でよく使うダイスセットをプリセットから選ぶ（個数・面数の入力も可）',
-        '「振る」ボタンを押すと3Dサイコロが物理演算で転がる',
+        '「振る」ボタンを押すとサイコロが転がって出目が決まる',
         '止まると各出目と合計が強調表示され、履歴に残る',
       ],
       tips: [
@@ -366,11 +366,11 @@ const TOOLS: Record<Locale, ToolContent[]> = {
       tag: 'Dice',
       icon: IconDice,
       name: 'Dice Roller',
-      summary: 'A dice roller with realistic 3D physics. Roll 1–10 dice with any number of sides (d4–d20), or use TRPG dice sets and d100 rolls. Classic white dice show pips for 1–6, and roll history copies in a Discord-friendly format.',
+      summary: 'An easy online dice roller. Roll 1–10 dice with any number of sides (d4–d20), or use TRPG dice sets, d100 rolls, and a Chinchiro mode. Classic white dice show pips for 1–6, and roll history copies in a Discord-friendly format.',
       steps: [
         'In Basic mode, enter the number of dice (1–10) and sides (2–100)',
         'Or switch to "TRPG mode" and pick a preset dice set (manual count/sides also available)',
-        'Press "Roll" and the 3D dice tumble with real physics',
+        'Press "Roll" and the dice tumble and settle on a result',
         'Once they settle, each face and the total are highlighted and saved to history',
       ],
       tips: [
