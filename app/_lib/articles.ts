@@ -11,11 +11,12 @@ import { topicPicker } from './articles/topic-picker';
 import { conversationStarters } from './articles/conversation-starters';
 import { debate } from './articles/debate';
 import { scoreboard } from './articles/scoreboard';
+import { dice } from './articles/dice';
 
 export type { Article, ArticleInput } from './articles/_types';
 
 /** 一覧などでの表示順（先頭が新着扱い） */
-export const ARTICLES: Article[] = [conversationStarters, scoreboard, teamDivision, roulette, amida, topicPicker, debate].map((a) => ({
+export const ARTICLES: Article[] = [dice, conversationStarters, scoreboard, teamDivision, roulette, amida, topicPicker, debate].map((a) => ({
   ...a,
   href: `/articles/${a.slug}`,
 }));
