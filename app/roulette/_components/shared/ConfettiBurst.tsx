@@ -44,14 +44,15 @@ export function ConfettiBurst({ triggerKey }: ConfettiBurstProps) {
         // 放物運動のパラメータ（px/秒・px/秒^2）
         const dir    = Math.random() * Math.PI * 2;        // 全方向へ射出
         const speed  = 170 + Math.random() * 260;          // 初速
+        const upBias = 120 + Math.random() * 200;          // 上方向への打ち上げ強化(負=上)
         const vx     = Math.cos(dir) * speed;
-        const vy     = Math.sin(dir) * speed;              // 上向き=負も含む
-        const grav   = 680 + Math.random() * 420;          // 重力加速度
+        const vy     = Math.sin(dir) * speed - upBias;     // 上向き(負)へ寄せる
+        const grav   = 320 + Math.random() * 240;          // 重力(軽め)
         const drag   = 0.6 + Math.random() * 0.25;         // 横方向の減衰(空気抵抗)
         const spin0  = Math.random() * 180;                // 初期角
         const spinV  = (Math.random() < 0.5 ? -1 : 1) * (220 + Math.random() * 640); // deg/秒
         const scl    = 0.65 + Math.random() * 0.75;
-        const dur    = 1.5 + Math.random() * 0.9;          // 秒
+        const dur    = 1.7 + Math.random() * 1.0;          // 秒
 
         // 時間tを線形に進め、位置は毎フレーム物理式で算出（＝止まらず連続的に落下）
         const st = { t: 0 };
