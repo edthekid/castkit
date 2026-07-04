@@ -387,6 +387,60 @@ export function IconDice({ size = 18, ...props }: IconProps) {
   );
 }
 
+export function IconTimer({ size = 18, ...props }: IconProps) {
+  return (
+    <svg {...base(size)} {...props}>
+      <circle cx="12" cy="13.5" r="7.5" />
+      <path d="M12 13.5V9" />
+      <path d="M9.5 2.5h5" />
+      <path d="M19 6l1.5-1.5" />
+    </svg>
+  );
+}
+
+export function IconPause({ size = 18, ...props }: IconProps) {
+  return (
+    <svg {...base(size)} {...props}>
+      <path d="M8 4.5v15M16 4.5v15" />
+    </svg>
+  );
+}
+
+export function IconExpand({ size = 18, ...props }: IconProps) {
+  return (
+    <svg {...base(size)} {...props}>
+      <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+    </svg>
+  );
+}
+
+export function IconVolume({ size = 18, ...props }: IconProps) {
+  return (
+    <svg {...base(size)} {...props}>
+      <path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4Z" />
+      <path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" />
+    </svg>
+  );
+}
+
+export function IconVolumeMute({ size = 18, ...props }: IconProps) {
+  return (
+    <svg {...base(size)} {...props}>
+      <path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4Z" />
+      <path d="M16 9.5l5 5M21 9.5l-5 5" />
+    </svg>
+  );
+}
+
+export function IconFlag({ size = 18, ...props }: IconProps) {
+  return (
+    <svg {...base(size)} {...props}>
+      <path d="M5.5 21V3.5" />
+      <path d="M5.5 4.5h11l-2 3.5 2 3.5h-11" />
+    </svg>
+  );
+}
+
 // ─── アイコンID → コンポーネントのマップ ─────────────────
 // topic/_data/topics.ts のような、データファイル側で文字列として
 // アイコンを指定したい場合に使う（JSXを直接データに書けないため）。
