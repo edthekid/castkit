@@ -59,7 +59,7 @@ app/
 │
 ├─ _theme/colors.ts          # JS用カラートークン（ck）。globals.css の :root と同値を保つ
 │
-├─ <tool>/                   # 各ツール（team-division / roulette / amida / topic / debate / scoreboard / dice）
+├─ <tool>/                   # 各ツール（team-division / roulette / amida / topic / debate / scoreboard / dice / timer）
 │   ├─ page.tsx              #   画面（ToolHeader + 本体 + ToolFooter）
 │   ├─ layout.tsx            #   メタデータ + JSON-LD
 │   ├─ _hooks/               #   状態・ロジック（useXxx）
@@ -100,6 +100,11 @@ app/_lib/articles/<slug>.ts (Markdown)
 - **d6 と非標準の面数は角丸キューブ**（`RoundedBoxGeometry` + `CANNON.Box`）にフォールバック。
 - **出目は物理任せ**：静止後、多くのダイスは上を向いた面の値を採用（face モード）。**d4 は本物と同じ「頂点読み」**（vertex モード）で、各面の3隅に頂点値を刻み、上を向いた頂点＝出目とする（頂点に集まる3隅は同値）。公平性のため面/頂点へ値をシャッフル割り当てる（d10 は 0〜9 を刻印し 0＝10）。強制的な向き補正はせず、静止直前にごく小さな水平化だけ行う。
 - **d%（1d100）は本物と同じ2つのd10方式**：十の位（面に 00〜90）と一の位（面に 0〜9）の2つのd10を振り、合計して 1〜100 を算出する（`00`＋`0`＝100）。乱数で1〜100を直接引くのではなく、2ダイスの物理出目を合計する。
+
+### タイマー（/timer）の計時モデル
+- 4モード（カウントダウン／ストップウォッチ／指定時刻まで／ポモドーロ）を `page.tsx` のタブで切替。**各モードのコンポーネントは常にマウントしたまま表示だけ切り替える**ため、タブを移動しても状態（走行中のタイマー・ラップ等）が壊れない。
+- 残り／経過は `setInterval` のカウント加算ではなく、**`Date.now()`（実時刻）との差**で毎ティック算出する。カウントダウンは開始時に `endsAt = Date.now() + 残り` を確定し `endsAt - Date.now()` を表示、ストップウォッチは `base + (Date.now() - 再開時刻)`。これによりドリフトせず、タブ非アクティブ時のスロットリングがあっても**復帰時に正しい値へ自動補正**される。
+- 通知は音声ファイルを持たず **Web Audio（`OscillatorNode`）でビープを合成**（`app/timer/_utils.ts`）。既定はミュートで、視覚的な点滅（`animate-pulse`）を常に併用。全画面表示はネイティブ Fullscreen API ではなく **`position:fixed` のアプリ内オーバーレイ**（OBS のキャプチャで安定）。設定は **localStorage** に保存。
 
 ---
 
