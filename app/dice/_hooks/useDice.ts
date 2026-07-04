@@ -17,6 +17,8 @@ import {
   STORAGE_KEY,
   CHINCHIRO_COUNT,
   CHINCHIRO_SIDES,
+  BASIC_SIDES,
+  DICE_PRESETS,
 } from '../_constants';
 import { notation, rollOne, formatRoll } from '../_utils';
 import {
@@ -79,9 +81,12 @@ export function useDice() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const saved = JSON.parse(raw) as Partial<PersistedState>;
-        if (saved.mode === 'basic' || saved.mode === 'trpg' || saved.mode === 'chinchiro') setModeState(saved.mode);
+        const savedMode = saved.mode;
+        if (savedMode === 'basic' || savedMode === 'trpg' || savedMode === 'chinchiro') setModeState(savedMode);
         if (typeof saved.count === 'number') setCountState(clampCount(saved.count));
-        if (typeof saved.sides === 'number') setSidesState(clampSides(saved.sides));
+        // 基本モードは常に6面（d6）。TRPGのみ保存された面数を復元する。
+        if (savedMode === 'basic') setSidesState(BASIC_SIDES);
+        else if (typeof saved.sides === 'number') setSidesState(clampSides(saved.sides));
         if (Array.isArray(saved.history)) setHistory(saved.history.slice(0, MAX_HISTORY));
       }
     } catch {
@@ -109,6 +114,13 @@ export function useDice() {
   // モード切替時はチンチロのターンと直近結果をリセットする。
   const setMode = useCallback((next: DiceMode) => {
     setModeState(next);
+    // 基本モードは6面（d6）固定。切替時に面数を6へ戻す。
+    if (next === 'basic') setSidesState(BASIC_SIDES);
+    // TRPGモードに切り替えたら、先頭プリセット（1d4）を既定選択にする。
+    else if (next === 'trpg') {
+      setCountState(clampCount(DICE_PRESETS[0].count));
+      setSidesState(clampSides(DICE_PRESETS[0].sides));
+    }
     const fresh = initialChinchiroTurn();
     chinTurnRef.current = fresh;
     chinBaseRef.current = fresh;

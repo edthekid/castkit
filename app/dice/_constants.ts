@@ -10,6 +10,9 @@ export type RollPhase = 'idle' | 'rolling' | 'result';
 export const CHINCHIRO_COUNT = 3;
 export const CHINCHIRO_SIDES = 6;
 
+/** 基本モードは6面（d6）固定。個数だけ選ぶ。 */
+export const BASIC_SIDES = 6;
+
 /** 1回分の出目（各サイコロの面数と出た値）。 */
 export interface DieResult {
   sides: number;
@@ -44,15 +47,20 @@ export const D100 = 100;
 
 /**
  * TRPGモードのダイスセット・プリセット（個数＋面数をまとめて設定）。
- * よく使う構成をワンタップで組めるようにする。
+ * 面数の小さい順に並べ、整ったグリッドで表示する。
  */
-export const TRPG_PRESETS: readonly { count: number; sides: number }[] = [
-  { count: 1, sides: 20 },  // 判定・攻撃（D&D 等）
-  { count: 2, sides: 6 },   // 2d6 系（多数のシステム）
-  { count: 3, sides: 6 },   // 能力値
-  { count: 4, sides: 6 },   // 能力値（4個）
-  { count: 2, sides: 10 },  // 2d10
-  { count: 1, sides: 100 }, // パーセンタイル
+export const DICE_PRESETS: readonly { count: number; sides: number }[] = [
+  { count: 1, sides: 4 },
+  { count: 2, sides: 6 },
+  { count: 3, sides: 6 },
+  { count: 4, sides: 6 },
+  { count: 1, sides: 8 },
+  { count: 1, sides: 10 },
+  { count: 2, sides: 10 },
+  { count: 1, sides: 12 },
+  { count: 1, sides: 20 },
+  { count: 2, sides: 20 },
+  { count: 1, sides: 100 },
 ];
 
 export const MAX_HISTORY = 20;

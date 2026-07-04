@@ -8,11 +8,9 @@ import { IconDice } from '../../_components/icons';
 import {
   type DiceMode,
   type RollPhase,
-  TRPG_PRESETS,
+  DICE_PRESETS,
   MIN_DICE,
   MAX_DICE,
-  MIN_SIDES,
-  MAX_SIDES,
 } from '../_constants';
 import { type ChinchiroTurn, CHINCHIRO_MAX_ROLLS } from '../_chinchiro';
 import { notation } from '../_utils';
@@ -118,7 +116,7 @@ function NumberStepper({
 }
 
 export function DiceControls({
-  mode, setMode, count, setCount, sides, setSides, setPreset, isD100, phase, onRoll, chinchiroTurn,
+  mode, setMode, count, setCount, sides, setPreset, isD100, phase, onRoll, chinchiroTurn,
 }: DiceControlsProps) {
   const { t } = useTranslation();
   const rolling = phase === 'rolling';
@@ -157,40 +155,9 @@ export function DiceControls({
         ))}
       </div>
 
-      {/* TRPGクイックプリセット（ダイスセット） */}
-      {mode === 'trpg' && (
+      {/* 基本：サイコロの数のみ（6面＝d6 固定） */}
+      {mode === 'basic' && (
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
-            {t('dice.trpgPreset')}
-          </span>
-          <div className="flex flex-wrap gap-2" role="group" aria-label={t('dice.trpgPreset')}>
-            {TRPG_PRESETS.map((p) => {
-              const active = count === p.count && sides === p.sides;
-              return (
-                <button
-                  key={`${p.count}d${p.sides}`}
-                  type="button"
-                  onClick={() => setPreset(p.count, p.sides)}
-                  aria-pressed={active}
-                  className="ck-btn text-sm font-black px-3 py-1.5"
-                  style={{
-                    background: active ? ck.text.primary : ck.bg.muted,
-                    color:      active ? ck.text.onDark  : ck.text.primary,
-                    border: `1.5px solid ${active ? ck.text.primary : ck.border.default}`,
-                  }}
-                >
-                  {notation(p.count, p.sides)}
-                </button>
-              );
-            })}
-          </div>
-          <p className="text-xs" style={{ color: ck.text.muted }}>{t('dice.trpgHint')}</p>
-        </div>
-      )}
-
-      {/* 個数・面数（基本 / TRPG のみ） */}
-      {!isChin && (
-        <>
           <div className="flex items-center justify-between gap-3">
             <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
               {t('dice.diceCount')}
@@ -205,25 +172,39 @@ export function DiceControls({
               ariaInc={t('dice.addDie')}
             />
           </div>
+          <p className="text-xs font-bold" style={{ color: ck.text.secondary }}>{t('dice.basicNote')}</p>
+        </div>
+      )}
 
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
-                {t('dice.sides')}
-              </span>
-              <NumberStepper
-                value={sides}
-                min={MIN_SIDES}
-                max={MAX_SIDES}
-                onChange={setSides}
-                ariaLabel={t('dice.sides')}
-                ariaDec={t('dice.sidesDown')}
-                ariaInc={t('dice.sidesUp')}
-              />
-            </div>
-            {isD100 && <p className="text-xs font-bold" style={{ color: ck.text.secondary }}>{t('dice.d100Note')}</p>}
+      {/* TRPG：ダイスセット・プリセットのみ（整ったグリッド） */}
+      {mode === 'trpg' && (
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
+            {t('dice.trpgPreset')}
+          </span>
+          <div className="grid grid-cols-4 gap-2" role="group" aria-label={t('dice.trpgPreset')}>
+            {DICE_PRESETS.map((p) => {
+              const active = count === p.count && sides === p.sides;
+              return (
+                <button
+                  key={`${p.count}d${p.sides}`}
+                  type="button"
+                  onClick={() => setPreset(p.count, p.sides)}
+                  aria-pressed={active}
+                  className="ck-btn w-full text-sm font-black py-2 tabular-nums"
+                  style={{
+                    background: active ? ck.text.primary : ck.bg.muted,
+                    color:      active ? ck.text.onDark  : ck.text.primary,
+                    border: `1.5px solid ${active ? ck.text.primary : ck.border.default}`,
+                  }}
+                >
+                  {notation(p.count, p.sides)}
+                </button>
+              );
+            })}
           </div>
-        </>
+          {isD100 && <p className="text-xs font-bold" style={{ color: ck.text.secondary }}>{t('dice.d100Note')}</p>}
+        </div>
       )}
 
       {/* チンチロ：ルール説明＋役一覧（倍率表）＋投数インジケータ */}
