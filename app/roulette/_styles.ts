@@ -33,16 +33,6 @@ export const ROULETTE_STYLES = `
     overflow: hidden;
   }
 
-  /* ─── 当選ポップアップ周りの紙吹雪（アニメはGSAP） ─── */
-  .confetti-dot {
-    position: absolute;
-    top: 50%; left: 50%;
-    width: 8px; height: 8px;
-    border-radius: 2px;
-    pointer-events: none;
-    z-index: 60;
-  }
-
   /* ─── スロット中央ハイライト ─── */
   @keyframes slot-center-highlight {
     0%,100% { box-shadow: inset 0 0 0 2px #a1a1aa, 0 0 8px rgba(129,140,248,0.3); }

@@ -2,23 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-import { ck } from '../../../_theme/colors';
+import { ConfettiBurst } from '../shared/ConfettiBurst';
 
 const FONT = "'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif";
-
-/** 当選時に飛び散る紙吹雪の配置（固定パターンでhydration安定） */
-const CONFETTI = [
-  { x: -130, y: -80,  r: 200, color: ck.text.primary, delay: 0.00 },
-  { x:  140, y: -90,  r: -160, color: ck.text.secondary, delay: 0.05 },
-  { x: -160, y: 40,   r: 120, color: ck.text.secondary, delay: 0.10 },
-  { x:  160, y: 50,   r: -90,  color: ck.text.primary, delay: 0.02 },
-  { x:  -60, y: -150, r: 260, color: ck.text.muted, delay: 0.12 },
-  { x:   80, y: -160, r: -210, color: ck.text.primary, delay: 0.07 },
-  { x: -120, y: 120,  r: 80,  color: ck.text.secondary, delay: 0.14 },
-  { x:  120, y: 130,  r: -140, color: ck.text.secondary, delay: 0.03 },
-  { x:    0, y: -180, r: 180, color: ck.text.primary, delay: 0.11 },
-  { x:    0, y: 170,  r: -60,  color: ck.text.muted, delay: 0.06 },
-] as const;
 
 // ─── 中央ドット ──────────────────────────────────────────
 export function CenterDot() {
@@ -71,7 +57,6 @@ export function WinnerOverlay({ winner, animKey }: { winner: string; animKey: nu
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const circle = circleRef.current;
     const chEls  = rootRef.current?.querySelectorAll<HTMLElement>('.w-char');
-    const dots   = rootRef.current?.querySelectorAll<HTMLElement>('.confetti-dot');
 
     if (reduce) {
       gsap.set(circle, { opacity: 1, scale: 1, boxShadow: RING_SOFT });
@@ -100,24 +85,6 @@ export function WinnerOverlay({ winner, animKey }: { winner: string; animKey: nu
         );
       }
 
-      // 紙吹雪バースト（外へ飛散しつつ回転・フェード）
-      if (dots && dots.length) {
-        tl.fromTo(
-          dots,
-          { x: 0, y: 0, scale: 0.4, opacity: 1, rotate: 0 },
-          {
-            x: (i) => CONFETTI[i].x,
-            y: (i) => CONFETTI[i].y,
-            rotate: (i) => CONFETTI[i].r,
-            scale: 1,
-            opacity: 0,
-            duration: 0.9,
-            ease: 'power2.out',
-            stagger: { each: 0.02, from: 'random' },
-          },
-          0.3,
-        );
-      }
     }, rootRef);
 
     return () => ctx.revert();
@@ -149,17 +116,10 @@ export function WinnerOverlay({ winner, animKey }: { winner: string; animKey: nu
             </span>
           ))}
         </span>
-
-        {/* 紙吹雪 */}
-        {CONFETTI.map((c, i) => (
-          <span
-            key={i}
-            className="confetti-dot"
-            aria-hidden="true"
-            style={{ background: c.color, opacity: 0 }}
-          />
-        ))}
       </div>
+
+      {/* 紙吹雪パーティクル（円の外周まで広がるよう円の外に配置） */}
+      <ConfettiBurst triggerKey={animKey} />
     </div>
   );
 }

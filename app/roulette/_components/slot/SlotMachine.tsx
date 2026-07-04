@@ -4,23 +4,10 @@ import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { SLOT_CELL_H, SLOT_VISIBLE } from '../../_constants';
 import { SingleReel } from './SingleReel';
+import { ConfettiBurst } from '../shared/ConfettiBurst';
 import { ck } from '../../../_theme/colors';
 
 const FONT = "'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif";
-
-/** 当選時に飛び散る紙吹雪の配置（固定パターンでhydration安定） */
-const CONFETTI = [
-  { x: -120, y: -70,  r: 200, color: ck.text.primary, delay: 0.00 },
-  { x:  130, y: -80,  r: -160, color: ck.text.secondary, delay: 0.04 },
-  { x: -150, y: 30,   r: 120, color: ck.text.secondary, delay: 0.08 },
-  { x:  150, y: 40,   r: -90,  color: ck.text.primary, delay: 0.02 },
-  { x:  -60, y: -110, r: 260, color: ck.text.muted, delay: 0.10 },
-  { x:   70, y: -120, r: -210, color: ck.text.primary, delay: 0.06 },
-  { x: -110, y: 100,  r: 80,  color: ck.text.secondary, delay: 0.12 },
-  { x:  110, y: 110,  r: -140, color: ck.text.secondary, delay: 0.03 },
-  { x:    0, y: -140, r: 180, color: ck.text.primary, delay: 0.09 },
-  { x:    0, y: 140,  r: -60,  color: ck.text.muted, delay: 0.05 },
-] as const;
 
 interface SlotMachineProps {
   items: string[];
@@ -45,7 +32,6 @@ export function SlotMachine({
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const popup = popupRef.current;
     const chEls = rootRef.current?.querySelectorAll<HTMLElement>('.w-char');
-    const dots  = rootRef.current?.querySelectorAll<HTMLElement>('.confetti-dot');
 
     if (reduce) {
       gsap.set(popup, { xPercent: -50, yPercent: -50, scale: 1, opacity: 1 });
@@ -74,24 +60,6 @@ export function SlotMachine({
         );
       }
 
-      // 紙吹雪バースト
-      if (dots && dots.length) {
-        tl.fromTo(
-          dots,
-          { x: 0, y: 0, scale: 0.4, opacity: 1, rotate: 0 },
-          {
-            x: (i) => CONFETTI[i].x,
-            y: (i) => CONFETTI[i].y,
-            rotate: (i) => CONFETTI[i].r,
-            scale: 1,
-            opacity: 0,
-            duration: 0.9,
-            ease: 'power2.out',
-            stagger: { each: 0.02, from: 'random' },
-          },
-          0.55,
-        );
-      }
     }, rootRef);
 
     return () => ctx.revert();
@@ -188,15 +156,8 @@ export function SlotMachine({
               </span>
             </div>
 
-            {/* 紙吹雪 */}
-            {CONFETTI.map((c, i) => (
-              <span
-                key={i}
-                className="confetti-dot"
-                aria-hidden="true"
-                style={{ background: c.color, opacity: 0 }}
-              />
-            ))}
+            {/* 紙吹雪パーティクル */}
+            <ConfettiBurst triggerKey={winner ?? ''} />
           </>
         )}
       </div>
