@@ -40,26 +40,26 @@ export function ConfettiBurst({ triggerKey }: ConfettiBurstProps) {
           x: 0, y: 0, rotation: Math.random() * 180, scale: 0, opacity: 1,
         });
 
-        // 上方向を中心に扇状の初速
-        const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.15;
-        const speed = 90 + Math.random() * 170;
-        const vx    = Math.cos(angle) * speed;
-        const vy    = Math.sin(angle) * speed;            // 負 = 上向き
-        const rise  = vy * (0.55 + Math.random() * 0.4);  // 上昇量(負)
-        const fall  = 150 + Math.random() * 150;          // 落下量
+        // 全方向(360°)へ放射状に飛散
+        const angle = Math.random() * Math.PI * 2;
+        const dist  = 70 + Math.random() * 170;           // 中心からの飛距離
+        const rx    = Math.cos(angle) * dist;
+        const ry    = Math.sin(angle) * dist;
+        const fall  = 120 + Math.random() * 170;          // 落下量(重力)
+        const drift = (Math.random() - 0.5) * 50;         // 落下中の横流れ
         const spin  = (Math.random() < 0.5 ? -1 : 1) * (180 + Math.random() * 620);
-        const dur   = 0.95 + Math.random() * 0.75;
-        const riseT = dur * 0.38;
-        const fallT = dur - riseT;
+        const dur   = 1.0 + Math.random() * 0.8;
+        const burstT = dur * 0.4;                          // 弾ける時間
+        const fallT  = dur - burstT;                       // 落ちる時間
 
         const tl = gsap.timeline();
         // 出現ポップ
         tl.to(p, { scale: 0.65 + Math.random() * 0.75, duration: 0.12, ease: 'power2.out' }, 0);
-        // 水平ドリフト（空気抵抗で減速）
-        tl.to(p, { x: vx * 1.4, duration: dur, ease: 'power1.out' }, 0);
-        // 上昇 → 落下（重力の放物線）
-        tl.to(p, { y: rise, duration: riseT, ease: 'power2.out' }, 0);
-        tl.to(p, { y: rise + fall, duration: fallT, ease: 'power2.in' }, riseT);
+        // ① 放射状に弾ける（全方向へ飛び出して減速）
+        tl.to(p, { x: rx, y: ry, duration: burstT, ease: 'power3.out' }, 0);
+        // ② 重力で落下（横にわずかに流れながら加速して落ちる）
+        tl.to(p, { y: ry + fall, duration: fallT, ease: 'power1.in' }, burstT);
+        tl.to(p, { x: rx + drift, duration: fallT, ease: 'sine.out' }, burstT);
         // 回転
         tl.to(p, { rotation: `+=${spin}`, duration: dur, ease: 'none' }, 0);
         // 後半でフェードアウト
