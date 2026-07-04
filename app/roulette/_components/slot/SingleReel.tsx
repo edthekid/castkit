@@ -48,11 +48,9 @@ export function SingleReel({ items, triggerKey, winnerIdx, delay = 0 }: SingleRe
     if (reduce) { gsap.set(el, { y: -centerOffset }); return; }
 
     const duration  = 4.8 + Math.random() * 0.8;
-    const overshoot = SLOT_CELL_H * 0.5;
     tlRef.current = gsap.timeline({ delay: delay / 1000 });
     tlRef.current
-      .to(el, { y: -(centerOffset + overshoot), duration, ease: 'power3.out' })
-      .to(el, { y: -centerOffset, duration: 0.4, ease: 'back.out(2.6)' });
+      .to(el, { y: -centerOffset, duration, ease: 'power3.out' });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- スピンはtriggerKey(明示的な開始信号)でのみ発火。winnerIdx/n/delayは発火時点の値を読む（値変化での再スピンを防ぐ）
   }, [triggerKey]);
 

@@ -71,8 +71,6 @@ export function useRouletteGame() {
       const totalSpin = (5 + Math.floor(Math.random() * 3)) * 360 + Math.floor(Math.random() * 360);
       const start  = rotation;
       const target = start + totalSpin;
-      // 当選スライスをわずかに行き過ぎてから「カチッ」と戻る演出（最大22deg）
-      const overshoot = Math.min(slice * 0.55, 22);
       const reduce = typeof window !== 'undefined'
         && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -107,8 +105,7 @@ export function useRouletteGame() {
       const dur = 4.8 + Math.random() * 1.4;
       spinTlRef.current = gsap.timeline({ onComplete: finish });
       spinTlRef.current
-        .to(proxy, { r: target + overshoot, duration: dur * 0.82, ease: 'power3.out', onUpdate: applyRotation })
-        .to(proxy, { r: target, duration: 0.7, ease: 'back.out(2.4)', onUpdate: applyRotation });
+        .to(proxy, { r: target, duration: dur, ease: 'power3.out', onUpdate: applyRotation });
 
     } else {
       // ── スロットアニメーション ──
