@@ -45,3 +45,6 @@ next-env.d.ts
 
 # local editor artifacts
 .claude/launch.json
+
+# graphify knowledge graph (regenerated locally via git hook / graphify update)
+/graphify-out
