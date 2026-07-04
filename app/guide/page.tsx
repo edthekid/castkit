@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useTranslation } from '../_i18n/useTranslation';
-import { IconBolt, IconTarget, IconLadder, IconChat, IconScales, IconTrophy, IconDice } from '../_components/icons';
+import { IconBolt, IconTarget, IconLadder, IconChat, IconScales, IconTrophy, IconDice, IconTimer } from '../_components/icons';
 import type { ComponentType, SVGProps } from 'react';
 
 type Locale = 'ja' | 'en';
@@ -205,6 +205,33 @@ const TOOLS: Record<Locale, ToolContent[]> = {
       ],
       related: ['/roulette', '/scoreboard'],
     },
+    {
+      href: '/timer',
+      tag: 'Timer',
+      icon: IconTimer,
+      name: 'タイマー',
+      summary: '配信・ゲームイベントで使える無料のタイマーです。カウントダウン、ストップウォッチ、指定時刻までのカウントダウン、ポモドーロの4モードをタブで切り替えて使えます。経過時間は実時刻（Date.now）基準で算出するのでズレにくく、配信の待機画面用に大きく表示できる全画面モードにも対応します。',
+      steps: [
+        '上部のタブで「カウントダウン／ストップウォッチ／指定時刻まで／ポモドーロ」を選ぶ',
+        'カウントダウンは時・分・秒を設定するか、プリセット（1分・3分など）を選ぶ',
+        '「開始」で計測をスタート。「一時停止」「リセット」で操作する',
+        '0到達で通知音（オンのとき）と画面の点滅で知らせる。全画面表示ボタンで大きく映せる',
+      ],
+      tips: [
+        '通知音は既定でオフ。右上のスイッチでオンにできる（視覚的な点滅は常に表示される）',
+        '経過時間は実時刻基準なので、タブを裏に回して復帰しても正しい残り時間になる',
+        'ストップウォッチはラップ計測に対応し、1/100秒まで表示する',
+        'ポモドーロの作業・休憩の分数と長い休憩の間隔は変更でき、ブラウザに自動保存される',
+        'タブを切り替えても各モードのタイマーは動き続ける',
+      ],
+      usecases: [
+        '配信開始まで／休憩の残り時間を待機画面に大きく表示',
+        '企画・ミニゲームの制限時間管理',
+        '作業配信でのポモドーロ（集中と休憩のリズム作り）',
+        '「指定時刻まで」で配信開始時刻までのカウントダウン',
+      ],
+      related: ['/scoreboard', '/dice'],
+    },
   ],
   en: [
     {
@@ -391,6 +418,33 @@ const TOOLS: Record<Locale, ToolContent[]> = {
       ],
       related: ['/roulette', '/scoreboard'],
     },
+    {
+      href: '/timer',
+      tag: 'Timer',
+      icon: IconTimer,
+      name: 'Timer',
+      summary: 'A free timer for streams and gaming events. Switch between four modes with tabs: countdown, stopwatch, a countdown to a target time, and Pomodoro. Elapsed time is computed from the real clock (Date.now), so it stays accurate, and a fullscreen mode lets you display it large on a stream standby screen.',
+      steps: [
+        'Pick a mode with the tabs: Countdown, Stopwatch, Until Time, or Pomodoro',
+        'For Countdown, set hours/minutes/seconds or choose a preset (1 min, 3 min, etc.)',
+        'Press "Start" to begin; use "Pause" and "Reset" to control it',
+        'On reaching zero it alerts you with a sound (when on) and a flashing screen; the fullscreen button shows it large',
+      ],
+      tips: [
+        'Sound is off by default — flip the switch at the top right to enable it (the flash is always shown)',
+        'Time is based on the real clock, so it stays correct even after the tab was in the background',
+        'The stopwatch supports laps and displays down to 1/100 second',
+        'Pomodoro focus/break minutes and the long-break interval are configurable and auto-saved in your browser',
+        'Timers keep running even when you switch tabs',
+      ],
+      usecases: [
+        'Showing the time until stream start or the remaining break on a standby screen',
+        'Managing time limits for segments and mini-games',
+        'Pomodoro for work-along streams (a focus-and-break rhythm)',
+        'Counting down to your stream start time with "Until Time"',
+      ],
+      related: ['/scoreboard', '/dice'],
+    },
   ],
 };
 
@@ -402,6 +456,7 @@ const TOOL_MAP: Record<string, { name: { ja: string; en: string } }> = {
   '/debate':        { name: { ja: 'ディベート',   en: 'Debate' } },
   '/scoreboard':    { name: { ja: 'スコアボード', en: 'Scoreboard' } },
   '/dice':          { name: { ja: 'サイコロ',     en: 'Dice Roller' } },
+  '/timer':         { name: { ja: 'タイマー',     en: 'Timer' } },
 };
 
 const FAQ: Record<Locale, { q: string; a: string }[]> = {

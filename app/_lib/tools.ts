@@ -61,6 +61,13 @@ export const TOOL_SHARE: ToolShare[] = [
       en: '🎲 Free online dice roller — TRPG dice sets (d4–d100) and Chinchiro — CastKit Dice #CastKit',
     },
   },
+  {
+    href: '/timer',
+    shareText: {
+      ja: '⏱️ 無料のタイマー「CastKit タイマー」カウントダウン・ストップウォッチ・ポモドーロ・全画面表示に対応 #CastKit',
+      en: '⏱️ Free online timer — countdown, stopwatch, and Pomodoro with fullscreen display — CastKit Timer #CastKit',
+    },
+  },
 ];
 
 /** パスから対応するシェア文言を取得 */

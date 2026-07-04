@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useTranslation } from './_i18n/useTranslation';
 import type { TranslationKey } from './_i18n/translations';
 import { gray } from './_theme/colors';
-import { IconBolt, IconTarget, IconLadder, IconChat, IconScales, IconTrophy, IconDice } from './_components/icons';
+import { IconBolt, IconTarget, IconLadder, IconChat, IconScales, IconTrophy, IconDice, IconTimer } from './_components/icons';
 import { HomeArticles } from './_components/HomeArticles';
 import type { ComponentType, SVGProps } from 'react';
 
@@ -80,6 +80,15 @@ const TOOLS: {
     accent: gray[800],
     gradient: 'from-zinc-800/8 to-zinc-400/8',
     tag: 'Dice',
+  },
+  {
+    href: '/timer',
+    icon: IconTimer,
+    titleKey: 'home.timer.title',
+    descKey: 'home.timer.description',
+    accent: gray[700],
+    gradient: 'from-zinc-700/8 to-zinc-300/8',
+    tag: 'Timer',
   },
 ];
 

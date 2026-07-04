@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from '../_i18n/useTranslation';
-import { IconBolt, IconTarget, IconLadder, IconChat, IconScales, IconTrophy, IconDice } from './icons';
+import { IconBolt, IconTarget, IconLadder, IconChat, IconScales, IconTrophy, IconDice, IconTimer } from './icons';
 import type { ComponentType, SVGProps } from 'react';
 
 const ALL_TOOLS: {
@@ -22,6 +22,7 @@ const ALL_TOOLS: {
   { href: '/debate',        icon: IconScales, tag: 'Debate',        titleJa: 'ディベート',   titleEn: 'Debate',        descJa: 'お題と陣営をランダム決定',     descEn: 'Randomly assign debate topics and sides' },
   { href: '/scoreboard',    icon: IconTrophy, tag: 'Scoreboard',    titleJa: 'スコアボード', titleEn: 'Scoreboard',    descJa: 'チームの得点をリアルタイム管理', descEn: 'Manage team scores in real time' },
   { href: '/dice',          icon: IconDice,   tag: 'Dice',          titleJa: 'サイコロ',     titleEn: 'Dice Roller',   descJa: 'サイコロを振って手軽に決める', descEn: 'Roll dice to decide anything' },
+  { href: '/timer',         icon: IconTimer,  tag: 'Timer',         titleJa: 'タイマー',     titleEn: 'Timer',         descJa: 'カウントダウン・ストップウォッチ・ポモドーロ', descEn: 'Countdown, stopwatch, and Pomodoro' },
 ];
 
 export function RelatedTools() {
