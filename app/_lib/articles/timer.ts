@@ -3,7 +3,7 @@ import type { ArticleInput } from './_types';
 export const timer: ArticleInput = {
   slug: 'timer',
   toolHref: '/timer',
-  date: '2026-07-04',
+  date: '2026-07-05',
   tag: { ja: 'タイマー', en: 'Timer' },
   title: {
     ja: '無料オンラインタイマーの使い方｜カウントダウン・ストップウォッチ・ポモドーロ',
