@@ -73,6 +73,10 @@ app/
 
 - [CLAUDE.md](./CLAUDE.md) — AI開発ルール
 - [SPEC.md](./SPEC.md) — 全体仕様
+- [RULES.md](./RULES.md) — AI向け絶対遵守コーディング規約
+- [MEMORY.md](./MEMORY.md) — プロジェクトの記憶・進捗管理（AI外部記憶）
+- [TESTING.md](./TESTING.md) — テスト戦略と実装ガイドライン
+- [SECURITY.md](./SECURITY.md) — セキュリティ要件とベストプラクティス
 - [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — システム構成
 - [docs/COMPONENTS.md](./docs/COMPONENTS.md) — UIコンポーネント一覧
 - [docs/STYLEGUIDE.md](./docs/STYLEGUIDE.md) — コーディング規約
