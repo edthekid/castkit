@@ -213,15 +213,16 @@ const TOOLS: Record<Locale, ToolContent[]> = {
       summary: '配信・ゲームイベントで使える無料のタイマーです。カウントダウン、ストップウォッチ、指定時刻までのカウントダウン、ポモドーロの4モードをタブで切り替えて使えます。経過時間は実時刻（Date.now）基準で算出するのでズレにくく、配信の待機画面用に大きく表示できる全画面モードにも対応します。',
       steps: [
         '上部のタブで「カウントダウン／ストップウォッチ／指定時刻まで／ポモドーロ」を選ぶ',
-        'カウントダウンは時・分・秒を設定するか、プリセット（1分・3分など）を選ぶ',
+        'カウントダウンは時・分・秒を設定するか、プリセット（1分・3分・5分・10分・15分）を選ぶ',
         '「開始」で計測をスタート。「一時停止」「リセット」で操作する',
-        '0到達で通知音（オンのとき）と画面の点滅で知らせる。全画面表示ボタンで大きく映せる',
+        '0到達で通知音（オンのとき）と画面の点滅で知らせる。「全画面表示」で大きく映し、クリックまたはEscで戻れる',
       ],
       tips: [
-        '通知音は既定でオフ。右上のスイッチでオンにできる（視覚的な点滅は常に表示される）',
+        '通知音は既定でオフ。右上のスイッチでオンにすると音量バーが出る（視覚的な点滅は常に表示される）',
+        '大型表示の数字フォントは「フォント」から変更できる（スコアボードと同じ一覧・全画面にも反映）',
         '経過時間は実時刻基準なので、タブを裏に回して復帰しても正しい残り時間になる',
         'ストップウォッチはラップ計測に対応し、1/100秒まで表示する',
-        'ポモドーロの作業・休憩の分数と長い休憩の間隔は変更でき、ブラウザに自動保存される',
+        'ポモドーロは作業／休憩／長い休憩の分数と「長い休憩までの作業回数」を設定でき、ブラウザに自動保存される',
         'タブを切り替えても各モードのタイマーは動き続ける',
       ],
       usecases: [
@@ -426,15 +427,16 @@ const TOOLS: Record<Locale, ToolContent[]> = {
       summary: 'A free timer for streams and gaming events. Switch between four modes with tabs: countdown, stopwatch, a countdown to a target time, and Pomodoro. Elapsed time is computed from the real clock (Date.now), so it stays accurate, and a fullscreen mode lets you display it large on a stream standby screen.',
       steps: [
         'Pick a mode with the tabs: Countdown, Stopwatch, Until Time, or Pomodoro',
-        'For Countdown, set hours/minutes/seconds or choose a preset (1 min, 3 min, etc.)',
+        'For Countdown, set hours/minutes/seconds or choose a preset (1, 3, 5, 10, or 15 min)',
         'Press "Start" to begin; use "Pause" and "Reset" to control it',
-        'On reaching zero it alerts you with a sound (when on) and a flashing screen; the fullscreen button shows it large',
+        'On reaching zero it alerts you with a sound (when on) and a flashing screen; "Fullscreen" shows it large — click anywhere or press Esc to exit',
       ],
       tips: [
-        'Sound is off by default — flip the switch at the top right to enable it (the flash is always shown)',
+        'Sound is off by default — flipping the switch at the top right reveals a volume bar (the flash is always shown)',
+        'The digit font can be changed from "Font" (the same list as the Scoreboard; it also applies in fullscreen)',
         'Time is based on the real clock, so it stays correct even after the tab was in the background',
         'The stopwatch supports laps and displays down to 1/100 second',
-        'Pomodoro focus/break minutes and the long-break interval are configurable and auto-saved in your browser',
+        'Pomodoro lets you set focus/break/long-break minutes and "Long break every (n)", auto-saved in your browser',
         'Timers keep running even when you switch tabs',
       ],
       usecases: [
