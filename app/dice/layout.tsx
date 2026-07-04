@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { pageAlternates, webAppJsonLd, breadcrumbJsonLd } from '../_lib/seo';
 
-const DESC = '無料のサイコロツール。1〜10個・面数自由（d4/d6/d8/d10/d12/d20/d100）。TRPG・チンチロにも対応。1〜6はドット目のオーソドックスな白サイコロ。履歴コピー対応。登録不要、ブラウザだけで使える。 / Free online dice roller. Roll 1–10 dice with any sides (d4–d100), plus TRPG and Chinchiro modes, classic pipped dice, and copyable history. No sign-up required.';
+const DESC = '無料のサイコロツール。基本はd6を1〜10個、TRPGはd4〜d100のダイスセット、チンチロにも対応。d4/d8/d10/d12/d20は本物の多面体で3D物理演算、1d100は2つのd10方式。履歴コピー対応・登録不要。 / Free online dice roller. 1–10 d6 in Basic, TRPG dice sets (d4–d100) with real 3D polyhedra and a two-d10 percentile, plus a Chinchiro mode. Copyable history, no sign-up.';
 
 export const metadata: Metadata = {
   title: '無料サイコロツール（TRPG・チンチロ対応）',
