@@ -1,8 +1,9 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
+import { gsap } from 'gsap';
 import { SLOT_CELL_H, SLOT_VISIBLE, SLOT_LAPS } from '../../_constants';
-import { generateColors, easeOutQuart } from '../../_utils';
+import { generateColors } from '../../_utils';
 import { ck } from '../../../_theme/colors';
 
 const FONT = "'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif";
@@ -16,7 +17,7 @@ interface SingleReelProps {
 
 export function SingleReel({ items, triggerKey, winnerIdx, delay = 0 }: SingleReelProps) {
   const reelRef      = useRef<HTMLDivElement>(null);
-  const rafRef       = useRef<number | null>(null);
+  const tlRef        = useRef<gsap.core.Timeline | null>(null);
   const isMountedRef = useRef(false);
 
   const n          = items.length;
@@ -26,46 +27,32 @@ export function SingleReel({ items, triggerKey, winnerIdx, delay = 0 }: SingleRe
   // クリーンアップ
   useEffect(() => {
     isMountedRef.current = false;
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+    return () => { tlRef.current?.kill(); };
   }, []);
 
-  // スピン実行
+  // スピン実行（GSAP: 減速 → わずかに行き過ぎ → カチッと着地）
   useEffect(() => {
     // 初回マウント時はスキップ
     if (!isMountedRef.current) { isMountedRef.current = true; return; }
     if (triggerKey === 0 || n === 0 || winnerIdx < 0) return;
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    const el = reelRef.current;
+    if (!el) return;
 
     const centerOffset =
       (SLOT_LAPS * n + winnerIdx) * SLOT_CELL_H - Math.floor(SLOT_VISIBLE / 2) * SLOT_CELL_H;
 
-    // 毎回先頭からスタート
-    if (reelRef.current) {
-      reelRef.current.style.transition = 'none';
-      reelRef.current.style.transform  = 'translateY(0px)';
-    }
+    tlRef.current?.kill();
+    gsap.set(el, { y: 0 });
 
-    const duration  = 4800 + Math.random() * 800 + delay;
-    const startTime = performance.now() + delay;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { gsap.set(el, { y: -centerOffset }); return; }
 
-    const tick = (now: number) => {
-      if (now < startTime) { rafRef.current = requestAnimationFrame(tick); return; }
-      const t     = Math.min((now - startTime) / duration, 1);
-      const y     = centerOffset * easeOutQuart(t);
-      if (reelRef.current) reelRef.current.style.transform = `translateY(-${y}px)`;
-
-      if (t < 1) {
-        rafRef.current = requestAnimationFrame(tick);
-      } else {
-        // 停止時に微バウンス
-        if (reelRef.current) {
-          reelRef.current.style.transition = 'transform 0.3s cubic-bezier(0.34,1.56,0.64,1)';
-          reelRef.current.style.transform  = `translateY(-${centerOffset}px)`;
-          setTimeout(() => { if (reelRef.current) reelRef.current.style.transition = ''; }, 350);
-        }
-      }
-    };
-    rafRef.current = requestAnimationFrame(tick);
+    const duration  = 4.8 + Math.random() * 0.8;
+    const overshoot = SLOT_CELL_H * 0.5;
+    tlRef.current = gsap.timeline({ delay: delay / 1000 });
+    tlRef.current
+      .to(el, { y: -(centerOffset + overshoot), duration, ease: 'power3.out' })
+      .to(el, { y: -centerOffset, duration: 0.4, ease: 'back.out(2.6)' });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- スピンはtriggerKey(明示的な開始信号)でのみ発火。winnerIdx/n/delayは発火時点の値を読む（値変化での再スピンを防ぐ）
   }, [triggerKey]);
 
