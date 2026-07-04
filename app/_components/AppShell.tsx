@@ -162,7 +162,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 borderBottom: `1px solid ${ck.border.default}`,
               }}
             >
-              <label htmlFor="drawer-toggle" className="btn btn-ghost btn-sm p-1" aria-label={locale === 'ja' ? 'メニューを開く' : 'Open menu'}>
+              <label
+                htmlFor="drawer-toggle"
+                className="flex items-center justify-center w-9 h-9 rounded cursor-pointer transition-colors text-ck-ink hover:bg-ck-surface"
+                aria-label={locale === 'ja' ? 'メニューを開く' : 'Open menu'}
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                   className="w-5 h-5 stroke-current text-ck-ink" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
