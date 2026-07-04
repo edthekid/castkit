@@ -12,9 +12,9 @@ import { ControlButton } from './ControlButton';
 import { FullscreenOverlay } from './FullscreenOverlay';
 
 /** 指定時刻まで：目標の日時までの残り時間をカウントダウン（ローカル時刻基準）。 */
-export function UntilMode({ muted }: { muted: boolean }) {
+export function UntilMode({ muted, volume }: { muted: boolean; volume: number }) {
   const { t } = useTranslation();
-  const alarm = useAlarm(muted);
+  const alarm = useAlarm(muted, volume);
   const until = useUntil(alarm.trigger);
   const [full, setFull] = useState(false);
 

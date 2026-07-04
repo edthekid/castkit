@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { useTranslation } from '../../_i18n/useTranslation';
 import { ck } from '../../_theme/colors';
-import { IconX } from '../../_components/icons';
 import { TimeDisplay } from './TimeDisplay';
 
 interface FullscreenOverlayProps {
@@ -16,7 +15,9 @@ interface FullscreenOverlayProps {
 
 /**
  * 配信の待機画面用の大型表示（アプリ内オーバーレイ）。
- * position:fixed で画面全体を覆い、巨大な等幅数字を表示する。Esc で閉じる。
+ * position:fixed で画面全体を覆い、巨大な等幅数字を表示する。
+ * クリック（どこでも）または Esc で閉じる。閉じるボタンは置かず、
+ * 待機画面として余計なUIを映さないようにしている。
  * ネイティブ Fullscreen API は使わず、OBS のウィンドウ/ブラウザキャプチャでも
  * 安定して映せるようにしている。
  */
@@ -39,22 +40,13 @@ export function FullscreenOverlay({ open, onClose, value, label, flashing = fals
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center p-6"
+      className="fixed inset-0 flex items-center justify-center p-6 cursor-pointer"
       style={{ zIndex: 200, background: ck.bg.page }}
       role="dialog"
       aria-modal="true"
       aria-label={label ?? t('timer.title')}
+      onClick={onClose}
     >
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label={t('timer.exitFullscreen')}
-        className="ck-btn absolute top-4 right-4 w-11 h-11 flex items-center justify-center"
-        style={{ background: ck.bg.muted, color: ck.text.primary, border: `1.5px solid ${ck.border.default}` }}
-      >
-        <IconX size={20} aria-hidden="true" />
-      </button>
-
       <TimeDisplay value={value} label={label} flashing={flashing} size="full" />
 
       <span

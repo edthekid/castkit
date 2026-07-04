@@ -24,9 +24,9 @@ const PHASE_LABEL: Record<PomodoroPhase, TranslationKey> = {
 };
 
 /** ポモドーロ：作業/休憩ループ・サイクル数表示・設定は localStorage 保持。 */
-export function PomodoroMode({ muted }: { muted: boolean }) {
+export function PomodoroMode({ muted, volume }: { muted: boolean; volume: number }) {
   const { t } = useTranslation();
-  const alarm = useAlarm(muted);
+  const alarm = useAlarm(muted, volume);
   // フェーズ切替ごとに通知（phase は使わないので破棄）。
   const pomo = usePomodoro(() => alarm.trigger());
   const [full, setFull] = useState(false);
@@ -63,6 +63,14 @@ export function PomodoroMode({ muted }: { muted: boolean }) {
             <IconExpand size={15} aria-hidden="true" /> {t('timer.fullscreen')}
           </button>
         </div>
+      </div>
+
+      {/* 使い方 */}
+      <div
+        className="p-4 text-xs leading-relaxed"
+        style={{ background: 'rgba(var(--ck-ink-rgb),0.03)', border: `1px solid ${ck.border.default}`, color: ck.text.secondary }}
+      >
+        {t('timer.pomo.howto')}
       </div>
 
       {/* 設定（idle のときのみ操作可） */}

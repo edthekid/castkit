@@ -15,9 +15,9 @@ import { ControlButton } from './ControlButton';
 import { FullscreenOverlay } from './FullscreenOverlay';
 
 /** カウントダウン：時/分/秒設定・プリセット・開始/一時停止/リセット・全画面。 */
-export function CountdownMode({ muted }: { muted: boolean }) {
+export function CountdownMode({ muted, volume }: { muted: boolean; volume: number }) {
   const { t } = useTranslation();
-  const alarm = useAlarm(muted);
+  const alarm = useAlarm(muted, volume);
   const cd = useCountdown(alarm.trigger);
   const [full, setFull] = useState(false);
 

@@ -2,6 +2,8 @@
 // 通知音は音声ファイルを持たず OscillatorNode で合成する（バックエンド無し・
 // 依存最小・プライバシー安全の方針に沿う）。
 
+import { DEFAULT_VOLUME, MAX_BEEP_GAIN } from './_constants';
+
 /** ms を { h, m, s, cs } に分解（cs = 1/100秒）。負値は 0 に丸める。 */
 export function breakdown(ms: number) {
   const clamped = Math.max(0, ms);
@@ -52,12 +54,14 @@ function getCtx(): AudioContext | null {
 /**
  * 短いビープを times 回鳴らす。ユーザー操作（開始ボタン等）を起点に
  * 生成された AudioContext を再利用する。muted 判定は呼び出し側で行う。
+ * volume（0〜1）でピークゲインをスケールする。
  */
-export function playBeep(times = 3): void {
+export function playBeep(times = 3, volume = DEFAULT_VOLUME): void {
   const ctx = getCtx();
   if (!ctx) return;
   if (ctx.state === 'suspended') void ctx.resume();
 
+  const peak = Math.max(0.0001, Math.min(1, volume) * MAX_BEEP_GAIN);
   const start = ctx.currentTime;
   const gap = 0.3;
   for (let i = 0; i < times; i++) {
@@ -67,7 +71,7 @@ export function playBeep(times = 3): void {
     osc.frequency.value = 880;
     const t = start + i * gap;
     gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.35, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(peak, t + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.24);
     osc.connect(gain).connect(ctx.destination);
     osc.start(t);

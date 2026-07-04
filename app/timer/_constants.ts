@@ -61,9 +61,16 @@ export const POMODORO_MAX = 90;
 export const POMODORO_EVERY_MIN = 2;
 export const POMODORO_EVERY_MAX = 12;
 
+// ─── 通知音の音量 ───────────────────────────────────────
+/** 通知音オン時の既定音量（0〜1）。控えめな既定にしている。 */
+export const DEFAULT_VOLUME = 0.6;
+/** 音量1.0のときのビープのピークゲイン（クリップを避けるため 0.4 に抑える）。 */
+export const MAX_BEEP_GAIN = 0.4;
+
 // ─── localStorage キー ──────────────────────────────────
 export const STORAGE_TAB      = 'castkit.timer.tab.v1';
 export const STORAGE_MUTED    = 'castkit.timer.muted.v1';
+export const STORAGE_VOLUME   = 'castkit.timer.volume.v1';
 export const STORAGE_COUNTDOWN = 'castkit.timer.countdown.v1';
 export const STORAGE_POMODORO = 'castkit.timer.pomodoro.v1';
 
