@@ -1,11 +1,13 @@
 'use client';
 
 import { useTranslation } from '../../_i18n/useTranslation';
-import type { TranslationKey } from '../../_i18n/translations';
 import { ck } from '../../_theme/colors';
-import { TIMER_FONTS } from '../_constants';
+import { FONTS } from '../../_lib/fonts';
 
-/** 大型表示の数字フォントを選ぶセレクト（全モード共通）。 */
+/**
+ * 大型表示の数字フォントを選ぶセレクト（全モード共通）。
+ * フォント一覧はスコアボードと同じ共通定義（app/_lib/fonts.ts）を使う。
+ */
 export function FontSelect({ font, onChange }: { font: string; onChange: (id: string) => void }) {
   const { t } = useTranslation();
   return (
@@ -17,10 +19,12 @@ export function FontSelect({ font, onChange }: { font: string; onChange: (id: st
         value={font}
         onChange={(e) => onChange(e.target.value)}
         aria-label={t('timer.fontLabel')}
-        className="ck-input h-9 px-2 text-xs font-bold"
+        className="ck-input px-2 py-1.5 text-sm font-bold"
       >
-        {TIMER_FONTS.map((f) => (
-          <option key={f.id} value={f.id}>{t(f.labelKey as TranslationKey)}</option>
+        {FONTS.map((f) => (
+          <option key={f.id} value={f.id} style={{ fontFamily: f.stack || undefined }}>
+            {f.label}
+          </option>
         ))}
       </select>
     </label>

@@ -7,7 +7,10 @@ import { ck } from '../../_theme/colors';
 import { IconPlay, IconPause, IconRefresh, IconExpand, IconPlay as IconSkip } from '../../_components/icons';
 import { usePomodoro } from '../_hooks/usePomodoro';
 import { useAlarm } from '../_hooks/useAlarm';
-import { type PomodoroPhase, POMODORO_MIN, POMODORO_MAX } from '../_constants';
+import {
+  type PomodoroPhase,
+  POMODORO_MIN, POMODORO_MAX, POMODORO_EVERY_MIN, POMODORO_EVERY_MAX,
+} from '../_constants';
 import { formatClock } from '../_utils';
 import { TimeDisplay } from './TimeDisplay';
 import { NumberStepper } from './NumberStepper';
@@ -37,8 +40,10 @@ export function PomodoroMode({ muted, volume, fontFamily }: { muted: boolean; vo
   const doReset = () => { pomo.reset(); alarm.stop(); };
 
   const CONFIG_FIELDS = [
-    ['timer.pomo.work',  pomo.config.workMin,  (n: number) => pomo.updateConfig({ workMin: n })]  as const,
-    ['timer.pomo.break', pomo.config.breakMin, (n: number) => pomo.updateConfig({ breakMin: n })] as const,
+    ['timer.pomo.work',      pomo.config.workMin,        (n: number) => pomo.updateConfig({ workMin: n }),        POMODORO_MIN, POMODORO_MAX] as const,
+    ['timer.pomo.break',     pomo.config.breakMin,       (n: number) => pomo.updateConfig({ breakMin: n }),       POMODORO_MIN, POMODORO_MAX] as const,
+    ['timer.pomo.longBreak', pomo.config.longBreakMin,   (n: number) => pomo.updateConfig({ longBreakMin: n }),   POMODORO_MIN, POMODORO_MAX] as const,
+    ['timer.pomo.every',     pomo.config.longBreakEvery, (n: number) => pomo.updateConfig({ longBreakEvery: n }), POMODORO_EVERY_MIN, POMODORO_EVERY_MAX] as const,
   ];
 
   return (
@@ -89,7 +94,7 @@ export function PomodoroMode({ muted, volume, fontFamily }: { muted: boolean; vo
           {t('timer.pomo.settings')}
         </p>
         <div style={{ border: `1.5px solid ${ck.border.default}`, background: ck.bg.page }}>
-          {CONFIG_FIELDS.map(([labelKey, value, onChange], i) => (
+          {CONFIG_FIELDS.map(([labelKey, value, onChange, min, max], i) => (
             <div
               key={labelKey}
               className="flex items-center justify-between gap-3 px-4 py-3"
@@ -98,8 +103,8 @@ export function PomodoroMode({ muted, volume, fontFamily }: { muted: boolean; vo
               <span className="text-sm font-bold" style={{ color: ck.text.primary }}>{t(labelKey as TranslationKey)}</span>
               <NumberStepper
                 value={value}
-                min={POMODORO_MIN}
-                max={POMODORO_MAX}
+                min={min}
+                max={max}
                 onChange={onChange}
                 disabled={!editable}
                 ariaLabel={t(labelKey as TranslationKey)}

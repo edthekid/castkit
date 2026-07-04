@@ -14,14 +14,15 @@ import { primeAudio, playBeep } from './_utils';
 import {
   type TimerTab, TIMER_TABS,
   STORAGE_TAB, STORAGE_MUTED, STORAGE_VOLUME, STORAGE_FONT,
-  DEFAULT_VOLUME, DEFAULT_FONT, TIMER_FONTS, fontCss,
+  DEFAULT_VOLUME,
 } from './_constants';
+import { FONTS, DEFAULT_FONT_ID, getFontStack } from '../_lib/fonts';
 
 export default function TimerPage() {
   const [tab, setTab]       = useState<TimerTab>('countdown');
   const [muted, setMuted]   = useState(true); // 既定はミュート
   const [volume, setVolume] = useState(DEFAULT_VOLUME);
-  const [font, setFont]     = useState(DEFAULT_FONT);
+  const [font, setFont]     = useState(DEFAULT_FONT_ID);
   const [hydrated, setHydrated] = useState(false);
 
   // ─── 読み込み（マウント後） ─────────────────────────────
@@ -38,7 +39,7 @@ export default function TimerPage() {
         if (Number.isFinite(v)) setVolume(Math.max(0, Math.min(1, v)));
       }
       const savedFont = localStorage.getItem(STORAGE_FONT);
-      if (savedFont && TIMER_FONTS.some((f) => f.id === savedFont)) setFont(savedFont);
+      if (savedFont && FONTS.some((f) => f.id === savedFont)) setFont(savedFont);
     } catch { /* 破損データは無視 */ }
     setHydrated(true);
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -54,7 +55,7 @@ export default function TimerPage() {
     } catch { /* 容量超過などは無視 */ }
   }, [hydrated, tab, muted, volume, font]);
 
-  const fontFamily = fontCss(font);
+  const fontFamily = getFontStack(font);
 
   return (
     <div className="max-w-4xl mx-auto">

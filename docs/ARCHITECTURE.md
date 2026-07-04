@@ -105,6 +105,7 @@ app/_lib/articles/<slug>.ts (Markdown)
 - 4モード（カウントダウン／ストップウォッチ／指定時刻まで／ポモドーロ）を `page.tsx` のタブで切替。**各モードのコンポーネントは常にマウントしたまま表示だけ切り替える**ため、タブを移動しても状態（走行中のタイマー・ラップ等）が壊れない。
 - 残り／経過は `setInterval` のカウント加算ではなく、**`Date.now()`（実時刻）との差**で毎ティック算出する。カウントダウンは開始時に `endsAt = Date.now() + 残り` を確定し `endsAt - Date.now()` を表示、ストップウォッチは `base + (Date.now() - 再開時刻)`。これによりドリフトせず、タブ非アクティブ時のスロットリングがあっても**復帰時に正しい値へ自動補正**される。
 - 通知は音声ファイルを持たず **Web Audio（`OscillatorNode`）でビープを合成**（`app/timer/_utils.ts`）。既定はミュートで、視覚的な点滅（`animate-pulse`）を常に併用。全画面表示はネイティブ Fullscreen API ではなく **`position:fixed` のアプリ内オーバーレイ**（OBS のキャプチャで安定）。設定は **localStorage** に保存。
+- 大型表示の数字フォントは選択式。フォント一覧は**スコアボードと共通の `app/_lib/fonts.ts`**（`FONTS` / `getFontStack`、システム標準フォントのみ）を使う（`app/scoreboard/_constants.ts` は互換のため再エクスポート）。
 
 ---
 
