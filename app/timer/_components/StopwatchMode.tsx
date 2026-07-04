@@ -9,7 +9,7 @@ import { TimeDisplay } from './TimeDisplay';
 import { ControlButton } from './ControlButton';
 
 /** ストップウォッチ：開始/一時停止/リセット・ラップ計測（1/100秒表示）。 */
-export function StopwatchMode() {
+export function StopwatchMode({ fontFamily }: { fontFamily?: string }) {
   const { t } = useTranslation();
   const sw = useStopwatch();
   const running = sw.status === 'running';
@@ -19,7 +19,7 @@ export function StopwatchMode() {
   return (
     <div className="flex flex-col gap-5">
       <div className="ck-section flex flex-col items-center gap-4 py-8">
-        <TimeDisplay value={formatStopwatch(sw.elapsedMs)} />
+        <TimeDisplay value={formatStopwatch(sw.elapsedMs)} fontFamily={fontFamily} />
       </div>
 
       {/* 操作 */}

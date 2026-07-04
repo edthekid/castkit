@@ -11,13 +11,15 @@ interface TimeDisplayProps {
   label?: string;
   /** サイズ（通常 / 全画面） */
   size?: 'normal' | 'full';
+  /** 数字のフォント（CSS font-family。空なら継承）。 */
+  fontFamily?: string;
 }
 
 /**
  * 等幅の大きな時計表示。数字は tabular-nums で桁ブレしないようにする。
  * 色はトークンのみ。点滅は Tailwind の animate-pulse を使う。
  */
-export function TimeDisplay({ value, flashing = false, label, size = 'normal' }: TimeDisplayProps) {
+export function TimeDisplay({ value, flashing = false, label, size = 'normal', fontFamily }: TimeDisplayProps) {
   const digitClass = size === 'full'
     ? 'text-[19vw] sm:text-[15vw]'
     : 'text-6xl sm:text-7xl';
@@ -34,7 +36,7 @@ export function TimeDisplay({ value, flashing = false, label, size = 'normal' }:
       )}
       <span
         className={`${digitClass} font-black tabular-nums leading-none`}
-        style={{ color: ck.text.primary, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.01em' }}
+        style={{ color: ck.text.primary, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.01em', fontFamily: fontFamily || undefined }}
       >
         {value}
       </span>

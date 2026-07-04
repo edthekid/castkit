@@ -15,7 +15,7 @@ import { ControlButton } from './ControlButton';
 import { FullscreenOverlay } from './FullscreenOverlay';
 
 /** カウントダウン：時/分/秒設定・プリセット・開始/一時停止/リセット・全画面。 */
-export function CountdownMode({ muted, volume }: { muted: boolean; volume: number }) {
+export function CountdownMode({ muted, volume, fontFamily }: { muted: boolean; volume: number; fontFamily?: string }) {
   const { t } = useTranslation();
   const alarm = useAlarm(muted, volume);
   const cd = useCountdown(alarm.trigger);
@@ -34,7 +34,7 @@ export function CountdownMode({ muted, volume }: { muted: boolean; volume: numbe
     <div className="flex flex-col gap-5">
       {/* 大型表示 */}
       <div className="ck-section flex flex-col items-center gap-4 py-8">
-        <TimeDisplay value={clock} flashing={flashing} label={done ? t('timer.done') : undefined} />
+        <TimeDisplay value={clock} flashing={flashing} label={done ? t('timer.done') : undefined} fontFamily={fontFamily} />
         <button
           type="button"
           onClick={() => setFull(true)}
@@ -104,6 +104,7 @@ export function CountdownMode({ muted, volume }: { muted: boolean; volume: numbe
         value={clock}
         label={done ? t('timer.done') : t('timer.tab.countdown')}
         flashing={flashing}
+        fontFamily={fontFamily}
       />
     </div>
   );

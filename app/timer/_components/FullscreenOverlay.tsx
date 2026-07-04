@@ -11,6 +11,7 @@ interface FullscreenOverlayProps {
   value: string;
   label?: string;
   flashing?: boolean;
+  fontFamily?: string;
 }
 
 /**
@@ -21,7 +22,7 @@ interface FullscreenOverlayProps {
  * ネイティブ Fullscreen API は使わず、OBS のウィンドウ/ブラウザキャプチャでも
  * 安定して映せるようにしている。
  */
-export function FullscreenOverlay({ open, onClose, value, label, flashing = false }: FullscreenOverlayProps) {
+export function FullscreenOverlay({ open, onClose, value, label, flashing = false, fontFamily }: FullscreenOverlayProps) {
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -47,7 +48,7 @@ export function FullscreenOverlay({ open, onClose, value, label, flashing = fals
       aria-label={label ?? t('timer.title')}
       onClick={onClose}
     >
-      <TimeDisplay value={value} label={label} flashing={flashing} size="full" />
+      <TimeDisplay value={value} label={label} flashing={flashing} size="full" fontFamily={fontFamily} />
 
       <span
         className="absolute bottom-6 text-xs font-bold tracking-widest uppercase"

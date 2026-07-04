@@ -61,6 +61,18 @@ export const POMODORO_MAX = 90;
 export const POMODORO_EVERY_MIN = 2;
 export const POMODORO_EVERY_MAX = 12;
 
+// ─── タイマー数字のフォント ─────────────────────────────
+/** 大型表示の数字に使えるフォント。css が空なら継承（アプリ標準）。 */
+export const TIMER_FONTS: readonly { id: string; labelKey: string; css: string }[] = [
+  { id: 'sans',  labelKey: 'timer.font.sans',  css: '' },
+  { id: 'mono',  labelKey: 'timer.font.mono',  css: "ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace" },
+  { id: 'serif', labelKey: 'timer.font.serif', css: "Georgia, 'Times New Roman', 'Noto Serif JP', serif" },
+];
+export const DEFAULT_FONT = 'sans';
+
+/** id から CSS の font-family を引く（未知は空文字＝継承）。 */
+export const fontCss = (id: string): string => TIMER_FONTS.find((f) => f.id === id)?.css ?? '';
+
 // ─── 通知音の音量 ───────────────────────────────────────
 /** 通知音オン時の既定音量（0〜1）。控えめな既定にしている。 */
 export const DEFAULT_VOLUME = 0.6;
@@ -71,6 +83,7 @@ export const MAX_BEEP_GAIN = 0.4;
 export const STORAGE_TAB      = 'castkit.timer.tab.v1';
 export const STORAGE_MUTED    = 'castkit.timer.muted.v1';
 export const STORAGE_VOLUME   = 'castkit.timer.volume.v1';
+export const STORAGE_FONT     = 'castkit.timer.font.v1';
 export const STORAGE_COUNTDOWN = 'castkit.timer.countdown.v1';
 export const STORAGE_POMODORO = 'castkit.timer.pomodoro.v1';
 

@@ -12,7 +12,7 @@ import { ControlButton } from './ControlButton';
 import { FullscreenOverlay } from './FullscreenOverlay';
 
 /** 指定時刻まで：目標の日時までの残り時間をカウントダウン（ローカル時刻基準）。 */
-export function UntilMode({ muted, volume }: { muted: boolean; volume: number }) {
+export function UntilMode({ muted, volume, fontFamily }: { muted: boolean; volume: number; fontFamily?: string }) {
   const { t } = useTranslation();
   const alarm = useAlarm(muted, volume);
   const until = useUntil(alarm.trigger);
@@ -29,7 +29,7 @@ export function UntilMode({ muted, volume }: { muted: boolean; volume: number })
   return (
     <div className="flex flex-col gap-5">
       <div className="ck-section flex flex-col items-center gap-4 py-8">
-        <TimeDisplay value={clock} flashing={flashing} label={done ? t('timer.done') : t('timer.untilRemaining')} />
+        <TimeDisplay value={clock} flashing={flashing} label={done ? t('timer.done') : t('timer.untilRemaining')} fontFamily={fontFamily} />
         <button
           type="button"
           onClick={() => setFull(true)}
@@ -72,6 +72,7 @@ export function UntilMode({ muted, volume }: { muted: boolean; volume: number })
         value={clock}
         label={done ? t('timer.done') : t('timer.tab.until')}
         flashing={flashing}
+        fontFamily={fontFamily}
       />
     </div>
   );

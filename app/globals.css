@@ -245,6 +245,51 @@ html, body {
 }
 .ck-input::placeholder, .ck-textarea::placeholder { color: var(--ck-text-muted); }
 
+/* ── レンジ（音量バーなど。ネイティブより視認性を上げる） ── */
+.ck-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+}
+.ck-range::-webkit-slider-runnable-track {
+  height: 8px;
+  background: var(--ck-bg-card-muted);
+  border: 1.5px solid var(--ck-border-strong);
+  border-radius: 0;
+}
+.ck-range::-moz-range-track {
+  height: 8px;
+  background: var(--ck-bg-card-muted);
+  border: 1.5px solid var(--ck-border-strong);
+  border-radius: 0;
+}
+.ck-range::-moz-range-progress {
+  height: 8px;
+  background: var(--ck-text-primary);
+}
+.ck-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 18px;
+  margin-top: -6.5px;
+  background: var(--ck-text-primary);
+  border: 1.5px solid var(--ck-text-primary);
+  border-radius: 0;
+}
+.ck-range::-moz-range-thumb {
+  width: 14px;
+  height: 18px;
+  background: var(--ck-text-primary);
+  border: 1.5px solid var(--ck-text-primary);
+  border-radius: 0;
+}
+.ck-range:focus { outline: none; }
+.ck-range:focus::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--ck-focus-ring); }
+.ck-range:focus::-moz-range-thumb { box-shadow: 0 0 0 3px var(--ck-focus-ring); }
+
 /* ── セクションカード ── */
 .ck-section {
   background: var(--ck-bg-card);
