@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useMemo, useSyncExternalStore } from 'react';
 import { useTranslation } from '../_i18n/useTranslation';
 import { IconBolt, IconTarget, IconLadder, IconChat, IconScales, IconTrophy, IconDice, IconTimer } from './icons';
 import type { ComponentType, SVGProps } from 'react';
@@ -25,11 +26,34 @@ const ALL_TOOLS: {
   { href: '/timer',         icon: IconTimer,  tag: 'Timer',         titleJa: 'タイマー',     titleEn: 'Timer',         descJa: 'カウントダウン・ストップウォッチ・ポモドーロ', descEn: 'Countdown, stopwatch, and Pomodoro' },
 ];
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// SSR は false、クライアントは true を返す。hydration mismatch を避けるための判定。
+function useIsClient() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+}
+
 export function RelatedTools() {
   const pathname = usePathname();
   const { locale } = useTranslation();
+  const isClient = useIsClient();
 
-  const related = ALL_TOOLS.filter((t) => t.href !== pathname).slice(0, 3);
+  // SSR／初回レンダーは決定論的に先頭3つ、マウント後は毎表示ランダム3つ。
+  const related = useMemo(() => {
+    const candidates = ALL_TOOLS.filter((t) => t.href !== pathname);
+    return (isClient ? shuffle(candidates) : candidates).slice(0, 3);
+  }, [pathname, isClient]);
 
   const label = locale === 'ja' ? '他のツールも使ってみる' : 'Try other tools';
   const open  = locale === 'ja' ? '開く →' : 'Open →';
