@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
 import { useDebate } from './_hooks/useDebate';
 import type { TopicMode } from './_hooks/useDebate';
 import { useTranslation } from '../_i18n/useTranslation';
@@ -185,6 +186,10 @@ export default function DebatePage() {
   const { t } = useTranslation();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  const factionGridRef = useRef<HTMLDivElement>(null);
+  const timerRef       = useRef<HTMLParagraphElement>(null);
+  const timeUpRef      = useRef<HTMLParagraphElement>(null);
+
   const customThemePool   = debate.customTopics.map((d) => d.theme[debate.locale]);
   const customFactionPool = debate.customTopics.flatMap((d) => [d.factionA[debate.locale], d.factionB[debate.locale]]);
 
@@ -225,6 +230,46 @@ export default function DebatePage() {
     return fmt(debate.timerSec);
   })();
 
+  // ── 陣営の激突リビール: 1Pは左から・2Pは右から・VSがポップ ──
+  const factionsReady = !!debate.factions && !isDrawing;
+  useEffect(() => {
+    if (!factionsReady || !factionGridRef.current) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const boxes = factionGridRef.current.querySelectorAll<HTMLElement>('.dbt-faction');
+    const vs    = factionGridRef.current.querySelector<HTMLElement>('.dbt-vs');
+    if (boxes.length < 2) return;
+    if (reduce) { gsap.set([boxes[0], boxes[1], vs], { clearProps: 'all' }); return; }
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline();
+      tl.fromTo(boxes[0], { x: -55, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.6)' }, 0);
+      tl.fromTo(boxes[1], { x:  55, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.6)' }, 0);
+      if (vs) tl.fromTo(vs, { scale: 0, rotate: -35, opacity: 0 }, { scale: 1, rotate: 0, opacity: 1, duration: 0.5, ease: 'back.out(2.6)' }, 0.16);
+    }, factionGridRef);
+    return () => ctx.revert();
+  }, [debate.factions, factionsReady]);
+
+  // ── タイマーの毎秒ティック（残り10秒は強めのハートビート） ──
+  useEffect(() => {
+    if (!isRunning || !timerRef.current) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const strong = debate.remaining <= 10;
+    gsap.fromTo(
+      timerRef.current,
+      { scale: strong ? 1.13 : 1.05 },
+      { scale: 1, duration: strong ? 0.5 : 0.28, ease: strong ? 'elastic.out(1, 0.5)' : 'power2.out' },
+    );
+  }, [debate.remaining, isRunning]);
+
+  // ── TIME UP のポップ ──
+  useEffect(() => {
+    if (!isDone || !timeUpRef.current) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(timeUpRef.current, { scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.55, ease: 'back.out(2.4)' });
+    });
+    return () => ctx.revert();
+  }, [isDone]);
+
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -262,15 +307,20 @@ export default function DebatePage() {
             {t('debate.topicLabel')}
           </p>
           {topicText ? (
-            <p
-              className="text-2xl font-black leading-snug"
-              style={{
-                color: topicText.shuffling ? ck.text.muted : ck.text.primary,
-                animation: topicText.shuffling ? 'debate-shuffle 0.08s linear infinite' : 'debate-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) both',
-              }}
-            >
-              {topicText.text}
-            </p>
+            topicText.shuffling ? (
+              <p
+                className="text-2xl font-black leading-snug"
+                style={{ color: ck.text.muted, animation: 'debate-shuffle 0.08s linear infinite' }}
+              >
+                {topicText.text}
+              </p>
+            ) : (
+              <RevealText
+                text={topicText.text}
+                className="text-2xl font-black leading-snug"
+                style={{ color: ck.text.primary }}
+              />
+            )
           ) : (
             <p className="text-base font-bold" style={{ color: ck.text.muted }}>
               {t('debate.idleMessage')}
@@ -279,7 +329,7 @@ export default function DebatePage() {
         </div>
 
         {/* 陣営エリア（常に表示） */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+        <div ref={factionGridRef} className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
           <FactionBox label="1P" faction={faction1Text} />
           <VSBadge />
           <FactionBox label="2P" faction={faction2Text} />
@@ -288,17 +338,17 @@ export default function DebatePage() {
         {/* タイマー表示 */}
         <div className="text-center">
           <p
+            ref={timerRef}
             className="text-5xl sm:text-6xl font-black tracking-widest tabular-nums transition-colors duration-300"
             style={{
               fontFamily: 'monospace',
               color: isDone ? ck.text.muted : urgent ? ck.series[1] : ck.text.primary,
-              animation: urgent && isRunning ? 'debate-pulse 0.6s ease-in-out infinite' : undefined,
             }}
           >
             {timerDisplay}
           </p>
           {isDone && (
-            <p className="text-xl font-black tracking-widest mt-2" style={{ color: ck.series[1] }}>
+            <p ref={timeUpRef} className="text-xl font-black tracking-widest mt-2" style={{ color: ck.series[1] }}>
               {t('debate.timeUp')}
             </p>
           )}
@@ -374,10 +424,6 @@ export default function DebatePage() {
           0%,100% { opacity: 1; }
           50%      { opacity: 0.55; }
         }
-        @keyframes debate-pulse {
-          0%,100% { transform: scale(1); }
-          50%      { transform: scale(1.04); }
-        }
         @keyframes debate-pop {
           from { opacity: 0; transform: scale(0.88); }
           to   { opacity: 1; transform: scale(1); }
@@ -397,7 +443,7 @@ function FactionBox({
 }) {
   return (
     <div
-      className="flex flex-col items-center gap-2 py-5 px-4 text-center"
+      className="dbt-faction flex flex-col items-center gap-2 py-5 px-4 text-center"
       style={{
         border: `1.5px solid ${ck.border.default}`,
         background: ck.bg.muted,
@@ -432,7 +478,7 @@ function FactionBox({
 function VSBadge() {
   return (
     <div
-      className="flex items-center justify-center w-10 h-10 text-sm font-black tracking-widest flex-shrink-0"
+      className="dbt-vs flex items-center justify-center w-10 h-10 text-sm font-black tracking-widest flex-shrink-0"
       style={{
         border: `1.5px solid ${ck.border.strong}`,
         background: ck.text.primary,
@@ -441,5 +487,49 @@ function VSBadge() {
     >
       VS
     </div>
+  );
+}
+
+// ─── お題テーマのリビール（1文字ずつフリップ） ─────────────
+function RevealText({
+  text,
+  className,
+  style,
+}: {
+  text: string;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  const ref = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const chars = el.querySelectorAll<HTMLElement>('.dbt-char');
+    if (chars.length === 0) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      gsap.set(chars, { opacity: 1, y: 0, rotateX: 0, scale: 1 });
+      return;
+    }
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        chars,
+        { opacity: 0, y: 16, rotateX: -80, scale: 0.6 },
+        { opacity: 1, y: 0, rotateX: 0, scale: 1, duration: 0.45, stagger: 0.03, ease: 'back.out(2.2)' },
+      );
+    }, ref);
+    return () => ctx.revert();
+  }, [text]);
+
+  return (
+    <p ref={ref} aria-label={text} className={className} style={{ ...style, perspective: 400 }}>
+      <span aria-hidden="true">
+        {Array.from(text).map((ch, i) => (
+          <span key={i} className="dbt-char" style={{ display: 'inline-block', whiteSpace: 'pre' }}>
+            {ch === ' ' ? ' ' : ch}
+          </span>
+        ))}
+      </span>
+    </p>
   );
 }
