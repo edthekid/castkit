@@ -290,7 +290,6 @@ export function AmidaCanvas({
                   style={{ opacity: 0 }}>
                   <circle r="10" fill={color} opacity="0.22" />
                   <circle r="5.5" fill={color} />
-                  <circle r="2" cx="-1.4" cy="-1.4" fill="#ffffff" opacity="0.85" />
                 </g>
               );
             })}
