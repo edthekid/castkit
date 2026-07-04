@@ -65,12 +65,27 @@ export function PomodoroMode({ muted, volume }: { muted: boolean; volume: number
         </div>
       </div>
 
-      {/* 使い方 */}
+      {/* 使い方（何ができる機能か＋設定手順STEP） */}
       <div
-        className="p-4 text-xs leading-relaxed"
-        style={{ background: 'rgba(var(--ck-ink-rgb),0.03)', border: `1px solid ${ck.border.default}`, color: ck.text.secondary }}
+        className="p-4 flex flex-col gap-3"
+        style={{ background: 'rgba(var(--ck-ink-rgb),0.03)', border: `1px solid ${ck.border.default}` }}
       >
-        {t('timer.pomo.howto')}
+        <p className="text-[10px] font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
+          {t('timer.pomo.howtoTitle')}
+        </p>
+        <p className="text-xs leading-relaxed" style={{ color: ck.text.secondary }}>
+          {t('timer.pomo.about')}
+        </p>
+        <ol className="flex flex-col gap-2">
+          {[1, 2, 3, 4].map((i) => (
+            <li key={i} className="flex gap-2.5 text-xs leading-relaxed" style={{ color: ck.text.secondary }}>
+              <span className="font-black tabular-nums tracking-wider shrink-0" style={{ color: ck.text.primary }}>
+                STEP {i}
+              </span>
+              <span>{t(`timer.pomo.step${i}` as TranslationKey)}</span>
+            </li>
+          ))}
+        </ol>
       </div>
 
       {/* 設定（idle のときのみ操作可） */}
