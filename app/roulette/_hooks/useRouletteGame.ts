@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import { gsap } from 'gsap';
 import { DEFAULT_ITEMS } from '../_constants';
-import { calcWinnerIdx, easeOutElastic } from '../_utils';
+import { calcWinnerIdx } from '../_utils';
 import type { DesignType } from '../_constants';
 
 export function useRouletteGame() {
@@ -22,9 +23,7 @@ export function useRouletteGame() {
 
   // ─── Refs ───────────────────────────────────────────────
   const svgRef         = useRef<SVGSVGElement>(null);
-  const rafRef         = useRef<number | null>(null);
-  const startTimeRef   = useRef<number>(0);
-  const durationRef    = useRef<number>(5000);
+  const spinTlRef      = useRef<gsap.core.Timeline | null>(null);
   const lastSliceRef   = useRef<number>(-1);
 
   // ─── 候補者リスト（メモ化） ──────────────────────────────
@@ -35,7 +34,7 @@ export function useRouletteGame() {
 
   // ─── クリーンアップ ──────────────────────────────────────
   useEffect(() => {
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+    return () => { spinTlRef.current?.kill(); };
   }, []);
 
   // ─── スタート ────────────────────────────────────────────
@@ -67,40 +66,46 @@ export function useRouletteGame() {
     lastSliceRef.current = -1;
 
     if (design === 1) {
-      // ── ホイールアニメーション ──
+      // ── ホイールアニメーション（GSAP）──
+      const slice = spinItems.length > 0 ? 360 / spinItems.length : 360;
       const totalSpin = (5 + Math.floor(Math.random() * 3)) * 360 + Math.floor(Math.random() * 360);
       const start  = rotation;
-      const target = rotation + totalSpin;
-      startTimeRef.current = performance.now();
-      durationRef.current  = 5000 + Math.random() * 1500;
+      const target = start + totalSpin;
+      const reduce = typeof window !== 'undefined'
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      const tick = (now: number) => {
-        const elapsed = now - startTimeRef.current;
-        const t = Math.min(elapsed / durationRef.current, 1);
-        const eased = easeOutElastic(t);
-        const currentAngle = start + (target - start) * eased;
-
-        if (svgRef.current) svgRef.current.style.transform = `rotate(${currentAngle}deg)`;
-
+      const proxy = { r: start };
+      const applyRotation = () => {
+        if (svgRef.current) svgRef.current.style.transform = `rotate(${proxy.r}deg)`;
         // スライス境界通過で針をバウンス
         if (spinItems.length > 1) {
-          const slice = 360 / spinItems.length;
-          const norm = ((currentAngle % 360) + 360) % 360;
+          const norm = ((proxy.r % 360) + 360) % 360;
           const cs = Math.floor(((90 - norm + 360) % 360) / slice);
           if (cs !== lastSliceRef.current && lastSliceRef.current !== -1) setBounceKey((k) => k + 1);
           lastSliceRef.current = cs;
         }
-
-        if (t < 1) {
-          rafRef.current = requestAnimationFrame(tick);
-        } else {
-          setRotation(target);
-          setWinner(spinItems[calcWinnerIdx(target, spinItems.length)]);
-          setAnimKey((k) => k + 1);
-          setIsSpinning(false);
-        }
       };
-      rafRef.current = requestAnimationFrame(tick);
+
+      const finish = () => {
+        setRotation(target);
+        setWinner(spinItems[calcWinnerIdx(target, spinItems.length)]);
+        setAnimKey((k) => k + 1);
+        setIsSpinning(false);
+      };
+
+      spinTlRef.current?.kill();
+
+      if (reduce) {
+        proxy.r = target;
+        applyRotation();
+        finish();
+        return;
+      }
+
+      const dur = 4.8 + Math.random() * 1.4;
+      spinTlRef.current = gsap.timeline({ onComplete: finish });
+      spinTlRef.current
+        .to(proxy, { r: target, duration: dur, ease: 'power3.out', onUpdate: applyRotation });
 
     } else {
       // ── スロットアニメーション ──

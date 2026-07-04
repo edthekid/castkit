@@ -1,24 +1,13 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
 import { SLOT_CELL_H, SLOT_VISIBLE } from '../../_constants';
 import { SingleReel } from './SingleReel';
+import { ConfettiBurst } from '../shared/ConfettiBurst';
 import { ck } from '../../../_theme/colors';
 
 const FONT = "'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif";
-
-/** 当選時に飛び散る紙吹雪の配置（固定パターンでhydration安定） */
-const CONFETTI = [
-  { x: -120, y: -70,  r: 200, color: ck.text.primary, delay: 0.00 },
-  { x:  130, y: -80,  r: -160, color: ck.text.secondary, delay: 0.04 },
-  { x: -150, y: 30,   r: 120, color: ck.text.secondary, delay: 0.08 },
-  { x:  150, y: 40,   r: -90,  color: ck.text.primary, delay: 0.02 },
-  { x:  -60, y: -110, r: 260, color: ck.text.muted, delay: 0.10 },
-  { x:   70, y: -120, r: -210, color: ck.text.primary, delay: 0.06 },
-  { x: -110, y: 100,  r: 80,  color: ck.text.secondary, delay: 0.12 },
-  { x:  110, y: 110,  r: -140, color: ck.text.secondary, delay: 0.03 },
-  { x:    0, y: -140, r: 180, color: ck.text.primary, delay: 0.09 },
-  { x:    0, y: 140,  r: -60,  color: ck.text.muted, delay: 0.05 },
-] as const;
 
 interface SlotMachineProps {
   items: string[];
@@ -34,6 +23,47 @@ export function SlotMachine({
   const n = items.length;
   const showWinner = winner !== null && !isSpinning;
   const reelHeight = SLOT_CELL_H * SLOT_VISIBLE;
+
+  const rootRef  = useRef<HTMLDivElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showWinner) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const popup = popupRef.current;
+    const chEls = rootRef.current?.querySelectorAll<HTMLElement>('.w-char');
+
+    if (reduce) {
+      gsap.set(popup, { xPercent: -50, yPercent: -50, scale: 1, opacity: 1 });
+      if (chEls) gsap.set(chEls, { opacity: 1, y: 0, rotateX: 0, scale: 1 });
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline();
+
+      // ポップアップの登場 → ボーダー脈動を無限ループ
+      tl.fromTo(
+        popup,
+        { xPercent: -50, yPercent: -50, scale: 0.4, opacity: 0 },
+        { xPercent: -50, yPercent: -50, scale: 1, opacity: 1, duration: 0.6, ease: 'back.out(1.7)' },
+      );
+      tl.to(popup, { borderColor: '#18181b', duration: 0.7, ease: 'sine.inOut', repeat: -1, yoyo: true }, 0.6);
+
+      // 当選文字を1文字ずつめくり上げ
+      if (chEls && chEls.length) {
+        tl.fromTo(
+          chEls,
+          { opacity: 0, y: 12, rotateX: -80, scale: 0.6 },
+          { opacity: 1, y: 0, rotateX: 0, scale: 1, duration: 0.4, stagger: 0.06, ease: 'back.out(2.4)' },
+          0.2,
+        );
+      }
+
+    }, rootRef);
+
+    return () => ctx.revert();
+  }, [showWinner, winner]);
 
   return (
     /* ─── 統一カード枠（RouletteWheelと同じスタイル） ─── */
@@ -51,7 +81,7 @@ export function SlotMachine({
       overflow: 'hidden',
     }}>
       {/* ─── リール部分 ─── */}
-      <div style={{ position: 'relative', display: 'block', width: '100%', maxWidth: 320 }}>
+      <div ref={rootRef} style={{ position: 'relative', display: 'block', width: '100%', maxWidth: 320 }}>
         {/* リール本体 */}
         <div style={{
           borderRadius: 0,
@@ -103,40 +133,31 @@ export function SlotMachine({
         {showWinner && (
           <>
             <div
+              ref={popupRef}
               className="slot-winner-popup"
               style={{
                 width: 'calc(100% - 8px)',
                 height: reelHeight - 8,
                 borderRadius: 0,
+                opacity: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >
-              <span className="w-text" style={{
+              <span className="w-text" aria-label={winner!} style={{
                 fontSize: winner!.length > 6 ? 20 : winner!.length > 3 ? 26 : 32,
                 fontWeight: 900, lineHeight: 1.2, fontFamily: FONT,
+                perspective: 400,
               }}>
                 {Array.from(winner!).map((ch, i) => (
-                  <span key={i} className="w-char" style={{ animationDelay: `${0.1 + i * 0.06}s` }}>
+                  <span key={i} className="w-char" aria-hidden="true" style={{ display: 'inline-block' }}>
                     {ch}
                   </span>
                 ))}
               </span>
             </div>
 
-            {/* 紙吹雪 */}
-            {CONFETTI.map((c, i) => (
-              <span
-                key={i}
-                className="confetti-dot"
-                style={{
-                  background: c.color,
-                  '--cx': `${c.x}px`,
-                  '--cy': `${c.y}px`,
-                  '--cr': `${c.r}deg`,
-                  animationDelay: `${0.55 + c.delay}s`,
-                } as React.CSSProperties}
-              />
-            ))}
+            {/* 紙吹雪パーティクル */}
+            <ConfettiBurst triggerKey={winner ?? ''} />
           </>
         )}
       </div>

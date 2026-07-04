@@ -1,22 +1,10 @@
 'use client';
 
-import { ck } from '../../../_theme/colors';
+import { useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
+import { ConfettiBurst } from '../shared/ConfettiBurst';
 
 const FONT = "'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif";
-
-/** 当選時に飛び散る紙吹雪の配置（固定パターンでhydration安定） */
-const CONFETTI = [
-  { x: -130, y: -80,  r: 200, color: ck.text.primary, delay: 0.00 },
-  { x:  140, y: -90,  r: -160, color: ck.text.secondary, delay: 0.05 },
-  { x: -160, y: 40,   r: 120, color: ck.text.secondary, delay: 0.10 },
-  { x:  160, y: 50,   r: -90,  color: ck.text.primary, delay: 0.02 },
-  { x:  -60, y: -150, r: 260, color: ck.text.muted, delay: 0.12 },
-  { x:   80, y: -160, r: -210, color: ck.text.primary, delay: 0.07 },
-  { x: -120, y: 120,  r: 80,  color: ck.text.secondary, delay: 0.14 },
-  { x:  120, y: 130,  r: -140, color: ck.text.secondary, delay: 0.03 },
-  { x:    0, y: -180, r: 180, color: ck.text.primary, delay: 0.11 },
-  { x:    0, y: 170,  r: -60,  color: ck.text.muted, delay: 0.06 },
-] as const;
 
 // ─── 中央ドット ──────────────────────────────────────────
 export function CenterDot() {
@@ -55,49 +43,83 @@ export function Needle({ bounceKey }: { bounceKey: number }) {
 }
 
 // ─── 当選オーバーレイ ────────────────────────────────────
+const RING_SOFT = '0 0 0 3px #a1a1aa, 0 0 20px 4px rgba(17,17,20,0.35)';
+const RING_HARD = '0 0 0 6px #d4d4d8, 0 0 36px 10px rgba(17,17,20,0.55)';
+
 export function WinnerOverlay({ winner, animKey }: { winner: string; animKey: number }) {
   const chars    = Array.from(winner);
   const fontSize = winner.length > 6 ? 17 : winner.length > 4 ? 20 : winner.length > 2 ? 25 : 30;
 
+  const rootRef   = useRef<HTMLDivElement>(null);
+  const circleRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const circle = circleRef.current;
+    const chEls  = rootRef.current?.querySelectorAll<HTMLElement>('.w-char');
+
+    if (reduce) {
+      gsap.set(circle, { opacity: 1, scale: 1, boxShadow: RING_SOFT });
+      if (chEls) gsap.set(chEls, { opacity: 1, y: 0, rotateX: 0, scale: 1 });
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline();
+
+      // 円のポップイン → リング脈動を無限ループ
+      tl.fromTo(
+        circle,
+        { scale: 0.2, opacity: 0, boxShadow: RING_SOFT },
+        { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' },
+      );
+      tl.to(circle, { boxShadow: RING_HARD, duration: 1, ease: 'sine.inOut', repeat: -1, yoyo: true }, 0.5);
+
+      // 当選文字を1文字ずつめくり上げ
+      if (chEls && chEls.length) {
+        tl.fromTo(
+          chEls,
+          { opacity: 0, y: 10, rotateX: -80, scale: 0.6 },
+          { opacity: 1, y: 0, rotateX: 0, scale: 1, duration: 0.4, stagger: 0.06, ease: 'back.out(2.4)' },
+          0.28,
+        );
+      }
+
+    }, rootRef);
+
+    return () => ctx.revert();
+  }, [animKey, winner]);
+
   return (
     <div
+      ref={rootRef}
       className="absolute inset-0 flex items-center justify-center pointer-events-none"
       style={{ zIndex: 10 }}
     >
       <div
-        key={animKey}
+        ref={circleRef}
         className="w-circle flex items-center justify-center"
-        style={{ width: 150, height: 150, borderRadius: '50%' }}
+        style={{ width: 150, height: 150, borderRadius: '50%', opacity: 0 }}
       >
         <span
           className="w-text"
+          aria-label={winner}
           style={{
             fontSize, fontWeight: 900, lineHeight: 1.2, fontFamily: FONT,
             maxWidth: 124, textAlign: 'center', display: 'block',
+            perspective: 400,
           }}
         >
           {chars.map((ch, i) => (
-            <span key={i} className="w-char" style={{ animationDelay: `${0.28 + i * 0.07}s` }}>
+            <span key={i} className="w-char" aria-hidden="true" style={{ display: 'inline-block' }}>
               {ch}
             </span>
           ))}
         </span>
-
-        {/* 紙吹雪 */}
-        {CONFETTI.map((c, i) => (
-          <span
-            key={i}
-            className="confetti-dot"
-            style={{
-              background: c.color,
-              '--cx': `${c.x}px`,
-              '--cy': `${c.y}px`,
-              '--cr': `${c.r}deg`,
-              animationDelay: `${0.3 + c.delay}s`,
-            } as React.CSSProperties}
-          />
-        ))}
       </div>
+
+      {/* 紙吹雪パーティクル（円の外周まで広がるよう円の外に配置） */}
+      <ConfettiBurst triggerKey={animKey} />
     </div>
   );
 }

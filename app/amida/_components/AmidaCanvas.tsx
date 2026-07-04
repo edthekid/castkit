@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
 import type { Rung, TracePath } from '../_constants';
 import { PLAYER_COLORS, TRACE_DURATION_MS } from '../_constants';
 import {
@@ -46,6 +47,7 @@ export function AmidaCanvas({
   const [localPaths, setLocalPaths]     = useState<TracePath[]>(tracePaths);
   const prevScrollTrigger               = useRef(scrollTrigger);
   const traceRefs   = useRef<(SVGPathElement | null)[]>([]);
+  const headRefs    = useRef<(SVGGElement | null)[]>([]);
   const svgWrapRef  = useRef<HTMLDivElement>(null);
   const nameLabelRef= useRef<HTMLDivElement>(null);
   const containerRef= useRef<HTMLDivElement>(null);
@@ -132,24 +134,50 @@ export function AmidaCanvas({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- phase遷移時のみ判定。scrollTriggerは前回値(ref)との比較用で、依存に入れると比較が壊れる
   }, [phase]);
 
-  // ─── トレースアニメーション ──────────────────────────────
+  // ─── トレースアニメーション（GSAP: 線を描きながら先端ヘッドが走る） ──
   useEffect(() => {
     if (activeSet.size === 0) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const tweens: gsap.core.Tween[] = [];
+
     activeSet.forEach((i) => {
-      const el = traceRefs.current[i];
+      const el   = traceRefs.current[i];
+      const head = headRefs.current[i];
       if (!el) return;
       // getTotalLengthで正確な長さを取得
       const len = el.getTotalLength ? el.getTotalLength() : 9999;
+      el.style.transition = 'none';
       el.style.strokeDasharray  = `${len}`;
       el.style.strokeDashoffset = `${len}`;
-      el.style.transition = 'none';
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          el.style.transition = `stroke-dashoffset ${TRACE_DURATION_MS}ms linear`;
-          el.style.strokeDashoffset = '0';
-        });
+
+      if (reduce) {
+        el.style.strokeDashoffset = '0';
+        if (head) head.style.opacity = '0';
+        return;
+      }
+
+      // 描画進捗pを等速で進め、線の描画量と先端ヘッド位置を同期
+      // （等速なのは tracing 中のスクロール追従と歩調を合わせるため）
+      const st = { p: 0 };
+      const tw = gsap.to(st, {
+        p: 1,
+        duration: TRACE_DURATION_MS / 1000,
+        ease: 'none',
+        onUpdate: () => {
+          const drawn = len * st.p;
+          el.style.strokeDashoffset = `${len - drawn}`;
+          if (head && el.getPointAtLength) {
+            const pt = el.getPointAtLength(drawn);
+            head.setAttribute('transform', `translate(${pt.x} ${pt.y})`);
+            head.style.opacity = st.p < 0.995 ? '1' : '0';
+          }
+        },
+        onComplete: () => { if (head) head.style.opacity = '0'; },
       });
+      tweens.push(tw);
     });
+
+    return () => tweens.forEach((t) => t.kill());
     // eslint-disable-next-line react-hooks/exhaustive-deps -- トレースは本数(activeSet.size)の増加でのみ起動。Set参照全体を依存にすると毎renderで再起動してしまう
   }, [activeSet.size]);
 
@@ -250,6 +278,20 @@ export function AmidaCanvas({
                 stroke={color} strokeWidth="5"
                 strokeLinecap="round" strokeLinejoin="round"
                 style={{ strokeDasharray: 99999, strokeDashoffset: 99999 }} />;
+            })}
+
+            {/* 先端ヘッド（線を描きながら走る光る玉） */}
+            {localPaths.map((tp, i) => {
+              if (!activeSet.has(i)) return null;
+              const color = PLAYER_COLORS[tp.playerIndex % PLAYER_COLORS.length];
+              return (
+                <g key={`head-${i}`}
+                  ref={(el) => { headRefs.current[i] = el; }}
+                  style={{ opacity: 0 }}>
+                  <circle r="10" fill={color} opacity="0.22" />
+                  <circle r="5.5" fill={color} />
+                </g>
+              );
             })}
 
             {/* 参加者ラベル */}
