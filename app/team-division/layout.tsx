@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { pageAlternates, webAppJsonLd, breadcrumbJsonLd } from '../_lib/seo';
 
-const DESC = '無料のチーム分けツール。メンバー名を入力するだけで均等なチームを自動生成。登録不要、ブラウザだけで使える。配信・対戦ゲームのチーム編成に。 / Free team division tool. Auto-generates balanced teams from member names. No sign-up required.';
+const DESC = '無料のチーム分け・グループ分けツール。メンバー名を入力するだけで均等なチームをランダムに自動生成。登録不要、ブラウザだけで使える。配信・対戦ゲームのチーム編成に。 / Free team division tool. Auto-generates balanced teams from member names. No sign-up required.';
 
 export const metadata: Metadata = {
-  title: '無料チーム分けツール',
+  title: '無料チーム分けツール｜ランダム・均等にグループ分け',
   description: DESC,
   openGraph: {
     title: 'チーム分け | CastKit',

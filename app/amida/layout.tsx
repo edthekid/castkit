@@ -4,7 +4,7 @@ import { pageAlternates, webAppJsonLd, breadcrumbJsonLd } from '../_lib/seo';
 const DESC = '無料のあみだくじツール。参加者と結果を入力するだけで自動生成。登録不要、ブラウザだけで使える。配信・ゲームイベントの役割決めや担当決めに。 / Free ladder lottery (Amida) tool. Auto-generates results from participants. No sign-up required.';
 
 export const metadata: Metadata = {
-  title: '無料あみだくじツール',
+  title: '無料あみだくじツール｜オンラインで順番・役割決め',
   description: DESC,
   openGraph: {
     title: 'あみだくじ | CastKit',

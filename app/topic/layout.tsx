@@ -4,7 +4,7 @@ import { pageAlternates, webAppJsonLd, breadcrumbJsonLd } from '../_lib/seo';
 const DESC = '無料の雑談お題ガチャ。配信の雑談コーナーで使えるお題をランダム抽選。カテゴリ別絞り込み・カスタムお題に対応。登録不要、ブラウザだけで使える。 / Free random topic picker for streaming. Category filter and custom topics supported. No sign-up required.';
 
 export const metadata: Metadata = {
-  title: '無料お題ガチャ',
+  title: '無料お題ガチャ｜雑談配信の話のネタをランダム抽選',
   description: DESC,
   openGraph: {
     title: 'お題ガチャ | CastKit',

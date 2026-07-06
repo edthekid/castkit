@@ -4,7 +4,7 @@ import { pageAlternates, webAppJsonLd, breadcrumbJsonLd } from '../_lib/seo';
 const DESC = '無料のディベートツール。お題と賛成・反対の陣営をランダム決定、カウントダウンタイマー付き。登録不要、ブラウザだけで使える。配信・グループゲームに。 / Free debate tool with random topic and faction assignment and countdown timer. No sign-up required.';
 
 export const metadata: Metadata = {
-  title: '無料ディベートツール',
+  title: '無料ディベートツール｜お題・賛成反対をランダム決定',
   description: DESC,
   openGraph: {
     title: 'ディベート | CastKit',
