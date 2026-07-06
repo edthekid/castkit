@@ -18,9 +18,9 @@ export const roulette: ArticleInput = {
     en: 'Tips to boost chat activity with draw segments, plus concrete use cases for the Wheel and Slot modes of CastKit’s Roulette tool.',
   },
   body: {
-    ja: `「誰が最初に発言するか」「次のゲームのマップはどれ」「今日のプレゼント当選者は誰？」——こんな場面でルーレット抽選を使うと、配信がぐっと盛り上がります。CastKitのルーレットツールは、登録不要でブラウザだけで動作する無料ツールです。ルーレットとスロットの2モードを搭載し、シーンに応じて演出を使い分けられます。
+    ja: `「誰が最初に発言するか」「次のゲームのマップはどれ」「今日のプレゼント当選者は誰？」——こんな場面でルーレット抽選を使うと、ライブ配信がぐっと盛り上がります。CastKitのルーレットツールは、登録不要でブラウザだけで動作する無料ツールです。ルーレットとスロットの2モードを搭載し、ライブ配信のシーンに応じて演出を使い分けられます。
 
-## 配信でルーレットを使う5つのシーン
+## ライブ配信でルーレットを使う5つのシーン
 
 **1. 参加者の順番決め**
 
@@ -76,9 +76,9 @@ export const roulette: ArticleInput = {
 ## まとめ
 
 ランダム抽選はシンプルでも、演出次第で大きな盛り上がりを作れるコンテンツです。CastKitのルーレットツールは2モードで多彩な演出が可能。登録不要でどのデバイスからも使えるので、ぜひ次の配信企画で活用してみてください。`,
-    en: `"Who speaks first?" "Which map next?" "Who wins today's giveaway?" — drop a roulette draw into moments like these and your stream instantly gets more exciting. CastKit's Roulette tool is free, needs no sign-up, and runs entirely in your browser. With both Wheel and Slot modes, you can match the presentation to the moment.
+    en: `"Who speaks first?" "Which map next?" "Who wins today's giveaway?" — drop a roulette draw into moments like these and your live stream instantly gets more exciting. CastKit's Roulette tool is free, needs no sign-up, and runs entirely in your browser. With both Wheel and Slot modes, you can match the presentation to the moment.
 
-## 5 Ways to Use Roulette on Stream
+## 5 Ways to Use Roulette on a Live Stream
 
 **1. Deciding turn order**
 

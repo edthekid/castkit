@@ -103,7 +103,7 @@ export const translations = {
     // ─── ルーレット ───────────────────────────────────
     'roulette.badge':    'Roulette',
     'roulette.title':    'ルーレット',
-    'roulette.subtitle': '候補者を入力してランダム抽選しよう',
+    'roulette.subtitle': '候補者を入力してランダム抽選。ライブ配信の視聴者参加企画に',
     'roulette.tabWheel': 'ルーレット',
     'roulette.tabSlot':  'スロット',
     'roulette.start':    'Start',
@@ -459,7 +459,7 @@ export const translations = {
     // ─── Roulette ─────────────────────────────────────
     'roulette.badge':    'Roulette',
     'roulette.title':    'Roulette',
-    'roulette.subtitle': 'Enter candidates and spin for a random pick',
+    'roulette.subtitle': 'Enter candidates and spin — perfect for live stream giveaways',
     'roulette.tabWheel': 'Wheel',
     'roulette.tabSlot':  'Slot',
     'roulette.start':    'Start',
