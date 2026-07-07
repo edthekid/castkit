@@ -130,6 +130,17 @@ html, body {
   color: var(--ck-text-primary);
 }
 
+/* ── フォーカス可視化（キーボード操作時のみ）──
+   リンク・ボタン・カード等の操作対象に角ばりのインクリングを統一適用。
+   入力欄は :focus で独自リングを持つため対象外。 */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--ck-text-primary);
+  outline-offset: 2px;
+}
+
 /* ── グラスモーフィズムカード ── */
 .ck-glass {
   background: rgba(255,255,255,0.7);
@@ -319,12 +330,46 @@ html, body {
   transform: translateY(-2px);
 }
 
+/* ── ツールカード（サイトのシグネチャー）──
+   角ばり + ハードオフセット影 + 対角hover（ボタンと同じ挙動）。
+   最重要の操作対象であるツール導線カード専用。汎用の .ck-card とは別扱いにして
+   「boldnessを一点に集中」させる。featured / compact は余白側で出し分ける。 */
+.ck-tool-card {
+  background: var(--ck-bg-card);
+  border: 1px solid var(--ck-text-primary);
+  box-shadow: 4px 4px 0 0 var(--ck-border-strong);
+  border-radius: 0;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.ck-tool-card:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 6px 6px 0 0 var(--ck-border-strong);
+}
+.ck-tool-card:active {
+  transform: translate(0, 0);
+  box-shadow: 2px 2px 0 0 var(--ck-border-strong);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ck-tool-card { transition: none; }
+  .ck-tool-card:hover { transform: none; box-shadow: 6px 6px 0 0 var(--ck-border-strong); }
+}
+
+/* ── Eyebrow（全ページ共通の小見出しラベル規格）──
+   これまで 9〜12px・字間バラバラだったラベルを1規格に統一する。 */
+.ck-eyebrow {
+  font-weight: 900;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ck-text-muted);
+}
+
 /* ── バッジ ── */
 .ck-badge {
   background: var(--ck-gradient-badge);
   border: 1px solid rgba(var(--ck-ink-rgb), 0.12);
   color: var(--ck-gray-800);
-  border-radius: 9999px;
+  border-radius: 0;
   padding: 2px 12px;
   font-size: 12px;
   font-weight: 700;
