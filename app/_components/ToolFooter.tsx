@@ -6,6 +6,7 @@ import { getToolShare } from '../_lib/tools';
 import { ToolArticleLink } from './ToolArticleLink';
 import { ShareButton } from './ShareButton';
 import { RelatedTools } from './RelatedTools';
+import { ToolIntro } from './ToolIntro';
 
 /**
  * 全ツールページ共通のフッター。
@@ -19,6 +20,7 @@ export function ToolFooter() {
 
   return (
     <>
+      <ToolIntro />
       <ToolArticleLink />
       {tool && (
         <div className="flex justify-center mt-12">
