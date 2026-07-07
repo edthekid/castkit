@@ -354,14 +354,23 @@ button:focus-visible,
   .ck-tool-card:hover { transform: none; box-shadow: 6px 6px 0 0 var(--ck-border-strong); }
 }
 
-/* ── Eyebrow（全ページ共通の小見出しラベル規格）──
-   これまで 9〜12px・字間バラバラだったラベルを1規格に統一する。 */
+/* ── ラベルの二層規格 ──
+   .ck-eyebrow … 装飾的な小見出し・タグ・キッカー（muted・薄め）。
+   .ck-label   … フォーム/操作パネルの機能ラベル（secondary・可読性優先）。
+   役割で色を分け、これまでの 9〜12px＋字間バラバラ＋インライン色の混在を解消する。 */
 .ck-eyebrow {
   font-weight: 900;
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--ck-text-muted);
+}
+.ck-label {
+  font-weight: 900;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ck-text-secondary);
 }
 
 /* ── バッジ ── */

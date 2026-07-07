@@ -43,7 +43,8 @@
 |--------|------|
 | `.ck-btn` / `.ck-btn-primary` / `.ck-btn-ghost` | ボタン（角ばり・ハードオフセット影 `4px 4px 0`） |
 | `.ck-tool-card` | **ツール導線カード専用のシグネチャー**（角ばり＋ハードオフセット影 `4px 4px 0`＋対角hover）。`ToolCard` が使用。汎用の `.ck-card` とは別扱いにして「シグネチャーを一点に集中」させる |
-| `.ck-eyebrow` | 小見出しラベルの共通規格（`10px` / 字間 `0.2em` / uppercase / `ck-muted`）。ページ横断のラベルはこれに寄せる |
+| `.ck-eyebrow` | **装飾ラベル**（キッカー/タグ/小見出し）の規格（`10px` / 字間 `0.2em` / uppercase / `ck-muted`）。回遊カードや記事タグ等に使う |
+| `.ck-label` | **機能ラベル**（フォーム/操作パネルの見出し）の規格（`10px` / 字間 `0.15em` / uppercase / `ck-subtle`＝可読性優先）。入力欄・設定パネルのラベルに使う |
 | `.ck-section` | セクションカード |
 | `.ck-card` / `.ck-card-interactive` | 汎用カード（枠＋淡背景＋控えめ影、hoverで浮く）。一覧・記事カード等の“静かな”面に使う |
 | `.ck-input` / `.ck-textarea` | 入力欄 |
