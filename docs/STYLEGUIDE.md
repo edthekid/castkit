@@ -42,10 +42,12 @@
 | クラス | 用途 |
 |--------|------|
 | `.ck-btn` / `.ck-btn-primary` / `.ck-btn-ghost` | ボタン（角ばり・ハードオフセット影 `4px 4px 0`） |
+| `.ck-tool-card` | **ツール導線カード専用のシグネチャー**（角ばり＋ハードオフセット影 `4px 4px 0`＋対角hover）。`ToolCard` が使用。汎用の `.ck-card` とは別扱いにして「シグネチャーを一点に集中」させる |
+| `.ck-eyebrow` | 小見出しラベルの共通規格（`10px` / 字間 `0.2em` / uppercase / `ck-muted`）。ページ横断のラベルはこれに寄せる |
 | `.ck-section` | セクションカード |
-| `.ck-card` / `.ck-card-interactive` | 汎用カード（枠＋淡背景＋控えめ影、hoverで浮く） |
+| `.ck-card` / `.ck-card-interactive` | 汎用カード（枠＋淡背景＋控えめ影、hoverで浮く）。一覧・記事カード等の“静かな”面に使う |
 | `.ck-input` / `.ck-textarea` | 入力欄 |
-| `.ck-badge` / `.ck-chip` | バッジ・チップ |
+| `.ck-badge` / `.ck-chip` | バッジ・チップ（どちらも角ばり `radius:0`） |
 | `.ck-gradient-text` | グラデーションテキスト |
 | `.ck-nav-link` | サイドバーのナビリンク |
 | `.article-body` | 記事/静的ページ本文のタイポグラフィ（h2/p/ul/li/strong） |
@@ -55,10 +57,12 @@
 
 ## 4. デザインの世界観
 
-- **モノクロ基調**（インク #18181b ＋ グレースケール）
-- **角ばり**（`border-radius: 0`）
-- **ハードオフセット影**（`4px 4px 0`、hoverで伸びる）がシグネチャー
-- フォント: Space Grotesk（Latin）＋ Noto Sans JP
+- **モノクロ基調**（インク #18181b ＋ グレースケール）。**有彩色は使わない**（唯一の意味色は `--ck-danger`）。
+- **角ばり**（`border-radius: 0`）を徹底。**丸めてよいのはステータス/箇条書きの円ドット（正円）だけ**。ピル・丸角ボタンは作らない。
+- **ハードオフセット影**（`4px 4px 0`、hoverで伸びる）がシグネチャー。最重要の操作対象＝ツール導線カード（`.ck-tool-card`）に集中させ、汎用カードは静かに保つ。
+- **フォーカス可視化**：リンク/ボタン/カード等は `:focus-visible` で角ばりのインクアウトライン（`globals.css` で共通適用）。
+- **タイプ階層**：Display（ホームHero専用）＞ ツールタイトル（`EditableTitle` `3xl/5xl` tracking-widest）＞ コンテンツタイトル（記事・固定 `2xl/3xl`）。ラベルは `.ck-eyebrow` に統一。
+- フォント: Space Grotesk（Latin）＋ Noto Sans JP。**個別に別フォント（Inter 等）を指定しない**（body 継承に任せる）。
 
 ---
 

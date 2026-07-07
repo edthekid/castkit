@@ -28,7 +28,8 @@
 | `EditableTitle` | クリックで編集できるページタイトル。未編集なら翻訳タイトル（言語追従）、編集後はユーザー入力を優先。中央寄せ用スペーサー内蔵。 |
 | `SettingsButton` | 設定モーダルを開くボタン（件数バッジ付き。お題ガチャ/ディベートで共通）。 |
 | `ShareButton` | X(Twitter) 投稿リンク。URLは `SITE_URL + usePathname()`（ハイドレーション安全・本番URL固定）。 |
-| `RelatedTools` | 他ツールへの回遊カード3件（現在ページを除外）。 |
+| `ToolCard` | 全ツール導線カードの共通コンポーネント。サイトのシグネチャー（`.ck-tool-card`＝角ばり＋ハードオフセット影＋対角hover）を担う。`variant="featured"`（ホーム大カード）/ `"compact"`（RelatedTools 小カード）。データは `toolList.ts`（`TOOL_CARDS`）に一元化。 |
+| `RelatedTools` | 他ツールへの回遊カード3件（現在ページを除外）。`ToolCard` の compact を使用。 |
 | `ToolArticleLink` | 現在のツールに対応する記事へのリンク（`getArticleByToolHref`）。 |
 
 ---
@@ -70,4 +71,5 @@
 
 - ツールページは原則 **`ToolHeader` → 本体 → `ToolFooter`** の構成。
 - 設定モーダルを持つツール（topic / debate）は `SettingsButton` を `ToolHeader` の `action` に渡す。
-- 新規共通UIを足すときは、まず既存（特に `ToolHeader`/`ToolFooter`/`.ck-card`）で代替できないか確認する。
+- 新規共通UIを足すときは、まず既存（特に `ToolHeader`/`ToolFooter`/`ToolCard`/`.ck-card`）で代替できないか確認する。
+- ツール導線カードは `ToolCard` に一本化済み（ホームと `RelatedTools` が共通利用）。ツール一覧の追加・変更は `_components/toolList.ts`（`TOOL_CARDS`）を編集する。
