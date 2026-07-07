@@ -16,10 +16,10 @@ export function ArticleList() {
   return (
     <div className="max-w-2xl mx-auto py-4">
       <header className="mb-10">
-        <div className="inline-flex items-center mb-4 px-3 py-1 text-[10px] font-black tracking-widest uppercase border border-ck-line text-ck-muted">
+        <div className="inline-flex items-center mb-4 px-3 py-1 border border-ck-line ck-eyebrow">
           ARTICLES
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black mb-3 text-ck-ink">
+        <h1 className="text-2xl sm:text-3xl font-black leading-snug mb-3 text-ck-ink">
           {heading}
         </h1>
         <p className="text-sm leading-relaxed text-ck-body">
@@ -35,7 +35,7 @@ export function ArticleList() {
             className="ck-card ck-card-interactive group block p-5"
           >
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] font-black tracking-widest uppercase px-2 py-0.5 border border-ck-line text-ck-subtle bg-ck-surface">
+              <span className="ck-eyebrow px-2 py-0.5 border border-ck-line bg-ck-surface">
                 {article.tag[locale]}
               </span>
               <span className="text-[10px] text-ck-muted">{article.date}</span>

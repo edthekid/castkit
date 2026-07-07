@@ -54,7 +54,7 @@ export function CountdownMode({ muted, volume, fontFamily }: { muted: boolean; v
             ['timer.seconds', cd.seconds, cd.editSeconds, 59] as const,
           ]).map(([labelKey, value, onChange, max]) => (
             <div key={labelKey} className="flex flex-col items-center gap-1.5">
-              <span className="text-[10px] font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
+              <span className="ck-label">
                 {t(labelKey as TranslationKey)}
               </span>
               <NumberStepper

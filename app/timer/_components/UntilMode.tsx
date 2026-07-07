@@ -42,7 +42,7 @@ export function UntilMode({ muted, volume, fontFamily }: { muted: boolean; volum
 
       {/* 目標日時 */}
       <div className="ck-section flex flex-col gap-3">
-        <label className="text-[10px] font-black tracking-widest uppercase" style={{ color: ck.text.secondary }} htmlFor="until-target">
+        <label className="ck-label" htmlFor="until-target">
           {t('timer.targetTime')}
         </label>
         <input

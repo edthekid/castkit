@@ -70,7 +70,7 @@ export function PomodoroMode({ muted, volume, fontFamily }: { muted: boolean; vo
         className="p-4 flex flex-col gap-3"
         style={{ background: 'rgba(var(--ck-ink-rgb),0.03)', border: `1px solid ${ck.border.default}` }}
       >
-        <p className="text-[10px] font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
+        <p className="ck-label">
           {t('timer.pomo.howtoTitle')}
         </p>
         <p className="text-xs leading-relaxed" style={{ color: ck.text.secondary }}>
@@ -90,7 +90,7 @@ export function PomodoroMode({ muted, volume, fontFamily }: { muted: boolean; vo
 
       {/* 設定（idle のときのみ操作可） */}
       <div className="ck-section flex flex-col gap-3">
-        <p className="text-[10px] font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
+        <p className="ck-label">
           {t('timer.pomo.settings')}
         </p>
         <div style={{ border: `1.5px solid ${ck.border.default}`, background: ck.bg.page }}>

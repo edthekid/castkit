@@ -30,7 +30,7 @@ export function ToolArticleLink() {
         <IconBook size={20} strokeWidth={1.6} />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-black tracking-widest uppercase mb-0.5 text-ck-muted">
+        <p className="ck-eyebrow mb-0.5">
           {lead}
         </p>
         <p className="text-sm font-bold leading-snug text-ck-ink">

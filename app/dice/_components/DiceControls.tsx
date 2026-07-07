@@ -214,7 +214,7 @@ export function DiceControls({
 
           {/* 役と倍率の一覧（強い順） */}
           <div style={{ border: `1px solid ${ck.border.default}`, background: ck.bg.card }}>
-            <p className="text-[10px] font-black tracking-widest uppercase px-3 pt-2 pb-1" style={{ color: ck.text.secondary }}>
+            <p className="ck-label px-3 pt-2 pb-1">
               {t('dice.chinchiro.legendTitle')}
             </p>
             <ul>

@@ -1,7 +1,6 @@
 'use client';
 
 import { useTranslation } from '../../_i18n/useTranslation';
-import { ck } from '../../_theme/colors';
 import { FONTS } from '../../_lib/fonts';
 
 /**
@@ -12,7 +11,7 @@ export function FontSelect({ font, onChange }: { font: string; onChange: (id: st
   const { t } = useTranslation();
   return (
     <label className="flex items-center gap-2">
-      <span className="text-[10px] font-black tracking-widest uppercase" style={{ color: ck.text.secondary }}>
+      <span className="ck-label">
         {t('timer.fontLabel')}
       </span>
       <select

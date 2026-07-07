@@ -21,7 +21,7 @@ export function HomeArticles() {
     <section className="mt-20">
       <div className="flex items-end justify-between gap-4 mb-2">
         <div>
-          <p className="text-[10px] font-black tracking-widest uppercase mb-1 text-ck-muted">
+          <p className="ck-eyebrow mb-1">
             ARTICLES
           </p>
           <h2 className="text-xl sm:text-2xl font-black text-ck-ink">
@@ -46,7 +46,7 @@ export function HomeArticles() {
             href={a.href}
             className="ck-card ck-card-interactive group flex flex-col p-4"
           >
-            <span className="text-[10px] font-black tracking-widest uppercase mb-2 text-ck-muted">
+            <span className="ck-eyebrow mb-2">
               {a.tag[locale]}
             </span>
             <p className="text-sm font-bold leading-snug group-hover:underline text-ck-ink">
