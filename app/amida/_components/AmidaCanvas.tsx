@@ -82,35 +82,32 @@ export function AmidaCanvas({
     setShowButtons(false);
   }, [phase]);
 
-  // ─── 演出スクロール（generate時のみ） ────────────────────
+  // ─── 演出スクロール（generate時のみ・コンテナ内スクロール） ──
   useEffect(() => {
     if (scrollTrigger === 0) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- スクロール演出の開始時にボタンを隠す（演出シーケンス）
     setShowButtons(false);
+    const box     = containerRef.current;
     const wrapper = svgWrapRef.current;
-    if (!wrapper) return;
+    if (!box || !wrapper) return;
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     const run = async () => {
-      const rect    = wrapper.getBoundingClientRect();
-      const wrapTop = rect.top + window.scrollY;
-      const scaleY  = rect.height / svgH;
+      const scaleY = wrapper.getBoundingClientRect().height / svgH;
 
-      // STEP1: 結果下端へ即ジャンプ
-      const resultY = wrapTop + (btmY + 44) * scaleY - window.innerHeight * 0.75;
-      window.scrollTo({ top: Math.max(0, resultY), behavior: 'instant' });
+      // STEP1: 結果（下端）を見せる位置へ即ジャンプ
+      const resultY = (btmY + 44) * scaleY;
+      box.scrollTop = Math.max(0, resultY - box.clientHeight * 0.75);
       await new Promise<void>((r) => { timers.push(setTimeout(r, 1600)); });
 
-      // STEP2: 下から上へ一定速度スクロール
-      const topY       = Math.max(0, wrapTop - 80);
-      const startY     = window.scrollY;
-      const scrollDist = startY - topY;
-      const step2Dur   = Math.max(2000, scrollDist * 5.5);
+      // STEP2: 下から上（名前側）へ一定速度でコンテナ内スクロール
+      const startY   = box.scrollTop;
+      const step2Dur = Math.max(2000, startY * 5.5);
       await new Promise<void>((resolve) => {
         const st = performance.now();
         const tick = (now: number) => {
           const t = Math.min((now - st) / step2Dur, 1);
-          window.scrollTo({ top: startY - scrollDist * t, behavior: 'instant' });
+          box.scrollTop = startY * (1 - t);
           if (t < 1) requestAnimationFrame(tick); else resolve();
         };
         requestAnimationFrame(tick);
@@ -181,7 +178,7 @@ export function AmidaCanvas({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- トレースは本数(activeSet.size)の増加でのみ起動。Set参照全体を依存にすると毎renderで再起動してしまう
   }, [activeSet.size]);
 
-  // ─── tracing: スクロール追従（SVGスケールを正確に計算） ───
+  // ─── tracing: 先端ヘッドをコンテナ内で追従スクロール ───
   useEffect(() => {
     if (phase !== 'tracing') {
       if (scrollRafRef.current) cancelAnimationFrame(scrollRafRef.current);
@@ -190,15 +187,14 @@ export function AmidaCanvas({
     startTimeRef.current = performance.now();
     const tick = (now: number) => {
       const t       = Math.min((now - startTimeRef.current) / TRACE_DURATION_MS, 1);
+      const box     = containerRef.current;
       const wrapper = svgWrapRef.current;
-      if (wrapper) {
-        // SVGのviewBox高さとDOM高さの比率でスケール計算
-        const domH        = wrapper.getBoundingClientRect().height;
-        const scaleY      = domH / svgH;
+      if (box && wrapper) {
+        // SVGのviewBox高さとDOM高さの比率でスケール計算し、先端の位置をコンテナ中央へ
+        const scaleY      = wrapper.getBoundingClientRect().height / svgH;
         const svgCurrentY = rowY(0) + (btmY - rowY(0)) * t;
-        const domY        = svgCurrentY * scaleY;
-        const wrapTop     = wrapper.getBoundingClientRect().top + window.scrollY;
-        window.scrollTo({ top: wrapTop + domY - window.innerHeight * 0.45, behavior: 'instant' });
+        const contentY    = svgCurrentY * scaleY;
+        box.scrollTop = contentY - box.clientHeight * 0.45;
       }
       if (t < 1) scrollRafRef.current = requestAnimationFrame(tick);
     };
@@ -240,7 +236,12 @@ export function AmidaCanvas({
 
   return (
     <div className="flex flex-col items-center w-full">
-      <div ref={containerRef} className="w-full overflow-hidden">
+      {/* 高さ固定のスクロールビューポート：あみだの演出はページではなくこの中でスクロールする */}
+      <div
+        ref={containerRef}
+        className="w-full overflow-y-auto overflow-x-hidden"
+        style={{ maxHeight: 'min(70vh, 680px)' }}
+      >
         <div ref={svgWrapRef} style={{ width: '100%', position: 'relative' }}>
           <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ display: 'block' }}>
 
