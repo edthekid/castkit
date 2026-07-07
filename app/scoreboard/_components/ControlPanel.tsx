@@ -98,7 +98,7 @@ export function ControlPanel({
                 className="px-3 py-1.5 text-xs font-black transition-colors"
                 style={{
                   background: active ? 'var(--ck-text-primary)' : 'transparent',
-                  color: active ? '#ffffff' : 'var(--ck-text-secondary)',
+                  color: active ? 'var(--ck-text-on-dark)' : 'var(--ck-text-secondary)',
                 }}
               >
                 {designLabel[mode]}
