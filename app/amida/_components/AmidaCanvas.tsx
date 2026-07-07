@@ -184,18 +184,22 @@ export function AmidaCanvas({
       if (scrollRafRef.current) cancelAnimationFrame(scrollRafRef.current);
       return;
     }
+    const box     = containerRef.current;
+    const wrapper = svgWrapRef.current;
+    if (!box || !wrapper) return;
+
+    // 計測は開始時に一度だけ（tracing中は不変）。以降のフレームは scrollTop の書き込みのみに限定し、
+    // 同一フレーム内でのレイアウト read/write の混在（layout thrashing）を避ける。
+    const scaleY   = wrapper.getBoundingClientRect().height / svgH;
+    const center   = box.clientHeight * 0.45;
+    const y0       = rowY(0);
+    const span     = btmY - y0;
     startTimeRef.current = performance.now();
+
     const tick = (now: number) => {
-      const t       = Math.min((now - startTimeRef.current) / TRACE_DURATION_MS, 1);
-      const box     = containerRef.current;
-      const wrapper = svgWrapRef.current;
-      if (box && wrapper) {
-        // SVGのviewBox高さとDOM高さの比率でスケール計算し、先端の位置をコンテナ中央へ
-        const scaleY      = wrapper.getBoundingClientRect().height / svgH;
-        const svgCurrentY = rowY(0) + (btmY - rowY(0)) * t;
-        const contentY    = svgCurrentY * scaleY;
-        box.scrollTop = contentY - box.clientHeight * 0.45;
-      }
+      const t        = Math.min((now - startTimeRef.current) / TRACE_DURATION_MS, 1);
+      const contentY = (y0 + span * t) * scaleY;
+      box.scrollTop = contentY - center; // write-only
       if (t < 1) scrollRafRef.current = requestAnimationFrame(tick);
     };
     scrollRafRef.current = requestAnimationFrame(tick);
