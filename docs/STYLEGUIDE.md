@@ -51,7 +51,7 @@
 | `.ck-badge` / `.ck-chip` | バッジ・チップ（どちらも角ばり `radius:0`） |
 | `.ck-gradient-text` | グラデーションテキスト |
 | `.ck-nav-link` | サイドバーのナビリンク |
-| `.article-body` | 記事/静的ページ本文のタイポグラフィ（h2/p/ul/li/strong） |
+| `.article-body` | 記事/静的ページ本文のタイポグラフィ（可読性優先: 本文15.2px・行間広め）。h2/h3/p/ul/ol/li/strong/a/blockquote/code/hr を整備 |
 | `.ck-slide-up` / `.ck-fade-in` | アニメーション |
 
 ---

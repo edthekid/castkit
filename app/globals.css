@@ -430,32 +430,46 @@ button:focus-visible,
 .ck-row-2 { border-left: 3px solid var(--ck-series-3); background: rgba(161,161,170,0.06); }
 .ck-row-3 { border-left: 3px solid var(--ck-series-2); background: rgba(63,63,70,0.05); }
 
-/* ── 記事・固定ページ本文（Markdown描画後のHTMLに適用） ── */
+/* ── 記事・固定ページ本文（Markdown描画後のHTMLに適用）──
+   長文の可読性を優先：本文を一段大きく(15.2px)・行間を広めに取り、見出しの階層差を強める。
+   実記事は h2/段落/太字/箇条書き/リンクだが、h3・番号リスト・引用・コード・区切り線も
+   将来の記事のために整えておく。font-weight は読み込み済みウェイト(500/700/900)に合わせる。 */
+.article-body > :first-child { margin-top: 0; }
+
 .article-body h2 {
-  font-size: 1.125rem;
+  font-size: 1.2rem;
   font-weight: 900;
   color: var(--ck-text-primary);
-  margin: 2rem 0 0.75rem;
+  margin: 2.5rem 0 0.85rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--ck-border);
 }
+.article-body h3 {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--ck-text-primary);
+  margin: 1.75rem 0 0.5rem;
+}
 .article-body p {
-  font-size: 0.9rem;
-  line-height: 1.85;
+  font-size: 0.95rem;
+  line-height: 1.9;
   color: var(--ck-gray-700);
-  margin: 0.75rem 0;
+  margin: 0.9rem 0;
 }
-.article-body ul {
-  margin: 0.75rem 0;
-  padding-left: 1.25rem;
-  list-style: disc;
+.article-body ul,
+.article-body ol {
+  margin: 0.9rem 0;
+  padding-left: 1.4rem;
 }
+.article-body ul { list-style: disc; }
+.article-body ol { list-style: decimal; }
 .article-body li {
-  font-size: 0.9rem;
-  line-height: 1.75;
+  font-size: 0.95rem;
+  line-height: 1.8;
   color: var(--ck-gray-700);
-  margin: 0.3rem 0;
+  margin: 0.35rem 0;
 }
+.article-body li::marker { color: var(--ck-text-muted); }
 .article-body strong {
   font-weight: 700;
   color: var(--ck-text-primary);
@@ -464,7 +478,28 @@ button:focus-visible,
   color: var(--ck-text-primary);
   text-decoration: underline;
   text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-thickness 0.15s ease;
 }
 .article-body a:hover {
-  opacity: 0.7;
+  text-decoration-thickness: 2px;
+}
+.article-body blockquote {
+  margin: 1.25rem 0;
+  padding: 0.25rem 0 0.25rem 1rem;
+  border-left: 3px solid var(--ck-text-primary);
+  color: var(--ck-text-secondary);
+}
+.article-body blockquote p { margin: 0.4rem 0; }
+.article-body code {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  background: var(--ck-bg-card-muted);
+  border: 1px solid var(--ck-border);
+  padding: 0.1em 0.35em;
+}
+.article-body hr {
+  border: 0;
+  border-top: 1px solid var(--ck-border);
+  margin: 2rem 0;
 }
