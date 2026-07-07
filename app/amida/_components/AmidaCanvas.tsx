@@ -160,16 +160,26 @@ export function AmidaCanvas({
 
       // 描画進捗pを等速で進め、線の描画量と先端ヘッド位置を同期
       // （等速なのは tracing 中のスクロール追従と歩調を合わせるため）
+      // 先端位置は毎フレーム getPointAtLength を呼ぶと重いので、開始時に一度だけ
+      // 経路を等間隔サンプリングして配列化し、onUpdate では O(1) 参照にする。
+      const SAMPLES = 100;
+      const pts: { x: number; y: number }[] = [];
+      if (el.getPointAtLength) {
+        for (let s = 0; s <= SAMPLES; s++) {
+          const pt = el.getPointAtLength((len * s) / SAMPLES);
+          pts.push({ x: pt.x, y: pt.y });
+        }
+      }
+
       const st = { p: 0 };
       const tw = gsap.to(st, {
         p: 1,
         duration: TRACE_DURATION_MS / 1000,
         ease: 'none',
         onUpdate: () => {
-          const drawn = len * st.p;
-          el.style.strokeDashoffset = `${len - drawn}`;
-          if (head && el.getPointAtLength) {
-            const pt = el.getPointAtLength(drawn);
+          el.style.strokeDashoffset = `${len - len * st.p}`;
+          if (head && pts.length) {
+            const pt = pts[Math.round(st.p * SAMPLES)];
             head.setAttribute('transform', `translate(${pt.x} ${pt.y})`);
             head.style.opacity = st.p < 0.995 ? '1' : '0';
           }
@@ -234,8 +244,9 @@ export function AmidaCanvas({
   const PANEL: React.CSSProperties = {
     display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center',
     padding: '8px 16px',
-    background: 'rgba(255,255,255,0.85)',
-    backdropFilter: 'blur(8px)',
+    // スクロールするコンテナ内にあるため backdrop-filter の毎フレーム再計算を避け、
+    // 背景を少し不透明化して視認性を保つ（見た目はほぼ同じ）。
+    background: 'rgba(255,255,255,0.92)',
     borderRadius: 0,
     border: '1px solid #e4e4e7',
     boxShadow: '0 2px 16px rgba(17,17,20, 0.12)',

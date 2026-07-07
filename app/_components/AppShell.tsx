@@ -155,7 +155,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               className="sticky top-0 z-30 flex items-center gap-3 px-4 py-3"
               style={{
                 background: 'rgba(255,255,255,0.95)',
-                backdropFilter: 'blur(12px)',
+                backdropFilter: 'blur(8px)',
                 borderBottom: `1px solid ${ck.border.default}`,
               }}
             >
