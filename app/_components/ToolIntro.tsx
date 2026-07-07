@@ -23,8 +23,7 @@ export function ToolIntro() {
     useCases: locale === 'ja' ? '活用シーン' : 'Use cases',
   };
 
-  const sectionLabelClass =
-    'text-[10px] font-black tracking-widest uppercase mb-2 text-ck-muted';
+  const sectionLabelClass = 'ck-eyebrow mb-2';
 
   return (
     <section className="mt-16 pt-10 border-t border-ck-line">

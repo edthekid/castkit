@@ -19,7 +19,7 @@ export function StaticPageLayout({ title, bodyHtml, meta }: StaticPageLayoutProp
 
   return (
     <div className="max-w-2xl mx-auto py-4">
-      <h1 className="text-2xl sm:text-3xl font-black mb-2 text-ck-ink">{title[locale]}</h1>
+      <h1 className="text-2xl sm:text-3xl font-black leading-snug mb-2 text-ck-ink">{title[locale]}</h1>
       {meta && <p className="text-xs text-ck-muted mb-6">{meta[locale]}</p>}
       <div className="article-body" dangerouslySetInnerHTML={{ __html: bodyHtml[locale] }} />
     </div>

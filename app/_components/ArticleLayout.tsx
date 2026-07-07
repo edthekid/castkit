@@ -41,7 +41,7 @@ export function ArticleLayout({ article, bodyHtml }: ArticleLayoutProps) {
 
       <article>
         <header className="mb-10">
-          <div className="inline-flex items-center mb-4 px-3 py-1 text-[10px] font-black tracking-widest uppercase border border-ck-line text-ck-muted">
+          <div className="inline-flex items-center mb-4 px-3 py-1 border border-ck-line ck-eyebrow">
             {articleBadge}
           </div>
           <h1 className="text-2xl sm:text-3xl font-black leading-snug mb-3 text-ck-ink">
@@ -60,7 +60,7 @@ export function ArticleLayout({ article, bodyHtml }: ArticleLayoutProps) {
 
         <div className="mt-12 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-ck-line bg-ck-surface">
           <div>
-            <p className="text-[10px] font-black tracking-widest uppercase mb-1 text-ck-muted">
+            <p className="ck-eyebrow mb-1">
               FREE TOOL
             </p>
             <p className="text-sm font-black text-ck-ink">
