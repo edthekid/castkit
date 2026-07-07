@@ -38,6 +38,7 @@
   --ck-text-secondary: var(--ck-gray-500); /* サブテキスト */
   --ck-text-muted:     var(--ck-gray-400); /* placeholder等 */
   --ck-text-on-dark:   #ffffff;            /* 濃色背景上の文字 */
+  --ck-danger:         #c0392b;            /* エラー・バリデーション警告（モノクロ設計内の唯一の意味色） */
 
   --ck-accent:        var(--ck-gray-900); /* プライマリアクセント（黒） */
   --ck-accent-soft:   var(--ck-gray-100); /* アクセントの淡い背景 */
@@ -99,6 +100,7 @@
   --color-ck-line-bold: var(--ck-border-strong);   /* 強調ボーダー (#d4d4d8) */
   --color-ck-card:      var(--ck-bg-card);         /* カード背景 (#fafafa) */
   --color-ck-surface:   var(--ck-bg-card-muted);   /* 控えめな面 (#f4f4f5) */
+  --color-ck-danger:    var(--ck-danger);          /* エラー・警告テキスト (#c0392b) */
 }
 
 /* ── ブラウザのネイティブUI（角丸・装飾）を完全にリセット ──

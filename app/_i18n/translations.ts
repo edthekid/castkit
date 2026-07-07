@@ -63,6 +63,7 @@ export const translations = {
     'memberInput.title':  'メンバー入力',
     'memberInput.count':  '現在 {count} 人',
     'memberInput.placeholder': '改行区切りで入力してください',
+    'memberInput.duplicateWarning': '名前が重複しています：{names}',
 
     'teamSettings.countTitle': 'チーム数',
     'teamSettings.namesTitle': 'チームの名前を変更',
@@ -90,6 +91,7 @@ export const translations = {
     // toast
     'toast.errorEmptyMembers':   'メンバーの名前を入力してください。',
     'toast.errorTooFewMembers':  'メンバー数がチーム数より少ないです。',
+    'toast.errorDuplicateMembers': '名前が重複しています：{names}。重複しない名前にしてください。',
     'toast.errorFixedTooMany':   '{team} に固定された人数が多すぎます。',
     'toast.errorTooMany':        'メンバー数が多いため、最初の{max}件のみを表示します。',
     'toast.errorNoCombination':  '固定条件を満たす組み合わせが見つかりませんでした。',
@@ -419,6 +421,7 @@ export const translations = {
     'memberInput.title':  'Members',
     'memberInput.count':  '{count} members',
     'memberInput.placeholder': 'Enter one name per line',
+    'memberInput.duplicateWarning': 'Duplicate names: {names}',
 
     'teamSettings.countTitle': 'Number of Teams',
     'teamSettings.namesTitle': 'Rename Teams',
@@ -446,6 +449,7 @@ export const translations = {
     // toast
     'toast.errorEmptyMembers':   'Please enter member names.',
     'toast.errorTooFewMembers':  'There are fewer members than teams.',
+    'toast.errorDuplicateMembers': 'Duplicate names: {names}. Please make each name unique.',
     'toast.errorFixedTooMany':   '{team} has too many fixed members.',
     'toast.errorTooMany':        'Too many members — showing only the first {max} combinations.',
     'toast.errorNoCombination':  'No combination matches the fixed conditions.',

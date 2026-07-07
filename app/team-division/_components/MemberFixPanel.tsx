@@ -53,13 +53,14 @@ export function MemberFixPanel({
 
       {/* メンバーチップ */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-        {members.map((member) => {
+        {members.map((member, index) => {
           const teamIdx = fixedMembers[member];
           const isFixed = teamIdx !== undefined;
           const color   = isFixed ? getTeamColor(teamIdx) : null;
           return (
             <button
-              key={member}
+              // 同名メンバー（別人）を許容するため index を併用して一意化する
+              key={`${member}-${index}`}
               onClick={() => onToggle(member)}
               className="ck-chip w-full justify-start flex items-center gap-1.5 overflow-hidden text-ellipsis whitespace-nowrap"
               style={{

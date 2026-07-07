@@ -34,6 +34,7 @@
 - [ ] `app/_components/RelatedTools.tsx` — 関連ツール配列（`titleJa/En`・`descJa/En`）。
 - [ ] `app/guide/page.tsx` — **日本語配列・英語配列の両方**にエントリ＋末尾の `TOOL_MAP` にも追加。
 - [ ] `app/_lib/tools.ts` — `TOOL_SHARE` に X シェア文言（ja/en）。
+- [ ] `app/_lib/toolIntro.ts` — `TOOL_INTRO` に「概要＋使い方＋活用シーン」（ja/en）。**未登録だとツール下部の本文が出ず、そのURLが低品質コンテンツ扱いになりやすい**。
 
 ## 4. i18n 辞書
 
