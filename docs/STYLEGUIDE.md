@@ -23,6 +23,7 @@
 ### 主なトークン
 - テキスト: `ck-ink`(#18181b) / `ck-body`(#52525b) / `ck-subtle`(#71717a) / `ck-muted`(#a1a1aa)
 - 面/枠: `ck-card`(#fafafa) / `ck-surface`(#f4f4f5) / `ck-line`(#e4e4e7) / `ck-line-bold`(#d4d4d8)
+- エラー: `ck-danger`(#c0392b) — バリデーション警告など。モノクロ設計内で使う唯一の意味色（乱用しない）
 - グレースケール: `--ck-gray-50` 〜 `--ck-gray-950`
 - シリーズ色（プレイヤー判別用）: `--ck-series-0..11`
 

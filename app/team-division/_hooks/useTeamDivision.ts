@@ -30,6 +30,17 @@ export function useTeamDivision() {
     [deferredInputText],
   );
 
+  // 重複した名前（複数回登場する名前の一覧）。重複はエラー扱いにする。
+  const duplicateMembers = useMemo(() => {
+    const seen = new Set<string>();
+    const dups = new Set<string>();
+    for (const m of currentMembers) {
+      if (seen.has(m)) dups.add(m);
+      else seen.add(m);
+    }
+    return [...dups];
+  }, [currentMembers]);
+
   const playedCount   = useMemo(
     () => patterns.filter((p) => playedKeys.has(JSON.stringify(p.teams))).length,
     [patterns, playedKeys],
@@ -87,6 +98,10 @@ export function useTeamDivision() {
       toast.error(t('toast.errorTooFewMembers'));
       return;
     }
+    if (duplicateMembers.length > 0) {
+      toast.error(t('toast.errorDuplicateMembers', { names: duplicateMembers.join(', ') }));
+      return;
+    }
 
     // 有効な固定メンバーのみ抽出
     const validFixedMap: Record<string, number> = {};
@@ -132,7 +147,7 @@ export function useTeamDivision() {
     );
     setPlayedKeys(new Set());
     setActiveTab('unplayed');
-  }, [currentMembers, teamCount, fixedMembers, getTeamName, t]);
+  }, [currentMembers, duplicateMembers, teamCount, fixedMembers, getTeamName, t]);
 
   // ─── クリップボードコピー ────────────────────────────────
   const copyPattern = useCallback((pattern: TeamPattern) => {
@@ -175,6 +190,7 @@ export function useTeamDivision() {
     activeTab, setActiveTab,
     // 派生
     currentMembers,
+    duplicateMembers,
     playedCount,
     unplayedCount,
     filteredPatterns,

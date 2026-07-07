@@ -21,6 +21,7 @@ export default function TeamDivider() {
       <MemberInput
         inputText={td.inputText}
         memberCount={td.currentMembers.length}
+        duplicateMembers={td.duplicateMembers}
         onChange={td.setInputText}
       />
 
