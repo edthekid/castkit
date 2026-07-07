@@ -35,39 +35,41 @@ export default function HomePage() {
     <div className="max-w-4xl mx-auto">
       {/* ヒーローセクション */}
       <div className="text-center mb-16 pt-8" style={{ animation: 'ck-slide-up 0.8s cubic-bezier(0.16,1,0.3,1) both' }}>
-        {/* バッジ */}
-        <div className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 text-xs font-bold"
+        {/* ステータスチップ（角ばり・インク基調） */}
+        <div className="inline-flex items-center gap-2 mb-7 px-3.5 py-1.5 text-[11px] font-bold tracking-wide"
           style={{
-            background: `rgba(var(--ck-ink-rgb), 0.08)`,
-            border: '1px solid rgba(var(--ck-ink-rgb), 0.25)',
+            background: `rgba(var(--ck-ink-rgb), 0.06)`,
+            border: '1px solid rgba(var(--ck-ink-rgb), 0.22)',
             color: 'var(--ck-text-primary)',
           }}>
           <span className="w-1.5 h-1.5 rounded-full bg-ck-ink animate-pulse" />
           {t('home.badge')}
         </div>
 
-        {/* タイトル（フォントは body 継承の Space Grotesk。個別フォント指定はしない） */}
+        {/* ワードマーク（グリッチ演出＝サイト唯一のシグネチャーモーション。
+            フォントは body 継承の Space Grotesk） */}
         <h1 ref={titleRef}
-          className="text-5xl sm:text-7xl font-black tracking-widest mb-4 text-ck-ink"
-          style={{ lineHeight: 1.1 }}>
+          className="text-5xl sm:text-7xl font-black tracking-widest mb-5 text-ck-ink"
+          style={{ lineHeight: 1.05 }}>
           CastKit
         </h1>
 
-        {/* サブタイトル */}
-        <p className="text-sm sm:text-base text-ck-muted font-medium max-w-md mx-auto leading-relaxed">
+        {/* サブタイトル（可読性のため muted→subtle に一段濃く） */}
+        <p className="text-sm sm:text-base text-ck-subtle font-medium max-w-md mx-auto leading-relaxed">
           {t('home.subtitleLine1')}<br />{t('home.subtitleLine2')}
         </p>
 
-        {/* デコライン（モノクロ：インク基調のハーフトーン） */}
-        <div className="flex items-center justify-center gap-3 mt-8">
-          <div className="h-px w-16" style={{ background: 'linear-gradient(to right, transparent, var(--ck-border-strong))' }} />
-          <div className="w-1.5 h-1.5 rounded-full bg-ck-ink" style={{ boxShadow: '0 0 8px rgba(var(--ck-ink-rgb), 0.5)' }} />
-          <div className="h-px w-16" style={{ background: 'linear-gradient(to left, transparent, var(--ck-border-strong))' }} />
+        {/* デコ：角ばりの菱形アクセント（radius:0 の世界観に合わせ、丸ドットから変更） */}
+        <div className="flex items-center justify-center gap-3 mt-9" aria-hidden="true">
+          <div className="h-px w-14" style={{ background: 'linear-gradient(to right, transparent, var(--ck-border-strong))' }} />
+          <div className="w-2 h-2 bg-ck-ink" style={{ transform: 'rotate(45deg)' }} />
+          <div className="h-px w-14" style={{ background: 'linear-gradient(to left, transparent, var(--ck-border-strong))' }} />
         </div>
 
-        {/* ガイドリンク */}
-        <div className="mt-5">
-          <Link href="/guide" className="text-xs text-ck-muted hover:text-ck-subtle transition-colors font-bold tracking-widest">
+        {/* ガイドCTA（曖昧な小文字リンク → 角ばりゴーストの明確なCTAに） */}
+        <div className="mt-8">
+          <Link href="/guide"
+            className="inline-flex items-center gap-2 border border-ck-line-bold px-4 py-2 text-xs font-black tracking-widest text-ck-subtle transition-colors hover:bg-ck-ink hover:text-white hover:border-ck-ink">
             {t('home.guideLink')}
           </Link>
         </div>
