@@ -53,7 +53,7 @@ function NavLink({ href, icon: Icon, labelKey, pathname }: {
       <span className="w-5 flex items-center justify-center opacity-80" aria-hidden="true"><Icon size={16} /></span>
       <span>{t(labelKey)}</span>
       {isActive && (
-        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-ck-ink shadow-[0_0_6px_rgba(17,17,20,0.6)]" aria-hidden="true" />
+        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-ck-ink shadow-[0_0_6px_rgba(var(--ck-ink-rgb),0.6)]" aria-hidden="true" />
       )}
     </Link>
   );
@@ -70,7 +70,7 @@ function Sidebar() {
           <div className="relative">
             <div className="text-3xl font-black tracking-widest ck-gradient-text">{t('common.castkit')}</div>
             <div style={{ fontSize: 10, color: ck.text.muted, fontWeight: 700, letterSpacing: '0.3em', marginTop: 2 }}>{t('common.utilityToolkit')}</div>
-            <div className="absolute -bottom-3 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-400/40 to-transparent" />
+            <div className="absolute -bottom-3 left-0 w-full h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(var(--ck-ink-rgb), 0.2), transparent)' }} />
           </div>
         </Link>
       </div>
@@ -82,10 +82,7 @@ function Sidebar() {
 
         <div className="mt-3 mb-1">
           <div className="h-px mb-3" style={{ background: ck.border.default }} />
-          <div
-            className="px-2 mb-1"
-            style={{ fontSize: 9, color: ck.text.muted, fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase' }}
-          >
+          <div className="ck-eyebrow px-2 mb-1">
             {locale === 'ja' ? 'コンテンツ' : 'CONTENT'}
           </div>
         </div>
@@ -164,7 +161,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             >
               <label
                 htmlFor="drawer-toggle"
-                className="flex items-center justify-center w-9 h-9 rounded cursor-pointer transition-colors text-ck-ink hover:bg-ck-surface"
+                className="flex items-center justify-center w-9 h-9 cursor-pointer transition-colors text-ck-ink hover:bg-ck-surface"
                 aria-label={locale === 'ja' ? 'メニューを開く' : 'Open menu'}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
