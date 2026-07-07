@@ -51,8 +51,6 @@ export function AmidaCanvas({
   const svgWrapRef  = useRef<HTMLDivElement>(null);
   const nameLabelRef= useRef<HTMLDivElement>(null);
   const containerRef= useRef<HTMLDivElement>(null);
-  const scrollRafRef= useRef<number | null>(null);
-  const startTimeRef= useRef<number>(0);
 
   const svgW = calcSvgWidth(n, colWidth);
   const svgH = calcSvgHeight(rows);
@@ -136,93 +134,84 @@ export function AmidaCanvas({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- phase遷移時のみ判定。scrollTriggerは前回値(ref)との比較用で、依存に入れると比較が壊れる
   }, [phase]);
 
-  // ─── トレースアニメーション（GSAP: 線を描きながら先端ヘッドが走る） ──
+  // ─── トレースアニメーション（GSAP単一クロックで 描画＋先端＋追従スクロールを完全同期） ──
   useEffect(() => {
     if (activeSet.size === 0) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const tweens: gsap.core.Tween[] = [];
+    const SAMPLES = 100;
 
-    activeSet.forEach((i) => {
-      const el   = traceRefs.current[i];
-      const head = headRefs.current[i];
-      if (!el) return;
-      // getTotalLengthで正確な長さを取得
-      const len = el.getTotalLength ? el.getTotalLength() : 9999;
-      el.style.transition = 'none';
-      el.style.strokeDasharray  = `${len}`;
-      el.style.strokeDashoffset = `${len}`;
-
-      if (reduce) {
-        el.style.strokeDashoffset = '0';
-        if (head) head.style.opacity = '0';
-        return;
-      }
-
-      // 描画進捗pを等速で進め、線の描画量と先端ヘッド位置を同期
-      // （等速なのは tracing 中のスクロール追従と歩調を合わせるため）
-      // 先端位置は毎フレーム getPointAtLength を呼ぶと重いので、開始時に一度だけ
-      // 経路を等間隔サンプリングして配列化し、onUpdate では O(1) 参照にする。
-      const SAMPLES = 100;
-      const pts: { x: number; y: number }[] = [];
-      if (el.getPointAtLength) {
-        for (let s = 0; s <= SAMPLES; s++) {
-          const pt = el.getPointAtLength((len * s) / SAMPLES);
-          pts.push({ x: pt.x, y: pt.y });
-        }
-      }
-
-      const st = { p: 0 };
-      const tw = gsap.to(st, {
-        p: 1,
-        duration: TRACE_DURATION_MS / 1000,
-        ease: 'none',
-        onUpdate: () => {
-          el.style.strokeDashoffset = `${len - len * st.p}`;
-          if (head && pts.length) {
-            const pt = pts[Math.round(st.p * SAMPLES)];
-            head.setAttribute('transform', `translate(${pt.x} ${pt.y})`);
-            head.style.opacity = st.p < 0.995 ? '1' : '0';
+    // 各アクティブ経路の描画情報を開始時に一括計算（毎フレームの getPointAtLength を避ける）
+    const items = ([...activeSet]
+      .map((i) => {
+        const el   = traceRefs.current[i];
+        const head = headRefs.current[i];
+        if (!el) return null;
+        const len = el.getTotalLength ? el.getTotalLength() : 9999;
+        el.style.transition = 'none';
+        el.style.strokeDasharray  = `${len}`;
+        el.style.strokeDashoffset = `${len}`;
+        const pts: { x: number; y: number }[] = [];
+        if (el.getPointAtLength) {
+          for (let s = 0; s <= SAMPLES; s++) {
+            const pt = el.getPointAtLength((len * s) / SAMPLES);
+            pts.push({ x: pt.x, y: pt.y });
           }
-        },
-        onComplete: () => { if (head) head.style.opacity = '0'; },
-      });
-      tweens.push(tw);
-    });
+        }
+        return { el, head, len, pts };
+      })
+      .filter(Boolean)) as { el: SVGPathElement; head: SVGGElement | null; len: number; pts: { x: number; y: number }[] }[];
 
-    return () => tweens.forEach((t) => t.kill());
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- トレースは本数(activeSet.size)の増加でのみ起動。Set参照全体を依存にすると毎renderで再起動してしまう
-  }, [activeSet.size]);
-
-  // ─── tracing: 先端ヘッドをコンテナ内で追従スクロール ───
-  useEffect(() => {
-    if (phase !== 'tracing') {
-      if (scrollRafRef.current) cancelAnimationFrame(scrollRafRef.current);
+    if (reduce) {
+      items.forEach(({ el, head }) => { el.style.strokeDashoffset = '0'; if (head) head.style.opacity = '0'; });
       return;
     }
+
+    // 追従スクロールの計測は開始時に一度だけ（tracing中は不変）
     const box     = containerRef.current;
     const wrapper = svgWrapRef.current;
-    if (!box || !wrapper) return;
-    // reduced-motion: 追従スクロールしない（トレース描画側は即完了する分岐を持つ）
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let scaleY = 1;
+    let center = 0;
+    const y0   = rowY(0);
+    const span = btmY - y0;
+    if (box && wrapper) {
+      scaleY = wrapper.getBoundingClientRect().height / svgH;
+      center = box.clientHeight * 0.45;
+    }
 
-    // 計測は開始時に一度だけ（tracing中は不変）。以降のフレームは scrollTop の書き込みのみに限定し、
-    // 同一フレーム内でのレイアウト read/write の混在（layout thrashing）を避ける。
-    const scaleY   = wrapper.getBoundingClientRect().height / svgH;
-    const center   = box.clientHeight * 0.45;
-    const y0       = rowY(0);
-    const span     = btmY - y0;
-    startTimeRef.current = performance.now();
+    // 描画・先端・追従スクロールを1つの tween（＝1クロック）から駆動し、
+    // 別ループ同士のフレームずれによるジッター（カクつき）を排除する。
+    const st = { p: 0 };
+    const tw = gsap.to(st, {
+      p: 1,
+      duration: TRACE_DURATION_MS / 1000,
+      ease: 'none',
+      onUpdate: () => {
+        const p = st.p;
+        for (const it of items) {
+          it.el.style.strokeDashoffset = `${it.len - it.len * p}`;
+          if (it.head && it.pts.length) {
+            // サンプル間を線形補間して段付き（先端のカクつき）を無くす
+            const f    = p * SAMPLES;
+            const i0   = Math.min(Math.floor(f), SAMPLES);
+            const i1   = Math.min(i0 + 1, SAMPLES);
+            const frac = f - i0;
+            const a = it.pts[i0];
+            const b = it.pts[i1];
+            const x = a.x + (b.x - a.x) * frac;
+            const y = a.y + (b.y - a.y) * frac;
+            it.head.setAttribute('transform', `translate(${x} ${y})`);
+            it.head.style.opacity = p < 0.995 ? '1' : '0';
+          }
+        }
+        // 描画と同一フレームで追従（write-only）。読み取りは開始時に済ませてある。
+        if (box) box.scrollTop = (y0 + span * p) * scaleY - center;
+      },
+      onComplete: () => { items.forEach(({ head }) => { if (head) head.style.opacity = '0'; }); },
+    });
 
-    const tick = (now: number) => {
-      const t        = Math.min((now - startTimeRef.current) / TRACE_DURATION_MS, 1);
-      const contentY = (y0 + span * t) * scaleY;
-      box.scrollTop = contentY - center; // write-only
-      if (t < 1) scrollRafRef.current = requestAnimationFrame(tick);
-    };
-    scrollRafRef.current = requestAnimationFrame(tick);
-    return () => { if (scrollRafRef.current) cancelAnimationFrame(scrollRafRef.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- tracing開始時のみ追従ループを起動。btmY/svgHは開始時点の値を読む（途中の再計算で再起動させない）
-  }, [phase]);
+    return () => { tw.kill(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- トレースは本数(activeSet.size)の増加でのみ起動。Set参照全体を依存にすると毎renderで再起動してしまう
+  }, [activeSet.size]);
 
   // ─── done: 結果パネルへスクロール（下端ではなく結果の位置で止める） ──
   useEffect(() => {
