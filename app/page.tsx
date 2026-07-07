@@ -14,6 +14,11 @@ export default function HomePage() {
   useEffect(() => {
     const el = titleRef.current;
     if (!el) return;
+    // reduced-motion: 文字スクランブル演出をせず、確定表示のみ
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      el.textContent = 'CastKit';
+      return;
+    }
     let frame = 0;
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%';
     const original = 'CastKit';

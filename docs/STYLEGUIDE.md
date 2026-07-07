@@ -62,6 +62,7 @@
 - **角ばり**（`border-radius: 0`）を徹底。**丸めてよいのはステータス/箇条書きの円ドット（正円）だけ**。ピル・丸角ボタンは作らない。
 - **ハードオフセット影**（`4px 4px 0`、hoverで伸びる）がシグネチャー。最重要の操作対象＝ツール導線カード（`.ck-tool-card`）に集中させ、汎用カードは静かに保つ。
 - **フォーカス可視化**：リンク/ボタン/カード等は `:focus-visible` で角ばりのインクアウトライン（`globals.css` で共通適用）。
+- **モーション削減**：`globals.css` の `@media (prefers-reduced-motion: reduce)` で CSSアニメ/トランジション/スムーズスクロールを一括最小化（インライン `animation` も `!important` で上書き）。JS駆動の演出（Heroのグリッチ、あみだの追従スクロール）は各コンポーネントで `matchMedia('(prefers-reduced-motion: reduce)')` を見て分岐する。
 - **タイプ階層**：Display（ホームHero専用）＞ ツールタイトル（`EditableTitle` `3xl/5xl` tracking-widest）＞ コンテンツタイトル（記事・固定 `2xl/3xl`）。ラベルは `.ck-eyebrow` に統一。
 - フォント: Space Grotesk（Latin）＋ Noto Sans JP。**個別に別フォント（Inter 等）を指定しない**（body 継承に任せる）。
 

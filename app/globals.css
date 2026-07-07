@@ -503,3 +503,17 @@ button:focus-visible,
   border-top: 1px solid var(--ck-border);
   margin: 2rem 0;
 }
+
+/* ── prefers-reduced-motion：モーションを最小化 ──
+   ck-slide-up 等のCSSアニメ／トランジション／スムーズスクロールを一括で無効化。
+   !important でインライン animation（Hero・ツールカード等）も上書きする。
+   JS駆動のモーション（Heroのグリッチ、あみだの演出スクロール）は各コンポーネントで
+   reduce を判定して分岐する（CSSでは止められないため）。 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

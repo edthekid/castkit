@@ -90,6 +90,11 @@ export function AmidaCanvas({
     const box     = containerRef.current;
     const wrapper = svgWrapRef.current;
     if (!box || !wrapper) return;
+    // reduced-motion: 演出スクロールをせず即ボタン表示
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setShowButtons(true);
+      return;
+    }
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     const run = async () => {
@@ -187,6 +192,8 @@ export function AmidaCanvas({
     const box     = containerRef.current;
     const wrapper = svgWrapRef.current;
     if (!box || !wrapper) return;
+    // reduced-motion: 追従スクロールしない（トレース描画側は即完了する分岐を持つ）
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     // 計測は開始時に一度だけ（tracing中は不変）。以降のフレームは scrollTop の書き込みのみに限定し、
     // 同一フレーム内でのレイアウト read/write の混在（layout thrashing）を避ける。
