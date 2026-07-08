@@ -13,11 +13,13 @@ import { debate } from './articles/debate';
 import { scoreboard } from './articles/scoreboard';
 import { dice } from './articles/dice';
 import { timer } from './articles/timer';
+import { onlinePartyQuestions } from './articles/online-party-questions';
+import { viewerParticipationIdeas } from './articles/viewer-participation-ideas';
 
 export type { Article, ArticleInput } from './articles/_types';
 
 /** 一覧などでの表示順（先頭が新着扱い） */
-export const ARTICLES: Article[] = [timer, dice, conversationStarters, scoreboard, teamDivision, roulette, amida, topicPicker, debate].map((a) => ({
+export const ARTICLES: Article[] = [viewerParticipationIdeas, onlinePartyQuestions, timer, dice, conversationStarters, scoreboard, teamDivision, roulette, amida, topicPicker, debate].map((a) => ({
   ...a,
   href: `/articles/${a.slug}`,
 }));
@@ -30,6 +32,6 @@ export const getArticleBySlug = (slug: string): Article | undefined =>
 export const getArticleByHref = (href: string): Article | undefined =>
   ARTICLES.find((a) => a.href === href);
 
-/** ツールURLから対応する記事を取得（ツール→記事リンク用） */
-export const getArticleByToolHref = (toolHref: string): Article | undefined =>
-  ARTICLES.find((a) => a.toolHref === toolHref);
+/** ツールURLから対応する記事を**すべて**取得（1ツール複数記事のクラスター用。新着順） */
+export const getArticlesByToolHref = (toolHref: string): Article[] =>
+  ARTICLES.filter((a) => a.toolHref === toolHref);

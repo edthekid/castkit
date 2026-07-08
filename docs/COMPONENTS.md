@@ -30,7 +30,7 @@
 | `ShareButton` | X(Twitter) 投稿リンク。URLは `SITE_URL + usePathname()`（ハイドレーション安全・本番URL固定）。 |
 | `ToolCard` | 全ツール導線カードの共通コンポーネント。サイトのシグネチャー（`.ck-tool-card`＝角ばり＋ハードオフセット影＋対角hover）を担う。`variant="featured"`（ホーム大カード）/ `"compact"`（RelatedTools 小カード）。データは `toolList.ts`（`TOOL_CARDS`）に一元化。 |
 | `RelatedTools` | 他ツールへの回遊カード3件（現在ページを除外）。`ToolCard` の compact を使用。 |
-| `ToolArticleLink` | 現在のツールに対応する記事へのリンク（`getArticleByToolHref`）。 |
+| `ToolArticleLink` | 現在のツールに対応する記事へのリンク一覧（`getArticlesByToolHref`。1ツール複数記事に対応）。 |
 
 ---
 
