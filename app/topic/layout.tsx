@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { pageAlternates, webAppJsonLd, breadcrumbJsonLd } from '../_lib/seo';
+import { pageAlternates, webAppJsonLd, breadcrumbJsonLd, toolFaqJsonLd } from '../_lib/seo';
 
 const DESC = '無料の雑談お題ガチャ。配信の雑談コーナーで使えるお題をランダム抽選。カテゴリ別絞り込み・カスタムお題に対応。登録不要、ブラウザだけで使える。 / Free random topic picker for streaming. Category filter and custom topics supported. No sign-up required.';
 
@@ -17,12 +17,14 @@ export const metadata: Metadata = {
 
 const jsonLd = webAppJsonLd({ name: 'お題ガチャ - CastKit', description: DESC, path: '/topic' });
 const breadcrumb = breadcrumbJsonLd('お題ガチャ', '/topic');
+const faq = toolFaqJsonLd('/topic');
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      {faq && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />}
       {children}
     </>
   );

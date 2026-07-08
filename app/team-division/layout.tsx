@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { pageAlternates, webAppJsonLd, breadcrumbJsonLd } from '../_lib/seo';
+import { pageAlternates, webAppJsonLd, breadcrumbJsonLd, toolFaqJsonLd } from '../_lib/seo';
 
 const DESC = '無料のチーム分け・グループ分けツール。メンバー名を入力するだけで均等なチームをランダムに自動生成。登録不要、ブラウザだけで使える。配信・対戦ゲームのチーム編成に。 / Free team division tool. Auto-generates balanced teams from member names. No sign-up required.';
 
@@ -17,12 +17,14 @@ export const metadata: Metadata = {
 
 const jsonLd = webAppJsonLd({ name: 'チーム分け - CastKit', description: DESC, path: '/team-division' });
 const breadcrumb = breadcrumbJsonLd('チーム分け', '/team-division');
+const faq = toolFaqJsonLd('/team-division');
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      {faq && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />}
       {children}
     </>
   );

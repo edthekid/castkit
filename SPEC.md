@@ -60,7 +60,7 @@
 - 通知音は音声ファイルを持たず **Web Audio（OscillatorNode）で合成**（バックエンド無し・依存最小・プライバシー安全）
 
 ### 共通仕様
-- 各ツールページ上部に**編集可能タイトル**（`ToolHeader`）、下部に**記事リンク＋シェア＋関連ツール**（`ToolFooter`）
+- 各ツールページ上部に**編集可能タイトル**（`ToolHeader`）、下部に**概要・使い方・活用シーン・FAQ＋記事リンク＋シェア＋関連ツール**（`ToolFooter`）。FAQ（各ツール4問・日英）は `app/_lib/toolIntro.ts` を単一ソースとし、FAQPage JSON-LD にも使う
 - カスタム設定は **localStorage** に保存（サーバー送信なし）
 
 ---
@@ -97,7 +97,7 @@
 - メタデータ（title テンプレート `%s | CastKit`、description は日英併記）
 - **canonical / hreflang**: `pageAlternates()` で全ページに付与
 - **OGP / Twitter Card**: 動的画像（`opengraph-image.tsx`、日英バイリンガル）
-- **構造化データ（JSON-LD）**: WebSite / WebApplication（各ツール）/ BreadcrumbList / BlogPosting（各記事）
+- **構造化データ（JSON-LD）**: WebSite / WebApplication（各ツール）/ FAQPage（各ツールのFAQ）/ BreadcrumbList / BlogPosting（各記事）
 - **sitemap.xml**: 静的ページ＋記事（`ARTICLES` から自動生成）
 - **robots.txt**: 全許可＋ sitemap 参照
 - **PWA**: `manifest.webmanifest` ＋ 192/512 アイコン
