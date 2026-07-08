@@ -24,13 +24,13 @@
 |----------------|------|
 | `ToolHeader` | ツール共通ヘッダー。`titleKey` / `subtitleKey` / 任意の `action`（設定ボタン）。`EditableTitle` を内包。 |
 | `ToolFooter` | ツール共通フッター。`ToolIntro` ＋ `ToolArticleLink` ＋ シェア（`tools.ts` の文言）＋ `RelatedTools` をまとめる。 |
-| `ToolIntro` | ツール下部の「概要＋使い方＋活用シーン」本文（`toolIntro.ts` からパスで取得）。ツールURL単体に読み物を持たせ、検索・広告審査での独自価値を示す。 |
+| `ToolIntro` | ツール下部の「概要＋使い方＋活用シーン＋よくある質問」本文（`toolIntro.ts` からパスで取得）。ツールURL単体に読み物を持たせ、検索・広告審査での独自価値を示す。FAQ は各ツール layout の FAQPage JSON-LD（`toolFaqJsonLd`）と同一ソース。 |
 | `EditableTitle` | クリックで編集できるページタイトル。未編集なら翻訳タイトル（言語追従）、編集後はユーザー入力を優先。中央寄せ用スペーサー内蔵。 |
 | `SettingsButton` | 設定モーダルを開くボタン（件数バッジ付き。お題ガチャ/ディベートで共通）。 |
 | `ShareButton` | X(Twitter) 投稿リンク。URLは `SITE_URL + usePathname()`（ハイドレーション安全・本番URL固定）。 |
 | `ToolCard` | 全ツール導線カードの共通コンポーネント。サイトのシグネチャー（`.ck-tool-card`＝角ばり＋ハードオフセット影＋対角hover）を担う。`variant="featured"`（ホーム大カード）/ `"compact"`（RelatedTools 小カード）。データは `toolList.ts`（`TOOL_CARDS`）に一元化。 |
 | `RelatedTools` | 他ツールへの回遊カード3件（現在ページを除外）。`ToolCard` の compact を使用。 |
-| `ToolArticleLink` | 現在のツールに対応する記事へのリンク（`getArticleByToolHref`）。 |
+| `ToolArticleLink` | 現在のツールに対応する記事へのリンク一覧（`getArticlesByToolHref`。1ツール複数記事に対応）。 |
 
 ---
 

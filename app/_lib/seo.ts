@@ -1,3 +1,5 @@
+import { getToolIntro } from './toolIntro';
+
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cast-kit.com';
 
 /** canonical + hreflang を生成するヘルパー */
@@ -54,6 +56,26 @@ export function webAppJsonLd({
       name: 'CastKit',
       url: SITE_URL,
     },
+  };
+}
+
+/**
+ * FAQPage JSON-LD スキーマを生成するヘルパー（ツールページ用）。
+ * app/_lib/toolIntro.ts の FAQ（日本語）をそのまま構造化データにする。
+ * 対応する FAQ が無いパスでは null を返す（script を描画しないこと）。
+ */
+export function toolFaqJsonLd(path: string) {
+  const intro = getToolIntro(path);
+  if (!intro || intro.faq.length === 0) return null;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    inLanguage: 'ja',
+    mainEntity: intro.faq.map((item) => ({
+      '@type': 'Question',
+      name: item.q.ja,
+      acceptedAnswer: { '@type': 'Answer', text: item.a.ja },
+    })),
   };
 }
 

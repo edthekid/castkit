@@ -21,6 +21,7 @@ export function ToolIntro() {
     overview: locale === 'ja' ? '概要' : 'Overview',
     steps: locale === 'ja' ? '使い方' : 'How to use',
     useCases: locale === 'ja' ? '活用シーン' : 'Use cases',
+    faq: locale === 'ja' ? 'よくある質問' : 'FAQ',
   };
 
   const sectionLabelClass = 'ck-eyebrow mb-2';
@@ -54,7 +55,7 @@ export function ToolIntro() {
       </div>
 
       {/* 活用シーン */}
-      <div>
+      <div className="mb-8">
         <h2 className={sectionLabelClass}>{labels.useCases}</h2>
         <ul className="flex flex-col gap-1.5">
           {intro.useCases[locale].map((useCase, i) => (
@@ -64,6 +65,19 @@ export function ToolIntro() {
             </li>
           ))}
         </ul>
+      </div>
+
+      {/* よくある質問 */}
+      <div>
+        <h2 className={sectionLabelClass}>{labels.faq}</h2>
+        <dl className="flex flex-col gap-5">
+          {intro.faq.map((item, i) => (
+            <div key={i}>
+              <dt className="text-sm font-bold text-ck-ink mb-1">{item.q[locale]}</dt>
+              <dd className="text-sm leading-relaxed text-ck-ink">{item.a[locale]}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </section>
   );

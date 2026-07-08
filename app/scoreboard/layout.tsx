@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { pageAlternates, webAppJsonLd, breadcrumbJsonLd } from '../_lib/seo';
+import { pageAlternates, webAppJsonLd, breadcrumbJsonLd, toolFaqJsonLd } from '../_lib/seo';
 
 const DESC = '無料のスコアボード・得点版ツール。2〜10チームの得点をリアルタイムに管理。+/-ボタン・カスタム加減算・順位表示・並べ替え・アンドゥ対応。7セグ／ミニマル／カードの3デザイン。登録不要、ブラウザだけで使える。配信・ゲームイベントの得点管理に。 / Free live scoreboard for streams and gaming events. Manage 2–10 teams, no sign-up.';
 
@@ -17,12 +17,14 @@ export const metadata: Metadata = {
 
 const jsonLd = webAppJsonLd({ name: 'スコアボード - CastKit', description: DESC, path: '/scoreboard' });
 const breadcrumb = breadcrumbJsonLd('スコアボード', '/scoreboard');
+const faq = toolFaqJsonLd('/scoreboard');
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      {faq && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />}
       {children}
     </>
   );
